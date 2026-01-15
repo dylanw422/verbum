@@ -1,0 +1,3 @@
+{
+  "extends": "@bible-reader/config/tsconfig.base.json"
+}

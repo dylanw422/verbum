@@ -1,0 +1,26 @@
+{
+  "name": "@bible-reader/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@bible-reader/auth": "workspace:*",
+    "@bible-reader/env": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "dotenv": "catalog:",
+    "next": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@bible-reader/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
