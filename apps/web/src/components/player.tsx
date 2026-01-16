@@ -476,7 +476,8 @@ export default function Player({ book }: PlayerProps) {
         >
           {words[wordIndex] ? (
             <RSVPWordDisplay
-              key={words[wordIndex].id} // Unique ID includes verse index to prevent artifacting
+              // VITAL: Removed 'key' prop here to allow React to diff the component
+              // and enable CSS transitions to run smoothly between words.
               word={words[wordIndex].text}
               studyMode={studyMode}
             />
@@ -605,32 +606,44 @@ export default function Player({ book }: PlayerProps) {
 // --- OPTICAL ENGINE COMPONENT ---
 
 const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean }) => {
-  // 1. VISUAL CLEANING (Visuals Only)
+  // 1. VISUAL CLEANING
+  // Keep punctuation in display to some extent if preferred, or clean it.
+  // The user requested removing unnecessary punctuation.
   const displayWord = word.replace(/[:;!()\[\]{}]/g, "");
 
   const LETTER_REGEX = /[a-zA-Z0-9\u00C0-\u00FF]/;
   const GLOBAL_LETTER_REGEX = /[^a-zA-Z0-9\u00C0-\u00FF]/g;
 
-  // 2. STUDY MODE: SYNTAX HIGHLIGHTING
-  let centerColor = "text-rose-500"; // Default
+  // 2. STUDY MODE: SYNTAX HIGHLIGHTING & SMOOTH TRANSITIONS
+  let textColor = "text-rose-500";
+  let glowColor = "bg-rose-500";
+  let decoration = "";
 
   if (studyMode) {
     const lower = displayWord.toLowerCase();
-    // Divine
+    // Divine (Gold)
     if (
-      ["god", "jesus", "lord", "christ", "spirit", "yahweh", "father"].some((k) =>
+      ["god", "jesus", "lord", "christ", "spirit", "yahweh", "father", "holy"].some((k) =>
         lower.includes(k)
       )
     ) {
-      centerColor = "text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]";
+      textColor = "text-amber-400";
+      glowColor = "bg-amber-400";
     }
-    // Negative
-    else if (["satan", "devil", "sin", "evil", "death", "hell"].some((k) => lower.includes(k))) {
-      centerColor = "text-red-500";
+    // Negative (Red)
+    else if (
+      ["satan", "devil", "sin", "evil", "death", "hell", "demon", "wicked"].some((k) =>
+        lower.includes(k)
+      )
+    ) {
+      textColor = "text-red-500";
+      glowColor = "bg-red-500";
     }
-    // Connectors
-    else if (["therefore", "however", "but", "because"].includes(lower)) {
-      centerColor = "text-blue-400 decoration-blue-500/30 underline underline-offset-4";
+    // Connectors (Blue)
+    else if (["therefore", "however", "but", "because", "for", "so"].includes(lower)) {
+      textColor = "text-blue-400";
+      glowColor = "bg-blue-400";
+      decoration = "underline decoration-blue-500/30 underline-offset-4";
     }
   }
 
@@ -678,13 +691,12 @@ const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean
     >
       <span className="flex justify-end w-[45vw] text-zinc-500 font-normal opacity-40">{left}</span>
       <span
-        className={`flex justify-center w-[1.5ch] ${centerColor} font-bold relative z-10 transform scale-110`}
+        className={`flex justify-center w-[1.5ch] ${textColor} ${decoration} font-bold relative z-10 transform scale-110 transition-colors duration-200`}
       >
         {center}
+        {/* Glow Element with Smooth Transition */}
         <span
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 blur-xl rounded-full -z-10 opacity-20 ${
-            studyMode && centerColor.includes("amber") ? "bg-amber-500" : "bg-rose-500"
-          }`}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 blur-xl rounded-full -z-10 opacity-20 ${glowColor} transition-colors duration-200`}
         />
       </span>
       <span className="flex justify-start w-[45vw] text-zinc-100 font-medium">{right}</span>
