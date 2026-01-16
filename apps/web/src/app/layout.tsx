@@ -16,9 +16,36 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Define your base URL once (replace with your actual production domain)
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  ? `https://${process.env.NEXT_PUBLIC_BASE_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "bible-reader",
-  description: "bible-reader",
+  metadataBase: new URL(baseUrl), // Critical for images to work!
+  title: {
+    default: "VERBUM",
+    template: "%s | VERBUM",
+  },
+  description: "Scripture Engine // Rapid Serial Visual Presentation Protocol",
+
+  // Facebook / Discord / LinkedIn
+  openGraph: {
+    title: "VERBUM",
+    description: "Scripture Engine // System Ready",
+    url: baseUrl,
+    siteName: "VERBUM",
+    locale: "en_US",
+    type: "website",
+  },
+
+  // Twitter (X)
+  twitter: {
+    card: "summary_large_image", // This makes the image big
+    title: "VERBUM",
+    description: "Scripture Engine",
+    creator: "@dylanw422", // Optional: your handle
+  },
 };
 
 export default function RootLayout({
