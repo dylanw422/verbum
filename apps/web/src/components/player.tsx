@@ -32,7 +32,7 @@ export default function Player({ book, chapters }: PlayerProps) {
   const [wordIndex, setWordIndex] = useState(0);
   const [words, setWords] = useState<string[]>([]);
   const [playing, setPlaying] = useState(false);
-  const [wpm, setWpm] = useState(250);
+  const [wpm, setWpm] = useState(200);
   const [userAdjusted, setUserAdjusted] = useState(false);
 
   // Visibility State for Chapter Grid
@@ -55,7 +55,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     setWordIndex(0);
     setPlaying(false);
 
-    if (!userAdjusted) setWpm(250);
+    if (!userAdjusted) setWpm(200);
   }, [book, chapter]);
 
   // --- Dynamic RSVP Loop (With Pauses) ---
@@ -71,14 +71,10 @@ export default function Player({ book, chapters }: PlayerProps) {
 
     // Punctuation Detection
     if (currentWord) {
-      // Strong Pause: Sentence endings (. ? ! ;)
-      // Regex handles trailing quotes or parens: e.g., "end.")
       if (/[.!?;]+["')]*$/.test(currentWord)) {
-        delay = baseDelay * 3.0; // Wait 3x longer on a period
-      }
-      // Weak Pause: Commas, Colons (Optional, but recommended for flow)
-      else if (/[,:]+["')]*$/.test(currentWord)) {
-        delay = baseDelay * 1.5;
+        delay = baseDelay * 3.0; // Strong pause
+      } else if (/[,:]+["')]*$/.test(currentWord)) {
+        delay = baseDelay * 1.5; // Weak pause
       }
     }
 
@@ -93,7 +89,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [playing, wordIndex, words, wpm]); // Dependency on wordIndex creates the loop
+  }, [playing, wordIndex, words, wpm]);
 
   // WPM Ramp
   useEffect(() => {
@@ -176,7 +172,11 @@ export default function Player({ book, chapters }: PlayerProps) {
           {/* Right Side: Toggle Button */}
           {chapters && (
             <button
-              onClick={() => setShowChapters(!showChapters)}
+              onClick={() => {
+                // If we are about to open the menu, pause the player
+                if (!showChapters) setPlaying(false);
+                setShowChapters(!showChapters);
+              }}
               className={`
                 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 mt-1
                 ${
