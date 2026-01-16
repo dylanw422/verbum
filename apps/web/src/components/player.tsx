@@ -2,7 +2,17 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Play, Pause, BookOpen, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import {
+  Play,
+  Pause,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+  Minus,
+  Plus,
+  Zap,
+} from "lucide-react";
 import { WEB } from "@/public/WEB";
 
 // --- Advanced ORP Logic ---
@@ -32,13 +42,16 @@ export default function Player({ book, chapters }: PlayerProps) {
   const [wordIndex, setWordIndex] = useState(0);
   const [words, setWords] = useState<string[]>([]);
   const [playing, setPlaying] = useState(false);
-  const [wpm, setWpm] = useState(200);
-  const [userAdjusted, setUserAdjusted] = useState(false);
+
+  // Speed State
+  const [targetWpm, setTargetWpm] = useState(250);
+  const [currentWpm, setCurrentWpm] = useState(250);
+
+  // Ref to track speed without triggering re-renders in the RSVP loop
+  const currentWpmRef = useRef(250);
 
   // Visibility State for Chapter Grid
   const [showChapters, setShowChapters] = useState(false);
-
-  const wpmRampRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load words
   useEffect(() => {
@@ -55,17 +68,55 @@ export default function Player({ book, chapters }: PlayerProps) {
     setWordIndex(0);
     setPlaying(false);
 
-    if (!userAdjusted) setWpm(200);
+    // Reset speeds on chapter change
+    setCurrentWpm(targetWpm);
+    currentWpmRef.current = targetWpm;
   }, [book, chapter]);
 
-  // --- Dynamic RSVP Loop (With Pauses) ---
+  // --- 1. Soft Start Logic ---
+  // Reset speed to 200 (or target) when play begins
+  useEffect(() => {
+    if (playing) {
+      const startSpeed = Math.min(200, targetWpm);
+      setCurrentWpm(startSpeed);
+      currentWpmRef.current = startSpeed;
+    }
+  }, [playing]);
+
+  // --- 2. Acceleration Loop ---
+  // Smoothly ramp currentWpm up to targetWpm
+  useEffect(() => {
+    if (!playing) return;
+
+    if (currentWpm !== targetWpm) {
+      const rampTimer = setInterval(() => {
+        setCurrentWpm((prev) => {
+          let next = prev;
+          if (prev < targetWpm) {
+            next = Math.min(targetWpm, prev + 5); // Accelerate (+5 per 100ms)
+          } else if (prev > targetWpm) {
+            next = Math.max(targetWpm, prev - 10); // Decelerate faster
+          }
+          currentWpmRef.current = next; // Sync ref
+          return next;
+        });
+      }, 100);
+
+      return () => clearInterval(rampTimer);
+    }
+  }, [playing, currentWpm, targetWpm]);
+
+  // --- 3. Dynamic RSVP Engine (Fixed) ---
   useEffect(() => {
     if (!playing || words.length === 0) return;
 
-    // Auto-collapse UI on play for Focus Mode
     if (showChapters) setShowChapters(false);
 
     const currentWord = words[wordIndex];
+
+    // VITAL: Read from ref to get latest speed without restarting the effect
+    const wpm = currentWpmRef.current;
+
     const baseDelay = 60000 / wpm;
     let delay = baseDelay;
 
@@ -89,27 +140,16 @@ export default function Player({ book, chapters }: PlayerProps) {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [playing, wordIndex, words, wpm]);
-
-  // WPM Ramp
-  useEffect(() => {
-    if (!playing || userAdjusted) return;
-    if (wpm < 400) {
-      wpmRampRef.current = setInterval(() => {
-        setWpm((prev) => Math.min(400, prev + 10));
-      }, 1000);
-    }
-    return () => {
-      if (wpmRampRef.current) clearInterval(wpmRampRef.current);
-    };
-  }, [playing, userAdjusted, wpm]);
+  }, [playing, wordIndex, words]); // REMOVED currentWpm from dependencies to prevent "starvation"
 
   const togglePlay = () => setPlaying(!playing);
 
-  const handleWpmChange = (val: number) => {
-    setWpm(val);
-    setUserAdjusted(true);
-    if (wpmRampRef.current) clearInterval(wpmRampRef.current);
+  // --- Speed Controls (Updates Target) ---
+  const adjustSpeed = (amount: number) => {
+    setTargetWpm((prev) => {
+      const next = prev + amount;
+      return Math.max(100, Math.min(1000, next));
+    });
   };
 
   // Keyboard Shortcuts
@@ -121,6 +161,14 @@ export default function Player({ book, chapters }: PlayerProps) {
       }
       if (e.code === "ArrowRight") setWordIndex((p) => Math.min(words.length - 1, p + 10));
       if (e.code === "ArrowLeft") setWordIndex((p) => Math.max(0, p - 10));
+      if (e.code === "ArrowUp") {
+        e.preventDefault();
+        adjustSpeed(25);
+      }
+      if (e.code === "ArrowDown") {
+        e.preventDefault();
+        adjustSpeed(-25);
+      }
       if (e.code === "Escape") setShowChapters(false);
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -173,7 +221,6 @@ export default function Player({ book, chapters }: PlayerProps) {
           {chapters && (
             <button
               onClick={() => {
-                // If we are about to open the menu, pause the player
                 if (!showChapters) setPlaying(false);
                 setShowChapters(!showChapters);
               }}
@@ -215,7 +262,7 @@ export default function Player({ book, chapters }: PlayerProps) {
                       key={ch}
                       onClick={() => {
                         setChapter(ch);
-                        setShowChapters(false); // Collapses drawer on selection
+                        setShowChapters(false);
                       }}
                       className={`
                         w-full h-8 flex items-center justify-center rounded-lg text-[11px] font-medium transition-all duration-200
@@ -273,34 +320,61 @@ export default function Player({ book, chapters }: PlayerProps) {
 
       {/* Control Deck */}
       <div className="absolute bottom-8 md:bottom-12 z-30 w-full flex justify-center px-4">
-        <div className="flex flex-col-reverse md:flex-row items-center gap-4 md:gap-6 px-6 py-4 md:py-3 bg-zinc-950/80 backdrop-blur-2xl border border-zinc-800/50 rounded-3xl md:rounded-full shadow-2xl shadow-black/50">
-          {/* WPM Slider */}
-          <div className="flex items-center gap-3 w-64 md:w-48 group justify-between md:justify-start">
-            <span className="text-[10px] font-bold text-zinc-500 w-8 text-left md:text-right group-hover:text-rose-500 transition-colors">
-              {wpm} <span className="md:hidden">WPM</span>
-            </span>
-            <input
-              type="range"
-              min={100}
-              max={600}
-              step={10}
-              value={wpm}
-              onChange={(e) => handleWpmChange(Number(e.target.value))}
-              className="flex-1 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 md:[&::-webkit-slider-thumb]:w-2.5 md:[&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-zinc-400 [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:bg-rose-500 hover:[&::-webkit-slider-thumb]:scale-110 transition-all"
-            />
+        <div className="flex items-center gap-3 px-3 py-3 md:px-4 bg-zinc-950/80 backdrop-blur-2xl border border-zinc-800/50 rounded-full shadow-2xl shadow-black/50">
+          {/* Cruise Control Interface */}
+          <div className="flex items-center bg-zinc-900 rounded-full p-1 border border-zinc-800">
+            <button
+              onClick={() => adjustSpeed(-25)}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 active:scale-95 transition-all"
+              aria-label="Decrease Speed"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+
+            <div className="w-24 flex flex-col items-center justify-center space-y-0.5 relative group">
+              <div
+                className={`flex items-center gap-1.5 transition-colors ${
+                  currentWpm < targetWpm && playing ? "text-zinc-400" : "text-rose-500"
+                }`}
+              >
+                <Zap
+                  className={`w-3 h-3 fill-current ${
+                    currentWpm < targetWpm && playing ? "animate-pulse" : ""
+                  }`}
+                />
+                <span className="text-lg font-bold font-mono tracking-tight leading-none tabular-nums">
+                  {targetWpm}
+                </span>
+              </div>
+              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider flex items-center gap-1">
+                WPM
+                {playing && currentWpm < targetWpm && (
+                  // Tiny acceleration indicator
+                  <span className="w-1 h-1 bg-rose-500 rounded-full animate-ping" />
+                )}
+              </span>
+            </div>
+
+            <button
+              onClick={() => adjustSpeed(25)}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 active:scale-95 transition-all"
+              aria-label="Increase Speed"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
 
-          <div className="hidden md:block w-px h-6 bg-zinc-800" />
+          <div className="w-px h-8 bg-zinc-800/50 mx-1" />
 
           {/* Play/Pause */}
           <button
             onClick={togglePlay}
-            className="flex items-center justify-center w-12 h-12 md:w-10 md:h-10 rounded-full bg-zinc-100 text-zinc-950 hover:bg-rose-500 hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-zinc-950/20"
+            className="flex items-center justify-center w-14 h-14 md:w-12 md:h-12 rounded-full bg-zinc-100 text-zinc-950 hover:bg-rose-500 hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-zinc-950/20"
           >
             {playing ? (
-              <Pause className="w-5 h-5 md:w-4 md:h-4 fill-current" />
+              <Pause className="w-6 h-6 md:w-5 md:h-5 fill-current" />
             ) : (
-              <Play className="w-5 h-5 md:w-4 md:h-4 fill-current ml-0.5" />
+              <Play className="w-6 h-6 md:w-5 md:h-5 fill-current ml-1" />
             )}
           </button>
         </div>
