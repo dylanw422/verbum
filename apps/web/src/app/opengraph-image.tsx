@@ -4,7 +4,7 @@ import { ImageResponse } from "next/og";
 export const runtime = "edge";
 
 // Image metadata
-export const alt = "VERBUM - High Velocity Scripture Engine";
+export const alt = "VERBUM - Scripture Engine";
 export const size = {
   width: 1200,
   height: 630,
@@ -150,11 +150,11 @@ export default async function Image() {
               display: "flex",
               marginBottom: 30,
               border: "1px solid #3f3f46",
-              padding: "8px 20px",
+              padding: "8px 24px",
               borderRadius: 50,
               backgroundColor: "#09090b",
               color: "#a1a1aa",
-              fontSize: 16,
+              fontSize: 14,
               letterSpacing: 4,
               textTransform: "uppercase",
             }}
@@ -185,6 +185,7 @@ export default async function Image() {
                 color: "#f43f5e",
                 position: "relative",
                 margin: "0 5px",
+                textShadow: "0 0 40px rgba(244, 63, 94, 0.6)", // Text glow
               }}
             >
               R{/* Decorative mark under letter */}
@@ -204,20 +205,20 @@ export default async function Image() {
             <span style={{ color: "#e4e4e7" }}>BUM</span>
           </div>
 
-          {/* Stats Row */}
+          {/* Slogan Row */}
           <div
             style={{
               marginTop: 50,
               display: "flex",
-              gap: 30,
-              color: "#52525b",
-              fontSize: 20,
-              letterSpacing: 2,
+              alignItems: "center",
+              color: "#71717a", // zinc-500
+              fontSize: 22,
+              letterSpacing: 6,
+              textTransform: "uppercase",
+              textAlign: "center",
             }}
           >
-            <span style={{ color: "#f43f5e" }}>● LIVE</span>
-            <span>700 WPM</span>
-            <span>FOCUS_LOCK</span>
+            Experience scripture in a new way
           </div>
         </div>
 
