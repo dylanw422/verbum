@@ -38,7 +38,6 @@ export default function Player({ book, chapters }: PlayerProps) {
   // Visibility State for Chapter Grid
   const [showChapters, setShowChapters] = useState(false);
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const wpmRampRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load words
@@ -59,14 +58,31 @@ export default function Player({ book, chapters }: PlayerProps) {
     if (!userAdjusted) setWpm(250);
   }, [book, chapter]);
 
-  // RSVP Loop
+  // --- Dynamic RSVP Loop (With Pauses) ---
   useEffect(() => {
     if (!playing || words.length === 0) return;
 
     // Auto-collapse UI on play for Focus Mode
     if (showChapters) setShowChapters(false);
 
-    const nextWord = () => {
+    const currentWord = words[wordIndex];
+    const baseDelay = 60000 / wpm;
+    let delay = baseDelay;
+
+    // Punctuation Detection
+    if (currentWord) {
+      // Strong Pause: Sentence endings (. ? ! ;)
+      // Regex handles trailing quotes or parens: e.g., "end.")
+      if (/[.!?;]+["')]*$/.test(currentWord)) {
+        delay = baseDelay * 3.0; // Wait 3x longer on a period
+      }
+      // Weak Pause: Commas, Colons (Optional, but recommended for flow)
+      else if (/[,:]+["')]*$/.test(currentWord)) {
+        delay = baseDelay * 1.5;
+      }
+    }
+
+    const timer = setTimeout(() => {
       setWordIndex((prev) => {
         if (prev >= words.length - 1) {
           setPlaying(false);
@@ -74,13 +90,10 @@ export default function Player({ book, chapters }: PlayerProps) {
         }
         return prev + 1;
       });
-    };
+    }, delay);
 
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(nextWord, 60000 / wpm);
-
-    return () => clearInterval(intervalRef.current!);
-  }, [playing, words, wpm]);
+    return () => clearTimeout(timer);
+  }, [playing, wordIndex, words, wpm]); // Dependency on wordIndex creates the loop
 
   // WPM Ramp
   useEffect(() => {
@@ -88,7 +101,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     if (wpm < 400) {
       wpmRampRef.current = setInterval(() => {
         setWpm((prev) => Math.min(400, prev + 10));
-      }, 2000);
+      }, 1000);
     }
     return () => {
       if (wpmRampRef.current) clearInterval(wpmRampRef.current);
