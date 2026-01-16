@@ -14,14 +14,8 @@ export const contentType = "image/png";
 
 // Image generation
 export default async function Image() {
-  // Load a Google Font for that crisp, technical look
-  // (JetBrains Mono is perfect for this aesthetic)
-  const fontData = await fetch(
-    new URL(
-      "https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnF8RD8yKxTOlOV.woff2",
-      import.meta.url
-    )
-  ).then((res) => res.arrayBuffer());
+  // We use standard fonts to ensure 100% reliability (no fetching errors)
+  // The 'monospace' look fits the terminal aesthetic perfectly.
 
   return new ImageResponse(
     (
@@ -34,231 +28,215 @@ export default async function Image() {
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#09090b", // zinc-950
-          fontFamily: '"JetBrains Mono"',
+          fontFamily: "monospace", // Reliable system font
           position: "relative",
-          overflow: "hidden",
         }}
       >
         {/* --- Background Layers --- */}
 
-        {/* 1. Subtle Noise/Grid Pattern */}
+        {/* 1. Grid Pattern */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
-            backgroundImage: `
-              radial-gradient(circle at 1px 1px, #27272a 1px, transparent 0)
-            `,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: "radial-gradient(circle at 2px 2px, #27272a 1px, transparent 0)",
             backgroundSize: "40px 40px",
             opacity: 0.3,
           }}
         />
 
-        {/* 2. Dramatic Radial Glow (The "Soul" of the machine) */}
+        {/* 2. Central Glow */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             background:
-              "radial-gradient(circle at center, rgba(244, 63, 94, 0.15) 0%, rgba(9, 9, 11, 0) 70%)",
+              "radial-gradient(circle at center, rgba(244, 63, 94, 0.1) 0%, rgba(9, 9, 11, 0) 60%)",
           }}
         />
 
-        {/* 3. Vignette to darken edges */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "radial-gradient(circle at center, transparent 40%, #09090b 100%)",
-          }}
-        />
+        {/* --- HUD Elements --- */}
 
-        {/* --- HUD / Technical Overlay Elements --- */}
-
-        {/* Top Left Marker */}
-        <div
-          style={{
-            position: "absolute",
-            top: 60,
-            left: 60,
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-          }}
-        >
-          <div style={{ width: 40, height: 2, backgroundColor: "#f43f5e" }} />
-          <div style={{ fontSize: 14, color: "#52525b", letterSpacing: "0.2em" }}>SYS.READY</div>
-        </div>
-
-        {/* Top Right Marker */}
-        <div
-          style={{
-            position: "absolute",
-            top: 60,
-            right: 60,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 4,
-          }}
-        >
-          <div
-            style={{ width: 10, height: 10, border: "2px solid #27272a", borderRadius: "50%" }}
-          />
-          <div style={{ fontSize: 14, color: "#52525b" }}>V1.0.4</div>
-        </div>
-
-        {/* Center Vertical Guide Line (The Optical Axis) */}
+        {/* Crosshair Lines */}
         <div
           style={{
             position: "absolute",
             top: 0,
             bottom: 0,
-            left: "50%",
+            left: "600px", // Center
             width: "1px",
             backgroundColor: "#f43f5e",
-            opacity: 0.2,
+            opacity: 0.15,
           }}
         />
-
-        {/* Horizontal Guide Line */}
         <div
           style={{
             position: "absolute",
             left: 0,
             right: 0,
-            top: "50%",
+            top: "315px", // Center
             height: "1px",
-            backgroundImage: "linear-gradient(to right, transparent, #27272a, transparent)",
+            backgroundColor: "#27272a",
             opacity: 0.5,
           }}
         />
 
-        {/* --- MAIN CONTENT: The RSVP Simulation --- */}
+        {/* Corners */}
+        <div
+          style={{
+            position: "absolute",
+            top: 40,
+            left: 40,
+            borderTop: "2px solid #3f3f46",
+            borderLeft: "2px solid #3f3f46",
+            width: 40,
+            height: 40,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: 40,
+            right: 40,
+            borderTop: "2px solid #3f3f46",
+            borderRight: "2px solid #3f3f46",
+            width: 40,
+            height: 40,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 40,
+            left: 40,
+            borderBottom: "2px solid #3f3f46",
+            borderLeft: "2px solid #3f3f46",
+            width: 40,
+            height: 40,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 40,
+            right: 40,
+            borderBottom: "2px solid #3f3f46",
+            borderRight: "2px solid #3f3f46",
+            width: 40,
+            height: 40,
+          }}
+        />
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", zIndex: 10 }}>
-          {/* The "Logo" Mark above text */}
+        {/* --- Main Content --- */}
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            zIndex: 10,
+            paddingBottom: 20,
+          }}
+        >
+          {/* Top Pill */}
           <div
             style={{
               display: "flex",
-              marginBottom: 40,
+              marginBottom: 30,
               border: "1px solid #3f3f46",
-              padding: "8px 16px",
-              borderRadius: 99,
-              backgroundColor: "rgba(9,9,11,0.8)",
-              boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+              padding: "8px 20px",
+              borderRadius: 50,
+              backgroundColor: "#09090b",
+              color: "#a1a1aa",
+              fontSize: 16,
+              letterSpacing: 4,
+              textTransform: "uppercase",
             }}
           >
-            <div
-              style={{
-                fontSize: 14,
-                color: "#a1a1aa",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-              }}
-            >
-              Optical Scripture Engine
-            </div>
+            Scripture Engine
           </div>
 
-          {/* THE WORD (Mimicking the RSVP Reader Logic) */}
+          {/* THE WORD - RSVP STYLE */}
           <div
             style={{
               display: "flex",
               alignItems: "baseline",
-              fontSize: 130,
-              fontWeight: 800,
+              fontSize: 140,
+              fontWeight: 700,
               lineHeight: 1,
-              letterSpacing: "-0.05em",
+              letterSpacing: -5,
             }}
           >
-            {/* Left Side (Ghosted) */}
-            <span style={{ color: "#52525b", opacity: 0.5, marginRight: 2 }}>VE</span>
+            {/* Left */}
+            <span style={{ color: "#3f3f46" }}>VE</span>
 
-            {/* Center Pivot (Highlighted & Glowing) */}
+            {/* Center (Red + Glow) */}
             <div
               style={{
-                position: "relative",
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
                 color: "#f43f5e",
+                position: "relative",
+                margin: "0 5px",
               }}
             >
-              R{/* Bloom effect behind the letter */}
+              R{/* Decorative mark under letter */}
               <div
                 style={{
                   position: "absolute",
-                  width: "120%",
-                  height: "120%",
-                  background: "#f43f5e",
-                  filter: "blur(40px)",
-                  opacity: 0.4,
-                  zIndex: -1,
+                  bottom: -20,
+                  width: 8,
+                  height: 8,
+                  backgroundColor: "#f43f5e",
+                  borderRadius: "50%",
                 }}
               />
             </div>
 
-            {/* Right Side (Bright White) */}
-            <span style={{ color: "#e4e4e7", marginLeft: 2 }}>BUM</span>
+            {/* Right */}
+            <span style={{ color: "#e4e4e7" }}>BUM</span>
           </div>
 
-          {/* Sub-data under the word */}
+          {/* Stats Row */}
           <div
             style={{
-              marginTop: 40,
+              marginTop: 50,
               display: "flex",
-              gap: 40,
-              color: "#71717a",
-              fontSize: 18,
-              letterSpacing: "0.1em",
+              gap: 30,
+              color: "#52525b",
+              fontSize: 20,
+              letterSpacing: 2,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div
-                style={{ width: 6, height: 6, backgroundColor: "#f43f5e", borderRadius: "50%" }}
-              />
-              <span>RSVP MODE</span>
-            </div>
-            <div>//</div>
-            <div>700 WPM</div>
-            <div>//</div>
-            <div>FOCUS_LOCK</div>
+            <span style={{ color: "#f43f5e" }}>● LIVE</span>
+            <span>700 WPM</span>
+            <span>FOCUS_LOCK</span>
           </div>
         </div>
 
-        {/* Bottom Bar decoration */}
+        {/* Version Number */}
         <div
           style={{
             position: "absolute",
             bottom: 50,
-            width: "80%",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderTop: "1px solid #27272a",
-            paddingTop: 20,
+            color: "#27272a",
+            fontSize: 14,
+            letterSpacing: 2,
           }}
         >
-          <div style={{ fontSize: 14, color: "#3f3f46" }}>READ FASTER. RETAIN MORE.</div>
-          {/* Fake barcode/data graphic */}
-          <div style={{ display: "flex", gap: 4, height: 12, alignItems: "center" }}>
-            {[10, 20, 15, 25, 10, 30, 15, 10, 20, 10].map((h, i) => (
-              <div key={i} style={{ width: 2, height: h, backgroundColor: "#3f3f46" }} />
-            ))}
-          </div>
+          SYS.VER.1.0
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: "JetBrains Mono",
-          data: fontData,
-          style: "normal",
-        },
-      ],
     }
   );
 }
