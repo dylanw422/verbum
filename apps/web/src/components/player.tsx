@@ -88,7 +88,7 @@ export default function Player({ book }: PlayerProps) {
       try {
         if (!globalFetchPromise) {
           globalFetchPromise = fetch(
-            "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/WEB.json"
+            "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/BSB.json"
           ).then(async (res) => {
             if (!res.ok) throw new Error("Failed to fetch library");
             return res.json();
