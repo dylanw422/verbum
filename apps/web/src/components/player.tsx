@@ -32,8 +32,6 @@ function tokenize(text: string) {
 }
 
 // --- Global Cache (Singleton Pattern) ---
-// This sits outside the component lifecycle.
-// Once fetched, it stays in memory until the page is hard-refreshed.
 type LibraryData = Record<string, Record<string, string | Record<string, string>>>;
 
 let globalLibraryCache: LibraryData | null = null;
@@ -43,20 +41,16 @@ let globalFetchPromise: Promise<LibraryData> | null = null;
 
 interface PlayerProps {
   book: string;
-  chapters?: number[];
+  chapters?: number[]; // Optional now, as we calculate it internally
 }
 
-export default function Player({ book, chapters }: PlayerProps) {
+export default function Player({ book }: PlayerProps) {
   // --- Data Fetching State with Caching Logic ---
-
-  // 1. Initialize state directly from the global cache if it exists
   const [library, setLibrary] = useState<LibraryData | null>(globalLibraryCache);
-
-  // 2. Only show loading if we don't have the cache yet
   const [isLoading, setIsLoading] = useState(!globalLibraryCache);
 
   // Player State
-  const [chapter, setChapter] = useState(chapters ? chapters[0] : 1);
+  const [chapter, setChapter] = useState(1);
   const [wordIndex, setWordIndex] = useState(0);
   const [words, setWords] = useState<string[]>([]);
   const [playing, setPlaying] = useState(false);
@@ -64,8 +58,6 @@ export default function Player({ book, chapters }: PlayerProps) {
   // Speed State
   const [targetWpm, setTargetWpm] = useState(250);
   const [currentWpm, setCurrentWpm] = useState(250);
-
-  // Ref to track speed without triggering re-renders in the RSVP loop
   const currentWpmRef = useRef(250);
 
   // Visibility State for Chapter Grid
@@ -86,7 +78,6 @@ export default function Player({ book, chapters }: PlayerProps) {
 
   // --- Data Fetching: Load JSON (Cached) ---
   useEffect(() => {
-    // If we already have data in the variable, ensure state is synced and stop.
     if (globalLibraryCache) {
       setLibrary(globalLibraryCache);
       setIsLoading(false);
@@ -95,7 +86,6 @@ export default function Player({ book, chapters }: PlayerProps) {
 
     async function fetchLibrary() {
       try {
-        // If a fetch is already running (from a previous mount), reuse that promise
         if (!globalFetchPromise) {
           globalFetchPromise = fetch(
             "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/WEB.json"
@@ -105,17 +95,11 @@ export default function Player({ book, chapters }: PlayerProps) {
           });
         }
 
-        // Await the singleton promise
         const data = await globalFetchPromise;
-
-        // Save to global cache
         globalLibraryCache = data;
-
-        // Update Local State
         setLibrary(data);
       } catch (error) {
         console.error("Error loading book data:", error);
-        // If error, reset promise so we can try again later
         globalFetchPromise = null;
       } finally {
         setIsLoading(false);
@@ -124,6 +108,17 @@ export default function Player({ book, chapters }: PlayerProps) {
 
     fetchLibrary();
   }, []);
+
+  // --- NEW: Derive Chapter List from Library ---
+  // Since we don't pass 'chapters' as a prop anymore, we calculate it here.
+  const availableChapters = useMemo(() => {
+    if (!library || !library[book]) return [];
+
+    // keys are "1", "2", etc.
+    return Object.keys(library[book])
+      .map((ch) => parseInt(ch, 10))
+      .sort((a, b) => a - b);
+  }, [library, book]);
 
   // --- Content Loading ---
   useEffect(() => {
@@ -143,7 +138,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     setPlaying(false);
   }, [book, chapter, library]);
 
-  // --- 1. Soft Start Logic ---
+  // --- Soft Start & Acceleration Logic ---
   useEffect(() => {
     if (playing) {
       const startSpeed = Math.min(200, targetWpm);
@@ -152,32 +147,25 @@ export default function Player({ book, chapters }: PlayerProps) {
     }
   }, [playing]);
 
-  // --- 2. Acceleration Loop ---
   useEffect(() => {
     if (!playing) return;
-
     if (currentWpm !== targetWpm) {
       const rampTimer = setInterval(() => {
         setCurrentWpm((prev) => {
           let next = prev;
-          if (prev < targetWpm) {
-            next = Math.min(targetWpm, prev + 5);
-          } else if (prev > targetWpm) {
-            next = Math.max(targetWpm, prev - 10);
-          }
+          if (prev < targetWpm) next = Math.min(targetWpm, prev + 5);
+          else if (prev > targetWpm) next = Math.max(targetWpm, prev - 10);
           currentWpmRef.current = next;
           return next;
         });
       }, 100);
-
       return () => clearInterval(rampTimer);
     }
   }, [playing, currentWpm, targetWpm]);
 
-  // --- 3. Dynamic RSVP Engine ---
+  // --- Dynamic RSVP Engine ---
   useEffect(() => {
     if (!playing || words.length === 0) return;
-
     if (showChapters) setShowChapters(false);
 
     const currentWord = words[wordIndex];
@@ -220,7 +208,6 @@ export default function Player({ book, chapters }: PlayerProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLoading) return;
-
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
@@ -250,7 +237,6 @@ export default function Player({ book, chapters }: PlayerProps) {
     return (wordIndex / words.length) * 100;
   }, [wordIndex, words]);
 
-  // --- Loading Screen ---
   if (isLoading) {
     return (
       <div className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center">
@@ -266,17 +252,13 @@ export default function Player({ book, chapters }: PlayerProps) {
 
   return (
     <div className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden overscroll-none font-sans selection:bg-rose-500/30">
-      {/* Cinematic Background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-zinc-950 to-zinc-950 opacity-80 pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 pointer-events-none mix-blend-overlay" />
 
       {/* --- Header Area --- */}
       <div className="absolute top-0 left-0 right-0 z-40 flex flex-col items-center p-6 md:p-8 pointer-events-none">
-        {/* Top Bar */}
         <div className="w-full max-w-5xl flex justify-between items-start pointer-events-auto">
-          {/* Left Side: Back Button + Title Block */}
           <div className="flex items-start gap-4 md:gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
-            {/* Back Button */}
             <Link
               href="/"
               className="mt-1 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-rose-500 hover:bg-zinc-800 transition-all duration-300 group"
@@ -284,7 +266,6 @@ export default function Player({ book, chapters }: PlayerProps) {
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             </Link>
 
-            {/* Title Block */}
             <div className="flex flex-col gap-1">
               <h1 className="text-[10px] font-bold tracking-[0.25em] text-zinc-600 uppercase">
                 Current Reading
@@ -301,8 +282,8 @@ export default function Player({ book, chapters }: PlayerProps) {
             </div>
           </div>
 
-          {/* Right Side: Toggle Button */}
-          {chapters && (
+          {/* --- FIXED: Chapter Selector Logic --- */}
+          {availableChapters.length > 0 && (
             <button
               onClick={() => {
                 if (!showChapters) setPlaying(false);
@@ -327,8 +308,8 @@ export default function Player({ book, chapters }: PlayerProps) {
           )}
         </div>
 
-        {/* Collapsible Chapter Grid */}
-        {chapters && (
+        {/* --- FIXED: Collapsible Chapter Grid --- */}
+        {availableChapters.length > 0 && (
           <div
             className={`
               w-full max-w-5xl pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
@@ -341,7 +322,7 @@ export default function Player({ book, chapters }: PlayerProps) {
             <div className="overflow-hidden min-h-0">
               <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/60 rounded-xl p-3 shadow-2xl max-h-[30vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent hover:scrollbar-thumb-zinc-500">
                 <div className="grid grid-cols-5 md:grid-cols-10 gap-1.5">
-                  {chapters.map((ch) => (
+                  {availableChapters.map((ch) => (
                     <button
                       key={ch}
                       onClick={() => {
@@ -369,12 +350,10 @@ export default function Player({ book, chapters }: PlayerProps) {
 
       {/* Main Reader Stage */}
       <div className="relative z-20 flex flex-col items-center justify-center w-full max-w-5xl h-64 md:h-96 px-4">
-        {/* Optical Guides */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 md:h-20 w-px bg-rose-500/10 mx-auto" />
         <div className="absolute inset-x-0 top-1/2 -translate-y-[1.5rem] md:-translate-y-[2rem] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent opacity-30" />
         <div className="absolute inset-x-0 top-1/2 translate-y-[1.5rem] md:translate-y-[2rem] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent opacity-30" />
 
-        {/* The Word */}
         <div className="relative h-24 md:h-32 w-full flex items-center justify-center mb-8">
           {words[wordIndex] ? (
             <RSVPWordDisplay word={words[wordIndex]} />
@@ -385,7 +364,6 @@ export default function Player({ book, chapters }: PlayerProps) {
           )}
         </div>
 
-        {/* Minimal Progress Bar */}
         <div className="w-full max-w-xs md:max-w-sm flex flex-col items-center gap-3">
           <div className="w-full h-0.5 bg-zinc-900 rounded-full overflow-hidden">
             <div
@@ -402,10 +380,8 @@ export default function Player({ book, chapters }: PlayerProps) {
         </div>
       </div>
 
-      {/* Control Deck */}
       <div className="absolute bottom-8 md:bottom-12 z-30 w-full flex justify-center px-4">
         <div className="flex items-center gap-3 px-3 py-3 md:px-4 bg-zinc-950/80 backdrop-blur-2xl border border-zinc-800/50 rounded-full shadow-2xl shadow-black/50">
-          {/* Cruise Control Interface */}
           <div className="flex items-center bg-zinc-900 rounded-full p-1 border border-zinc-800">
             <button
               onClick={() => adjustSpeed(-25)}
@@ -433,7 +409,6 @@ export default function Player({ book, chapters }: PlayerProps) {
               <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider flex items-center gap-1">
                 WPM
                 {playing && currentWpm < targetWpm && (
-                  // Tiny acceleration indicator
                   <span className="w-1 h-1 bg-rose-500 rounded-full animate-ping" />
                 )}
               </span>
@@ -450,7 +425,6 @@ export default function Player({ book, chapters }: PlayerProps) {
 
           <div className="w-px h-8 bg-zinc-800/50 mx-1" />
 
-          {/* Play/Pause */}
           <button
             onClick={togglePlay}
             className="flex items-center justify-center w-14 h-14 md:w-12 md:h-12 rounded-full bg-zinc-100 text-zinc-950 hover:bg-rose-500 hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-zinc-950/20"
@@ -464,7 +438,6 @@ export default function Player({ book, chapters }: PlayerProps) {
         </div>
       </div>
 
-      {/* --- Keyboard Shortcuts Legend (Desktop Only) --- */}
       <div className="absolute bottom-6 right-6 z-30 hidden md:flex flex-col items-end gap-2 opacity-100 hover:opacity-100 transition-opacity duration-300">
         <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1.5">
           <Keyboard className="w-3 h-3" /> Shortcuts
@@ -495,8 +468,6 @@ export default function Player({ book, chapters }: PlayerProps) {
     </div>
   );
 }
-
-// --- The Optical Engine ---
 
 const RSVPWordDisplay = ({ word }: { word: string }) => {
   const cleanWord = word.replace(/[^a-zA-Z0-9\u00C0-\u00FF]/g, "");
