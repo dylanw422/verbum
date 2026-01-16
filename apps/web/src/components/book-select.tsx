@@ -151,7 +151,7 @@ export default function BookSelect() {
             {/* Version / Date Stamp */}
             <div className="hidden sm:block text-right">
               <div className="text-[10px] font-mono text-zinc-600 tracking-widest">
-                BUILD_2024.1
+                BUILD_2026.1
               </div>
             </div>
           </motion.div>
