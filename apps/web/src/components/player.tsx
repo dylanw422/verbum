@@ -47,7 +47,6 @@ let globalFetchPromise: Promise<LibraryData> | null = null;
 
 interface PlayerProps {
   book: string;
-  chapters?: number[]; // Optional now, as we calculate it internally
 }
 
 export default function Player({ book }: PlayerProps) {
@@ -115,7 +114,7 @@ export default function Player({ book }: PlayerProps) {
     fetchLibrary();
   }, []);
 
-  // --- NEW: Derive Chapter List from Library ---
+  // --- Derive Chapter List from Library ---
   const availableChapters = useMemo(() => {
     if (!library || !library[book]) return [];
 
@@ -179,9 +178,10 @@ export default function Player({ book }: PlayerProps) {
     let delay = baseDelay;
 
     if (currentWord) {
+      // 1. TIMING LOGIC: Uses the raw word (with punctuation) to determine pauses.
       if (/[.!?;]+["')]*$/.test(currentWord)) {
-        delay = baseDelay * 3.0;
-      } else if (/[,:]+["')]*$/.test(currentWord)) {
+        delay = baseDelay * 2.5;
+      } else if (/[,:;]+["')]*$/.test(currentWord)) {
         delay = baseDelay * 1.5;
       }
     }
@@ -287,7 +287,6 @@ export default function Player({ book }: PlayerProps) {
             </div>
           </div>
 
-          {/* --- Chapter Selector Logic --- */}
           {availableChapters.length > 0 && (
             <button
               onClick={() => {
@@ -313,7 +312,6 @@ export default function Player({ book }: PlayerProps) {
           )}
         </div>
 
-        {/* --- Collapsible Chapter Grid --- */}
         {availableChapters.length > 0 && (
           <div
             className={`
@@ -361,7 +359,10 @@ export default function Player({ book }: PlayerProps) {
 
         <div className="relative h-24 md:h-32 w-full flex items-center justify-center mb-8">
           {words[wordIndex] ? (
-            <RSVPWordDisplay word={words[wordIndex]} />
+            <RSVPWordDisplay
+              key={`${wordIndex}-${words[wordIndex]}`} // Force re-render on word change
+              word={words[wordIndex]}
+            />
           ) : (
             <span className="text-zinc-700 text-sm md:text-lg font-mono tracking-widest uppercase text-center animate-pulse">
               End of Chapter
@@ -474,19 +475,40 @@ export default function Player({ book }: PlayerProps) {
   );
 }
 
+// --- OPTICAL ENGINE COMPONENT ---
+
 const RSVPWordDisplay = ({ word }: { word: string }) => {
-  const cleanWord = word.replace(/[^a-zA-Z0-9\u00C0-\u00FF]/g, "");
-  const hasLetters = cleanWord.length > 0;
+  // 1. VISUAL CLEANING:
+  // We strip punctuation from the displayed word to prevent visual artifacts
+  // and keep the focus on the word itself.
+  // We keep: Alphanumerics, hyphens, and apostrophes (for contractions)
+  // We remove: . , : ; ! ? " ( ) [ ] etc.
+  const displayWord = word.replace(/[:;!()\[\]{}]/g, "");
+
+  const LETTER_REGEX = /[a-zA-Z0-9\u00C0-\u00FF]/;
+  const GLOBAL_LETTER_REGEX = /[^a-zA-Z0-9\u00C0-\u00FF]/g;
+
+  // 2. DYNAMIC FONT SIZING (Based on cleaned length)
+  const len = displayWord.length;
+  const textSize =
+    len > 15
+      ? "text-2xl sm:text-3xl md:text-5xl"
+      : len > 10
+      ? "text-3xl sm:text-4xl md:text-6xl"
+      : "text-4xl sm:text-5xl md:text-7xl";
+
+  const cleanWordForORP = displayWord.replace(GLOBAL_LETTER_REGEX, "");
+  const hasLetters = cleanWordForORP.length > 0;
 
   let left, center, right;
 
   if (hasLetters) {
-    const orpIndexClean = getORPIndex(cleanWord);
+    const orpIndexClean = getORPIndex(cleanWordForORP);
     let currentCleanIndex = 0;
     let pivotIndex = 0;
 
-    for (let i = 0; i < word.length; i++) {
-      if (/[a-zA-Z0-9\u00C0-\u00FF]/.test(word[i])) {
+    for (let i = 0; i < displayWord.length; i++) {
+      if (LETTER_REGEX.test(displayWord[i])) {
         if (currentCleanIndex === orpIndexClean) {
           pivotIndex = i;
           break;
@@ -495,26 +517,29 @@ const RSVPWordDisplay = ({ word }: { word: string }) => {
       }
     }
 
-    left = word.slice(0, pivotIndex);
-    center = word[pivotIndex];
-    right = word.slice(pivotIndex + 1);
+    left = displayWord.slice(0, pivotIndex);
+    center = displayWord[pivotIndex];
+    right = displayWord.slice(pivotIndex + 1);
   } else {
-    const pivotIndex = Math.floor(word.length / 2);
-    left = word.slice(0, pivotIndex);
-    center = word[pivotIndex];
-    right = word.slice(pivotIndex + 1);
+    // Fallback for symbols/numbers without letters
+    const pivotIndex = Math.floor(displayWord.length / 2);
+    left = displayWord.slice(0, pivotIndex);
+    center = displayWord[pivotIndex];
+    right = displayWord.slice(pivotIndex + 1);
   }
 
   return (
-    <div className="flex items-baseline font-mono text-4xl sm:text-5xl md:text-6xl tracking-tight leading-none select-none">
-      <span className="flex justify-end w-[40vw] text-zinc-500 font-normal opacity-40">{left}</span>
+    <div
+      className={`flex items-baseline ${textSize} font-mono tracking-tight leading-none select-none transition-all duration-100 ease-out`}
+    >
+      <span className="flex justify-end w-[45vw] text-zinc-500 font-normal opacity-40">{left}</span>
 
       <span className="flex justify-center w-[1.5ch] text-rose-500 font-bold relative z-10 transform scale-110">
         {center}
         <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-rose-500/20 blur-xl rounded-full -z-10" />
       </span>
 
-      <span className="flex justify-start w-[40vw] text-zinc-100 font-medium">{right}</span>
+      <span className="flex justify-start w-[45vw] text-zinc-100 font-medium">{right}</span>
     </div>
   );
 };
