@@ -53,6 +53,19 @@ export default function Player({ book, chapters }: PlayerProps) {
   // Visibility State for Chapter Grid
   const [showChapters, setShowChapters] = useState(false);
 
+  // --- Persistence: Load WPM on Mount ---
+  useEffect(() => {
+    const saved = localStorage.getItem("rsvp-speed");
+    if (saved) {
+      const val = parseInt(saved, 10);
+      if (!isNaN(val) && val >= 100 && val <= 1000) {
+        setTargetWpm(val);
+        setCurrentWpm(val); // Immediate UI sync
+        currentWpmRef.current = val; // Immediate Engine sync
+      }
+    }
+  }, []);
+
   // Load words
   useEffect(() => {
     const bookData = WEB[book];
@@ -68,10 +81,12 @@ export default function Player({ book, chapters }: PlayerProps) {
     setWordIndex(0);
     setPlaying(false);
 
-    // Reset speeds on chapter change
-    setCurrentWpm(targetWpm);
-    currentWpmRef.current = targetWpm;
-  }, [book, chapter]);
+    // Ensure we start fresh on chapter change, respecting the current target
+    setCurrentWpm((prev) => {
+      currentWpmRef.current = targetWpm;
+      return targetWpm;
+    });
+  }, [book, chapter, targetWpm]);
 
   // --- 1. Soft Start Logic ---
   // Reset speed to 200 (or target) when play begins
@@ -81,7 +96,7 @@ export default function Player({ book, chapters }: PlayerProps) {
       setCurrentWpm(startSpeed);
       currentWpmRef.current = startSpeed;
     }
-  }, [playing]);
+  }, [playing]); // Only runs when play toggles
 
   // --- 2. Acceleration Loop ---
   // Smoothly ramp currentWpm up to targetWpm
@@ -106,7 +121,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     }
   }, [playing, currentWpm, targetWpm]);
 
-  // --- 3. Dynamic RSVP Engine (Fixed) ---
+  // --- 3. Dynamic RSVP Engine ---
   useEffect(() => {
     if (!playing || words.length === 0) return;
 
@@ -140,15 +155,16 @@ export default function Player({ book, chapters }: PlayerProps) {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [playing, wordIndex, words]); // REMOVED currentWpm from dependencies to prevent "starvation"
+  }, [playing, wordIndex, words]); // Intentionally exclude currentWpm/targetWpm
 
   const togglePlay = () => setPlaying(!playing);
 
-  // --- Speed Controls (Updates Target) ---
+  // --- Speed Controls (Updates Target & LocalStorage) ---
   const adjustSpeed = (amount: number) => {
     setTargetWpm((prev) => {
-      const next = prev + amount;
-      return Math.max(100, Math.min(1000, next));
+      const next = Math.max(100, Math.min(1000, prev + amount));
+      localStorage.setItem("rsvp-speed", next.toString()); // Save on user action
+      return next;
     });
   };
 
