@@ -12,6 +12,7 @@ import {
   Minus,
   Plus,
   Zap,
+  Keyboard,
 } from "lucide-react";
 import { WEB } from "@/public/WEB";
 
@@ -66,7 +67,9 @@ export default function Player({ book, chapters }: PlayerProps) {
     }
   }, []);
 
-  // Load words
+  // --- Content Loading ---
+  // VITAL FIX: targetWpm is removed from dependencies so changing speed
+  // does not reload the text or reset the index.
   useEffect(() => {
     const bookData = WEB[book];
     if (!bookData) return;
@@ -80,13 +83,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     setWords(tokenize(text));
     setWordIndex(0);
     setPlaying(false);
-
-    // Ensure we start fresh on chapter change, respecting the current target
-    setCurrentWpm((prev) => {
-      currentWpmRef.current = targetWpm;
-      return targetWpm;
-    });
-  }, [book, chapter, targetWpm]);
+  }, [book, chapter]);
 
   // --- 1. Soft Start Logic ---
   // Reset speed to 200 (or target) when play begins
@@ -155,7 +152,7 @@ export default function Player({ book, chapters }: PlayerProps) {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [playing, wordIndex, words]); // Intentionally exclude currentWpm/targetWpm
+  }, [playing, wordIndex, words]);
 
   const togglePlay = () => setPlaying(!playing);
 
@@ -184,6 +181,10 @@ export default function Player({ book, chapters }: PlayerProps) {
       if (e.code === "ArrowDown") {
         e.preventDefault();
         adjustSpeed(-25);
+      }
+      if (e.code === "KeyR") {
+        e.preventDefault();
+        setWordIndex(0); // Only restarts position
       }
       if (e.code === "Escape") setShowChapters(false);
     };
@@ -393,6 +394,35 @@ export default function Player({ book, chapters }: PlayerProps) {
               <Play className="w-6 h-6 md:w-5 md:h-5 fill-current ml-1" />
             )}
           </button>
+        </div>
+      </div>
+
+      {/* --- Keyboard Shortcuts Legend (Desktop Only) --- */}
+      <div className="absolute bottom-6 right-6 z-30 hidden md:flex flex-col items-end gap-2 opacity-100 hover:opacity-100 transition-opacity duration-300">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1.5">
+          <Keyboard className="w-3 h-3" /> Shortcuts
+        </div>
+        <div className="grid grid-cols-1 gap-1.5 text-[10px] font-mono text-zinc-400">
+          {[
+            { keys: ["Space"], label: "Play / Pause" },
+            { keys: ["↑", "↓"], label: "Adjust Speed" },
+            { keys: ["←", "→"], label: "Rewind / Skip" },
+            { keys: ["R"], label: "Restart Chapter" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center justify-end gap-2">
+              <span className="text-zinc-600 tracking-tight">{item.label}</span>
+              <div className="flex gap-1">
+                {item.keys.map((k) => (
+                  <span
+                    key={k}
+                    className="min-w-[20px] h-5 flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded px-1 shadow-sm text-zinc-300"
+                  >
+                    {k}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
