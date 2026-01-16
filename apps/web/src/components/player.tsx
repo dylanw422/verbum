@@ -28,7 +28,13 @@ function getORPIndex(word: string): number {
 }
 
 function tokenize(text: string) {
-  return text.match(/\S+/g) || [];
+  // Pre-process text to handle attached punctuation and hyphens
+  const processed = text
+    .replace(/—/g, " — ") // Detach em-dashes
+    .replace(/--/g, " — ") // Handle double-dash as em-dash
+    .replace(/-/g, "- "); // Add space after hyphens to split words like "morning-The" -> "morning-" "The"
+
+  return processed.match(/\S+/g) || [];
 }
 
 // --- Global Cache (Singleton Pattern) ---
@@ -110,7 +116,6 @@ export default function Player({ book }: PlayerProps) {
   }, []);
 
   // --- NEW: Derive Chapter List from Library ---
-  // Since we don't pass 'chapters' as a prop anymore, we calculate it here.
   const availableChapters = useMemo(() => {
     if (!library || !library[book]) return [];
 
@@ -282,7 +287,7 @@ export default function Player({ book }: PlayerProps) {
             </div>
           </div>
 
-          {/* --- FIXED: Chapter Selector Logic --- */}
+          {/* --- Chapter Selector Logic --- */}
           {availableChapters.length > 0 && (
             <button
               onClick={() => {
@@ -308,7 +313,7 @@ export default function Player({ book }: PlayerProps) {
           )}
         </div>
 
-        {/* --- FIXED: Collapsible Chapter Grid --- */}
+        {/* --- Collapsible Chapter Grid --- */}
         {availableChapters.length > 0 && (
           <div
             className={`
