@@ -2,12 +2,85 @@
 
 import { useState, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { WEB } from "@/public/WEB";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.cjs";
 import { BookOpen, Database, ScanLine, Command } from "lucide-react";
+
+// --- Hardcoded Data ---
+
+const BOOKS = [
+  "Genesis",
+  "Exodus",
+  "Leviticus",
+  "Numbers",
+  "Deuteronomy",
+  "Joshua",
+  "Judges",
+  "Ruth",
+  "1 Samuel",
+  "2 Samuel",
+  "1 Kings",
+  "2 Kings",
+  "1 Chronicles",
+  "2 Chronicles",
+  "Ezra",
+  "Nehemiah",
+  "Esther",
+  "Job",
+  "Psalms",
+  "Proverbs",
+  "Ecclesiastes",
+  "Song of Solomon",
+  "Isaiah",
+  "Jeremiah",
+  "Lamentations",
+  "Ezekiel",
+  "Daniel",
+  "Hosea",
+  "Joel",
+  "Amos",
+  "Obadiah",
+  "Jonah",
+  "Micah",
+  "Nahum",
+  "Habakkuk",
+  "Zephaniah",
+  "Haggai",
+  "Zechariah",
+  "Malachi",
+  "Matthew",
+  "Mark",
+  "Luke",
+  "John",
+  "Acts",
+  "Romans",
+  "1 Corinthians",
+  "2 Corinthians",
+  "Galatians",
+  "Ephesians",
+  "Philippians",
+  "Colossians",
+  "1 Thessalonians",
+  "2 Thessalonians",
+  "1 Timothy",
+  "2 Timothy",
+  "Titus",
+  "Philemon",
+  "Hebrews",
+  "James",
+  "1 Peter",
+  "2 Peter",
+  "1 John",
+  "2 John",
+  "3 John",
+  "Jude",
+  "Revelation",
+];
+
+const OT_BOOKS = BOOKS.slice(0, 39);
+const NT_BOOKS = BOOKS.slice(39);
 
 // --- 3D Background: Warp Field ---
 
@@ -40,12 +113,6 @@ function StarField(props: any) {
     </group>
   );
 }
-
-// --- Logic ---
-
-const BOOKS = Object.keys(WEB);
-const OT_BOOKS = BOOKS.slice(0, 39);
-const NT_BOOKS = BOOKS.slice(39);
 
 // --- Components ---
 

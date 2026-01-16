@@ -13,8 +13,8 @@ import {
   Plus,
   Zap,
   Keyboard,
+  Loader2,
 } from "lucide-react";
-import { WEB } from "@/public/WEB";
 
 // --- Advanced ORP Logic ---
 
@@ -31,14 +31,31 @@ function tokenize(text: string) {
   return text.match(/\S+/g) || [];
 }
 
+// --- Global Cache (Singleton Pattern) ---
+// This sits outside the component lifecycle.
+// Once fetched, it stays in memory until the page is hard-refreshed.
+type LibraryData = Record<string, Record<string, string | Record<string, string>>>;
+
+let globalLibraryCache: LibraryData | null = null;
+let globalFetchPromise: Promise<LibraryData> | null = null;
+
 // --- Components ---
 
 interface PlayerProps {
-  book: keyof typeof WEB;
+  book: string;
   chapters?: number[];
 }
 
 export default function Player({ book, chapters }: PlayerProps) {
+  // --- Data Fetching State with Caching Logic ---
+
+  // 1. Initialize state directly from the global cache if it exists
+  const [library, setLibrary] = useState<LibraryData | null>(globalLibraryCache);
+
+  // 2. Only show loading if we don't have the cache yet
+  const [isLoading, setIsLoading] = useState(!globalLibraryCache);
+
+  // Player State
   const [chapter, setChapter] = useState(chapters ? chapters[0] : 1);
   const [wordIndex, setWordIndex] = useState(0);
   const [words, setWords] = useState<string[]>([]);
@@ -61,20 +78,61 @@ export default function Player({ book, chapters }: PlayerProps) {
       const val = parseInt(saved, 10);
       if (!isNaN(val) && val >= 100 && val <= 1000) {
         setTargetWpm(val);
-        setCurrentWpm(val); // Immediate UI sync
-        currentWpmRef.current = val; // Immediate Engine sync
+        setCurrentWpm(val);
+        currentWpmRef.current = val;
       }
     }
   }, []);
 
-  // --- Content Loading ---
-  // VITAL FIX: targetWpm is removed from dependencies so changing speed
-  // does not reload the text or reset the index.
+  // --- Data Fetching: Load JSON (Cached) ---
   useEffect(() => {
-    const bookData = WEB[book];
+    // If we already have data in the variable, ensure state is synced and stop.
+    if (globalLibraryCache) {
+      setLibrary(globalLibraryCache);
+      setIsLoading(false);
+      return;
+    }
+
+    async function fetchLibrary() {
+      try {
+        // If a fetch is already running (from a previous mount), reuse that promise
+        if (!globalFetchPromise) {
+          globalFetchPromise = fetch(
+            "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/WEB.json"
+          ).then(async (res) => {
+            if (!res.ok) throw new Error("Failed to fetch library");
+            return res.json();
+          });
+        }
+
+        // Await the singleton promise
+        const data = await globalFetchPromise;
+
+        // Save to global cache
+        globalLibraryCache = data;
+
+        // Update Local State
+        setLibrary(data);
+      } catch (error) {
+        console.error("Error loading book data:", error);
+        // If error, reset promise so we can try again later
+        globalFetchPromise = null;
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchLibrary();
+  }, []);
+
+  // --- Content Loading ---
+  useEffect(() => {
+    if (!library) return;
+
+    const bookData = library[book];
     if (!bookData) return;
 
-    const chapterData = bookData[chapter.toString() as keyof typeof bookData];
+    const chapterData = bookData[chapter.toString()];
     const text =
       typeof chapterData === "object"
         ? Object.values(chapterData).join(" ")
@@ -83,20 +141,18 @@ export default function Player({ book, chapters }: PlayerProps) {
     setWords(tokenize(text));
     setWordIndex(0);
     setPlaying(false);
-  }, [book, chapter]);
+  }, [book, chapter, library]);
 
   // --- 1. Soft Start Logic ---
-  // Reset speed to 200 (or target) when play begins
   useEffect(() => {
     if (playing) {
       const startSpeed = Math.min(200, targetWpm);
       setCurrentWpm(startSpeed);
       currentWpmRef.current = startSpeed;
     }
-  }, [playing]); // Only runs when play toggles
+  }, [playing]);
 
   // --- 2. Acceleration Loop ---
-  // Smoothly ramp currentWpm up to targetWpm
   useEffect(() => {
     if (!playing) return;
 
@@ -105,11 +161,11 @@ export default function Player({ book, chapters }: PlayerProps) {
         setCurrentWpm((prev) => {
           let next = prev;
           if (prev < targetWpm) {
-            next = Math.min(targetWpm, prev + 5); // Accelerate (+5 per 100ms)
+            next = Math.min(targetWpm, prev + 5);
           } else if (prev > targetWpm) {
-            next = Math.max(targetWpm, prev - 10); // Decelerate faster
+            next = Math.max(targetWpm, prev - 10);
           }
-          currentWpmRef.current = next; // Sync ref
+          currentWpmRef.current = next;
           return next;
         });
       }, 100);
@@ -125,19 +181,15 @@ export default function Player({ book, chapters }: PlayerProps) {
     if (showChapters) setShowChapters(false);
 
     const currentWord = words[wordIndex];
-
-    // VITAL: Read from ref to get latest speed without restarting the effect
     const wpm = currentWpmRef.current;
-
     const baseDelay = 60000 / wpm;
     let delay = baseDelay;
 
-    // Punctuation Detection
     if (currentWord) {
       if (/[.!?;]+["')]*$/.test(currentWord)) {
-        delay = baseDelay * 3.0; // Strong pause
+        delay = baseDelay * 3.0;
       } else if (/[,:]+["')]*$/.test(currentWord)) {
-        delay = baseDelay * 1.5; // Weak pause
+        delay = baseDelay * 1.5;
       }
     }
 
@@ -156,11 +208,10 @@ export default function Player({ book, chapters }: PlayerProps) {
 
   const togglePlay = () => setPlaying(!playing);
 
-  // --- Speed Controls (Updates Target & LocalStorage) ---
   const adjustSpeed = (amount: number) => {
     setTargetWpm((prev) => {
       const next = Math.max(100, Math.min(1000, prev + amount));
-      localStorage.setItem("rsvp-speed", next.toString()); // Save on user action
+      localStorage.setItem("rsvp-speed", next.toString());
       return next;
     });
   };
@@ -168,6 +219,8 @@ export default function Player({ book, chapters }: PlayerProps) {
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isLoading) return;
+
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
@@ -184,18 +237,32 @@ export default function Player({ book, chapters }: PlayerProps) {
       }
       if (e.code === "KeyR") {
         e.preventDefault();
-        setWordIndex(0); // Only restarts position
+        setWordIndex(0);
       }
       if (e.code === "Escape") setShowChapters(false);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [playing, words]);
+  }, [playing, words, isLoading]);
 
   const progress = useMemo(() => {
     if (words.length === 0) return 0;
     return (wordIndex / words.length) * 100;
   }, [wordIndex, words]);
+
+  // --- Loading Screen ---
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-zinc-950 to-zinc-950 opacity-80 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 pointer-events-none mix-blend-overlay" />
+        <Loader2 className="w-8 h-8 text-rose-500 animate-spin z-20" />
+        <span className="mt-4 text-xs font-mono tracking-widest text-zinc-500 uppercase z-20">
+          Loading Library...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden overscroll-none font-sans selection:bg-rose-500/30">
