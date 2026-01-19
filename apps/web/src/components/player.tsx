@@ -112,7 +112,7 @@ export default function Player({ book }: PlayerProps) {
       try {
         if (!globalFetchPromise) {
           globalFetchPromise = fetch(
-            "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/BSB.json"
+            "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/BSB.json",
           ).then(async (res) => {
             if (!res.ok) throw new Error("Failed to fetch library");
             return res.json();
@@ -152,7 +152,7 @@ export default function Player({ book }: PlayerProps) {
     } else {
       // Sort verses numerically to ensure order
       const sortedVerses = Object.entries(chapterData).sort(
-        (a, b) => parseInt(a[0]) - parseInt(b[0])
+        (a, b) => parseInt(a[0]) - parseInt(b[0]),
       );
       let currentIndex = 0;
       sortedVerses.forEach(([verseNum, text]) => {
@@ -348,7 +348,16 @@ export default function Player({ book }: PlayerProps) {
             <div className="flex flex-col gap-1">
               <h1 className="text-[10px] font-bold tracking-[0.25em] text-zinc-600 uppercase flex items-center gap-2">
                 Current Reading
-                {studyMode && <span className="text-rose-500 animate-pulse">• STUDY MODE</span>}
+                {studyMode && (
+                  <>
+                    {/* Mobile: Pink Hat Icon */}
+                    <GraduationCap className="w-3 h-3 text-rose-500 animate-pulse md:hidden" />
+                    {/* Desktop: Text */}
+                    <span className="hidden md:inline text-rose-500 animate-pulse">
+                      • STUDY MODE
+                    </span>
+                  </>
+                )}
               </h1>
               <div className="flex items-center gap-3 text-zinc-200">
                 <div className="p-1.5 bg-zinc-900 rounded-md border border-zinc-800">
@@ -430,7 +439,7 @@ export default function Player({ book }: PlayerProps) {
 
       {/* --- Main Reader Stage --- */}
       <div className="relative z-20 flex flex-col items-center justify-center w-full max-w-5xl h-64 md:h-96 px-4">
-        {/* STUDY MODE: Context Overlay (Only on Pause) */}
+        {/* STUDY MODE: Context Overlay (Only on Pause) - VISIBLE ON MOBILE */}
         {studyMode && !playing && contextVerses.length > 0 && (
           <div className="absolute -top-32 md:-top-24 inset-x-0 flex flex-col items-center animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 pointer-events-none z-50">
             <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-5 rounded-xl max-w-2xl text-center shadow-2xl shadow-black/50 pointer-events-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700">
@@ -624,7 +633,7 @@ const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean
     // Divine (Gold)
     if (
       ["god", "jesus", "lord", "christ", "spirit", "yahweh", "father", "holy"].some((k) =>
-        lower.includes(k)
+        lower.includes(k),
       )
     ) {
       textColor = "text-amber-400";
@@ -633,7 +642,7 @@ const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean
     // Negative (Red)
     else if (
       ["satan", "devil", "sin", "evil", "death", "hell", "demon", "wicked"].some((k) =>
-        lower.includes(k)
+        lower.includes(k),
       )
     ) {
       textColor = "text-red-500";
@@ -653,8 +662,8 @@ const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean
     len > 15
       ? "text-2xl sm:text-3xl md:text-5xl"
       : len > 10
-      ? "text-3xl sm:text-4xl md:text-6xl"
-      : "text-4xl sm:text-5xl md:text-7xl";
+        ? "text-3xl sm:text-4xl md:text-6xl"
+        : "text-4xl sm:text-5xl md:text-7xl";
 
   const cleanWordForORP = displayWord.replace(GLOBAL_LETTER_REGEX, "");
   const hasLetters = cleanWordForORP.length > 0;
@@ -687,7 +696,7 @@ const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean
 
   return (
     <div
-      className={`flex items-baseline ${textSize} font-mono tracking-tight leading-none select-none transition-all duration-100 ease-out`}
+      className={`flex items-baseline ${textSize} font-mono tracking-tight leading-none select-none`}
     >
       <span className="flex justify-end w-[45vw] text-zinc-500 font-normal opacity-40">{left}</span>
       <span
@@ -696,7 +705,8 @@ const RSVPWordDisplay = ({ word, studyMode }: { word: string; studyMode: boolean
         {center}
         {/* Glow Element with Smooth Transition */}
         <span
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 blur-xl rounded-full -z-10 opacity-20 ${glowColor} transition-colors duration-200`}
+          key={word} // Force Re-render to clear previous color state on mobile
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 blur-xl rounded-full -z-10 opacity-20 ${glowColor}`}
         />
       </span>
       <span className="flex justify-start w-[45vw] text-zinc-100 font-medium">{right}</span>
