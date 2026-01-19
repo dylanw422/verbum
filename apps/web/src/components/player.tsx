@@ -567,9 +567,8 @@ export default function Player({ book }: PlayerProps) {
         )}
 
         {/* Optical Guides (Fixed Height to prevent layout shift) */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 md:h-20 w-px bg-rose-500/20 mx-auto z-0" />
-        <div className="absolute inset-x-0 top-1/2 -translate-y-[2.5rem] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent opacity-50" />
-        <div className="absolute inset-x-0 top-1/2 translate-y-[2.5rem] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent opacity-50" />
+        {/* UPDATED: Removed horizontal lines, added gradient fade to vertical line */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 md:h-20 w-px bg-gradient-to-b from-transparent via-rose-500/20 to-transparent mx-auto z-0" />
 
         <div
           className={`relative h-40 w-full flex items-center justify-center mb-8 transition-opacity duration-300 ${
@@ -780,8 +779,8 @@ const RSVPWordDisplay = ({ wordData, studyMode }: { wordData: WordData; studyMod
       >
         {centerChar}
 
-        {/* Optical Anchor Line */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px bg-current opacity-20 -z-10 h-32 md:h-40" />
+        {/* Optical Anchor Line - UPDATED to fade */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px bg-gradient-to-b from-transparent via-current to-transparent opacity-20 -z-10 h-32 md:h-40" />
       </div>
 
       {/* Right Side - Left Aligned - No Wrapping */}
