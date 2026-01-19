@@ -83,14 +83,13 @@ type WordData = {
   verse: string;
   id: string;
   orpIndex: number;
-  durationFactor: number; // Multiplier for how long this word stays on screen
+  durationFactor: number;
 };
 
 type LibraryData = Record<string, Record<string, string | Record<string, string>>>;
 
 // --- Logic & Tokenization ---
 
-// The "Optimal Recognition Point" is slightly left of center
 function getORPIndex(word: string): number {
   const len = word.length;
   if (len <= 1) return 0;
@@ -101,28 +100,19 @@ function getORPIndex(word: string): number {
   return 4;
 }
 
-// Cognitive Load Calculation
 function calculateDurationFactor(word: string): number {
   let factor = 1.0;
   const len = word.length;
-
-  // 1. Length Penalty
   if (len > 7) factor += 0.2;
   if (len > 10) factor += 0.3;
-
-  // 2. Punctuation Penalty (Major pauses)
   if (/[.?!]/.test(word)) factor += 1.5;
   else if (/[,:;]/.test(word)) factor += 0.6;
   else if (/[-–—]/.test(word)) factor += 0.4;
-
-  // 3. Structure
   if (word.includes('"') || word.includes("'")) factor += 0.2;
-
   return factor;
 }
 
 function tokenizeToData(text: string, verse: string, startIndex: number): WordData[] {
-  // Normalize dashes and spaces
   const processed = text
     .replace(/—/g, " — ")
     .replace(/--/g, " — ")
@@ -132,9 +122,7 @@ function tokenizeToData(text: string, verse: string, startIndex: number): WordDa
   const tokens = processed.match(/\S+/g) || [];
 
   return tokens.map((token, i) => {
-    // Strip punctuation for the "center" logic, but keep it for display
     const cleanText = token.replace(/[^a-zA-Z0-9\u00C0-\u00FF]/g, "");
-
     return {
       text: token,
       cleanText,
@@ -175,7 +163,7 @@ export default function Player({ book }: PlayerProps) {
   const [targetWpm, setTargetWpm] = useState(300);
   const [showChapters, setShowChapters] = useState(false);
 
-  // Refs for High-Performance Loop
+  // Refs
   const requestRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const accumulatorRef = useRef<number>(0);
@@ -242,7 +230,6 @@ export default function Player({ book }: PlayerProps) {
     if (!chapterData) return;
 
     let parsedWords: WordData[] = [];
-
     if (typeof chapterData === "string") {
       parsedWords = tokenizeToData(chapterData, "1", 0);
     } else {
@@ -263,7 +250,6 @@ export default function Player({ book }: PlayerProps) {
     indexRef.current = 0;
     setPlaying(false);
 
-    // Reset engine
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
   }, [book, chapter, library]);
 
@@ -274,21 +260,18 @@ export default function Player({ book }: PlayerProps) {
     const deltaTime = time - lastTimeRef.current;
     lastTimeRef.current = time;
 
-    // 1. Calculate Current Speed (Handle Warmup)
     let currentSpeed = wpmRef.current;
     if (warmupStartRef.current > 0) {
       const elapsedWarmup = time - warmupStartRef.current;
       if (elapsedWarmup < WARMUP_DURATION) {
-        // Linear ramp from 50% speed to 100% speed
         const progress = elapsedWarmup / WARMUP_DURATION;
         currentSpeed = wpmRef.current * (0.5 + 0.5 * progress);
       } else {
-        warmupStartRef.current = 0; // Warmup done
+        warmupStartRef.current = 0;
         setIsWarmingUp(false);
       }
     }
 
-    // 2. Determine Duration of Current Word
     const currentWord = wordsRef.current[indexRef.current];
     if (!currentWord) {
       setPlaying(false);
@@ -298,21 +281,17 @@ export default function Player({ book }: PlayerProps) {
     const baseMsPerWord = 60000 / currentSpeed;
     const targetDuration = baseMsPerWord * currentWord.durationFactor;
 
-    // 3. Accumulate Time
     accumulatorRef.current += deltaTime;
 
-    // 4. Trigger Next Word
     if (accumulatorRef.current >= targetDuration) {
       const nextIndex = indexRef.current + 1;
-
       if (nextIndex >= wordsRef.current.length) {
         setPlaying(false);
-        setWordIndex(wordsRef.current.length - 1); // Clamp to end
+        setWordIndex(wordsRef.current.length - 1);
         return;
       }
-
       indexRef.current = nextIndex;
-      setWordIndex(nextIndex); // Sync React State
+      setWordIndex(nextIndex);
       accumulatorRef.current = 0;
     }
 
@@ -321,25 +300,18 @@ export default function Player({ book }: PlayerProps) {
 
   const togglePlay = useCallback(() => {
     if (playing) {
-      // PAUSE LOGIC
       setPlaying(false);
       cancelAnimationFrame(requestRef.current);
-
-      // Micro-Rewind: Go back a few words to regain context
       const newIndex = Math.max(0, indexRef.current - REWIND_ON_PAUSE);
       indexRef.current = newIndex;
       setWordIndex(newIndex);
     } else {
-      // PLAY LOGIC
       if (indexRef.current >= words.length - 1) {
-        // Restart if at end
         indexRef.current = 0;
         setWordIndex(0);
       }
-
       setPlaying(true);
       setIsWarmingUp(true);
-
       lastTimeRef.current = 0;
       accumulatorRef.current = 0;
       warmupStartRef.current = performance.now();
@@ -347,12 +319,10 @@ export default function Player({ book }: PlayerProps) {
     }
   }, [playing, words.length, animate]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => cancelAnimationFrame(requestRef.current);
   }, []);
 
-  // Update refs when state changes
   useEffect(() => {
     wpmRef.current = targetWpm;
   }, [targetWpm]);
@@ -365,10 +335,7 @@ export default function Player({ book }: PlayerProps) {
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
     const newIndex = Math.floor(percentage * words.length);
-
-    // Stop playing if scrubbing
     if (playing) togglePlay();
-
     indexRef.current = newIndex;
     setWordIndex(newIndex);
   };
@@ -387,7 +354,6 @@ export default function Player({ book }: PlayerProps) {
     localStorage.setItem("rsvp-study-mode", String(newMode));
   };
 
-  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLoading) return;
@@ -423,7 +389,7 @@ export default function Player({ book }: PlayerProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [playing, words, isLoading, studyMode, togglePlay]);
 
-  // --- Context Logic (Memoized) ---
+  // --- Context Logic ---
   const contextVerses = useMemo(() => {
     if (!words[wordIndex] || !library) return [];
     const currentVerseStr = words[wordIndex].verse;
@@ -435,7 +401,7 @@ export default function Player({ book }: PlayerProps) {
     }
 
     const verses: any[] = [];
-    const range = [-1, 0, 1]; // Prev, Current, Next
+    const range = [-1, 0, 1];
 
     range.forEach((offset) => {
       const vNum = currentVerseNum + offset;
@@ -467,10 +433,8 @@ export default function Player({ book }: PlayerProps) {
 
   return (
     <div className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-rose-500/30">
-      {/* Background Ambience */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-zinc-950 to-zinc-950 opacity-80 pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none mix-blend-overlay" />
-      {/* Vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(transparent_0%,_#09090b_80%)] pointer-events-none z-10" />
 
       {/* --- Header Area --- */}
@@ -541,7 +505,6 @@ export default function Player({ book }: PlayerProps) {
           )}
         </div>
 
-        {/* Chapter Grid */}
         <div
           className={`w-full max-w-5xl pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] grid ${
             showChapters ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0"
@@ -574,7 +537,6 @@ export default function Player({ book }: PlayerProps) {
 
       {/* --- Main Reader Stage --- */}
       <div className="relative z-30 flex flex-col items-center justify-center w-full max-w-5xl h-64 md:h-96 px-4">
-        {/* Context Overlay (Paused State) */}
         {studyMode && !playing && contextVerses.length > 0 && (
           <div className="absolute -top-32 md:-top-24 inset-x-0 flex flex-col items-center animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 pointer-events-none z-50">
             <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-5 rounded-xl max-w-2xl text-center shadow-2xl shadow-black/80 pointer-events-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 ring-1 ring-white/10">
@@ -604,15 +566,14 @@ export default function Player({ book }: PlayerProps) {
           </div>
         )}
 
-        {/* Optical Guides (Fixed) */}
+        {/* Optical Guides (Fixed Height to prevent layout shift) */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 md:h-20 w-px bg-rose-500/20 mx-auto z-0" />
         <div className="absolute inset-x-0 top-1/2 -translate-y-[2.5rem] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent opacity-50" />
         <div className="absolute inset-x-0 top-1/2 translate-y-[2.5rem] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent opacity-50" />
 
-        {/* RSVP Display */}
         <div
-          className={`relative h-40 w-full flex items-center justify-center mb-8 transition-all duration-500 ${
-            studyMode && !playing ? "opacity-10 blur-sm scale-95" : "opacity-100 scale-100"
+          className={`relative h-40 w-full flex items-center justify-center mb-8 transition-opacity duration-300 ${
+            studyMode && !playing ? "opacity-10 blur-sm" : "opacity-100"
           }`}
         >
           {words[wordIndex] ? (
@@ -636,7 +597,6 @@ export default function Player({ book }: PlayerProps) {
           )}
         </div>
 
-        {/* Interactive Progress Bar */}
         <div className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-3 relative group">
           <div
             className="w-full h-1.5 bg-zinc-800/50 rounded-full overflow-hidden cursor-pointer hover:h-2.5 transition-all"
@@ -660,7 +620,6 @@ export default function Player({ book }: PlayerProps) {
       {/* --- Control Deck --- */}
       <div className="absolute bottom-8 md:bottom-12 z-40 w-full flex justify-center px-4">
         <div className="flex items-center gap-4 px-5 py-4 bg-zinc-950/80 backdrop-blur-2xl border border-zinc-800/60 rounded-full shadow-2xl shadow-black">
-          {/* Speed Controls */}
           <div className="flex items-center bg-zinc-900 rounded-full p-1 border border-zinc-800">
             <button
               onClick={() => adjustSpeed(-50)}
@@ -691,7 +650,6 @@ export default function Player({ book }: PlayerProps) {
 
           <div className="w-px h-8 bg-zinc-800/50" />
 
-          {/* Play/Pause */}
           <button
             onClick={togglePlay}
             className={`flex items-center justify-center w-16 h-16 md:w-14 md:h-14 rounded-full transition-all duration-300 shadow-lg ${
@@ -709,7 +667,6 @@ export default function Player({ book }: PlayerProps) {
 
           <div className="w-px h-8 bg-zinc-800/50" />
 
-          {/* Study Mode Toggle */}
           <button
             onClick={toggleStudyMode}
             className={`w-12 h-12 flex items-center justify-center rounded-full transition-all active:scale-95 border ${
@@ -724,7 +681,6 @@ export default function Player({ book }: PlayerProps) {
         </div>
       </div>
 
-      {/* Shortcuts Help */}
       <div className="absolute bottom-6 right-6 z-30 hidden lg:flex flex-col items-end gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
         <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1.5">
           <Keyboard className="w-3 h-3" /> Controls
@@ -757,20 +713,14 @@ const RSVPWordDisplay = ({ wordData, studyMode }: { wordData: WordData; studyMod
   const { text, cleanText, orpIndex } = wordData;
 
   // VISUAL PROCESSING
-  // We want to pivot the word perfectly on its ORP (Optimal Recognition Point)
-  // The center letter should always be at the exact center of the container
-
   let leftPart, centerChar, rightPart;
 
   if (cleanText.length === 0) {
-    // Handle symbol-only tokens (rare but possible)
     const mid = Math.floor(text.length / 2);
     leftPart = text.slice(0, mid);
     centerChar = text[mid];
     rightPart = text.slice(mid + 1);
   } else {
-    // Find the index of the ORP character in the *original* text
-    // This accounts for punctuation at the start of the word (e.g., "quote)
     let cleanCount = 0;
     let splitIndex = 0;
 
@@ -807,34 +757,39 @@ const RSVPWordDisplay = ({ wordData, studyMode }: { wordData: WordData; studyMod
     }
   }
 
-  // Adaptive Sizing based on word length
-  const totalLength = text.length;
-  const sizeClass =
-    totalLength > 12
-      ? "text-4xl md:text-6xl"
-      : totalLength > 8
-        ? "text-5xl md:text-7xl"
-        : "text-6xl md:text-8xl";
+  // --- STATIC SIZING (Mobile Fix) ---
+  // Default to text-4xl on mobile.
+  // If word is > 12 chars, drop to text-3xl to ensure centering without wrap.
+  // Desktop is always large.
+  // REMOVED TRANSITIONS to prevent jitter.
+  const isLong = text.length > 12;
+  const sizeClass = isLong ? "text-3xl md:text-7xl" : "text-4xl md:text-7xl";
 
   return (
     <div
       className={`flex items-center justify-center ${sizeClass} font-mono tracking-tight leading-none select-none w-full relative h-full`}
     >
-      {/* Left Side - Right Aligned */}
-      <div className="flex-1 text-right text-zinc-600 font-normal opacity-60">{leftPart}</div>
+      {/* Left Side - Right Aligned - No Wrapping */}
+      <div className="flex-1 text-right text-zinc-600 font-normal opacity-60 whitespace-nowrap overflow-visible">
+        {leftPart}
+      </div>
 
-      {/* ORP Center - Fixed Width to prevent jitter */}
+      {/* ORP Center */}
       <div
-        className={`flex justify-center w-[1.1ch] ${centerColor} font-bold relative z-10 ${glowEffect}`}
+        className={`flex justify-center w-[1ch] ${centerColor} font-bold relative z-10 ${glowEffect}`}
       >
         {centerChar}
 
-        {/* Optical Anchor Line - FIXED HEIGHT and CENTERED */}
+        {/* Optical Anchor Line */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px bg-current opacity-20 -z-10 h-32 md:h-40" />
       </div>
 
-      {/* Right Side - Left Aligned */}
-      <div className={`flex-1 text-left ${textColor} font-medium`}>{rightPart}</div>
+      {/* Right Side - Left Aligned - No Wrapping */}
+      <div
+        className={`flex-1 text-left ${textColor} font-medium whitespace-nowrap overflow-visible`}
+      >
+        {rightPart}
+      </div>
     </div>
   );
 };
