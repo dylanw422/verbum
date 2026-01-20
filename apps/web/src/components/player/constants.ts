@@ -1,6 +1,6 @@
 // --- Speed Configuration ---
 export const MIN_WPM = 100;
-export const MAX_WPM = 1200;
+export const MAX_WPM = 1000;
 export const REWIND_ON_PAUSE = 5; // Words to rewind when pausing
 export const WARMUP_DURATION = 800; // ms to ramp up speed
 
