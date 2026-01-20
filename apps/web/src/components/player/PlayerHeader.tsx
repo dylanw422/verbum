@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BookOpen, ChevronDown, ChevronUp, ArrowLeft, GraduationCap } from "lucide-react";
-import { AICompanionTrigger } from "@/components/ai/ai-companion";
 import { ChapterSelector } from "./ChapterSelector";
 
 interface PlayerHeaderProps {
@@ -97,7 +96,6 @@ export function PlayerHeader({
                 <ChevronDown className="w-3 h-3" />
               )}
             </button>
-            <AICompanionTrigger />
           </div>
         )}
       </div>
