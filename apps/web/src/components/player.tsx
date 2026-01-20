@@ -12,6 +12,7 @@ import { PlayerHeader } from "./player/PlayerHeader";
 import { ReaderStage } from "./player/ReaderStage";
 import { ControlDeck } from "./player/ControlDeck";
 import { KeyboardHints } from "./player/KeyboardHints";
+import { useSwipe } from "@/hooks/use-swipe";
 
 interface PlayerProps {
   book: string;
@@ -117,6 +118,24 @@ export default function Player({ book }: PlayerProps) {
     setShowChapters(false);
   }, []);
 
+  // --- Swipe Handlers ---
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: () => {
+      // Go to next chapter
+      if (chapter < availableChapters.length) {
+         setChapter((prev) => prev + 1);
+         resetToStart();
+      }
+    },
+    onSwipeRight: () => {
+      // Go to previous chapter
+      if (chapter > 1) {
+        setChapter((prev) => prev - 1);
+        resetToStart();
+      }
+    },
+  });
+
   // --- Loading State ---
   if (isLoading) {
     return <LoadingState />;
@@ -124,7 +143,10 @@ export default function Player({ book }: PlayerProps) {
 
   // --- Render ---
   return (
-    <div className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-rose-500/30">
+    <div 
+      className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-rose-500/30"
+      {...swipeHandlers}
+    >
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-zinc-950 to-zinc-950 opacity-80 pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none mix-blend-overlay" />
