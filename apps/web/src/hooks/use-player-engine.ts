@@ -7,6 +7,7 @@ import { REWIND_ON_PAUSE, WARMUP_DURATION } from "@/components/player/constants"
 interface UsePlayerEngineOptions {
   words: WordData[];
   targetWpm: number;
+  onComplete?: () => void;
 }
 
 interface UsePlayerEngineReturn {
@@ -22,7 +23,8 @@ interface UsePlayerEngineReturn {
  * Hook that manages the RSVP playback engine using requestAnimationFrame.
  * Handles word timing, warmup speed ramping, and playback state.
  */
-export function usePlayerEngine({ words, targetWpm }: UsePlayerEngineOptions): UsePlayerEngineReturn {
+export function usePlayerEngine(options: UsePlayerEngineOptions): UsePlayerEngineReturn {
+  const { words, targetWpm } = options;
   const [wordIndex, setWordIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [isWarmingUp, setIsWarmingUp] = useState(false);
@@ -87,6 +89,9 @@ export function usePlayerEngine({ words, targetWpm }: UsePlayerEngineOptions): U
       if (nextIndex >= wordsRef.current.length) {
         setPlaying(false);
         setWordIndex(wordsRef.current.length - 1);
+        if (options.onComplete) {
+          options.onComplete();
+        }
         return;
       }
       indexRef.current = nextIndex;

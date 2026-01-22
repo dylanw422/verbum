@@ -12,6 +12,7 @@ import { PlayerHeader } from "./player/PlayerHeader";
 import { ReaderStage } from "./player/ReaderStage";
 import { ControlDeck } from "./player/ControlDeck";
 import { KeyboardHints } from "./player/KeyboardHints";
+import { QuizModal } from "./quiz-modal";
 import { useSwipe } from "@/hooks/use-swipe";
 
 interface PlayerProps {
@@ -27,11 +28,17 @@ export default function Player({ book }: PlayerProps) {
   const [chapter, setChapter] = useState(1);
   const [words, setWords] = useState<WordData[]>([]);
   const [showChapters, setShowChapters] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
+
+  const handleComplete = useCallback(() => {
+    setShowQuizModal(true);
+  }, []);
 
   // --- Player Engine ---
   const { wordIndex, playing, isWarmingUp, togglePlay, seekTo, resetToStart } = usePlayerEngine({
     words,
     targetWpm,
+    onComplete: handleComplete,
   });
 
   // --- Parse Chapter Text into Words ---
@@ -118,6 +125,14 @@ export default function Player({ book }: PlayerProps) {
     setShowChapters(false);
   }, []);
 
+  const handleNextChapter = useCallback(() => {
+    if (chapter < availableChapters.length) {
+      setChapter((prev) => prev + 1);
+      resetToStart();
+    }
+    setShowQuizModal(false);
+  }, [chapter, availableChapters.length, resetToStart]);
+
   // --- Swipe Handlers ---
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => {
@@ -190,6 +205,14 @@ export default function Player({ book }: PlayerProps) {
 
       {/* Keyboard Hints */}
       <KeyboardHints />
+
+      <QuizModal
+        isOpen={showQuizModal}
+        onClose={() => setShowQuizModal(false)}
+        chapterText={words.map(w => w.text).join(" ")}
+        onNextChapter={handleNextChapter}
+        hasNextChapter={chapter < availableChapters.length}
+      />
     </div>
   );
 }
