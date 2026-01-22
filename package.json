@@ -25,6 +25,7 @@
     "dev:web": "turbo -F web dev"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.15",
     "@bible-reader/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"

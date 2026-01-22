@@ -1,14 +1,9 @@
 "use server";
 
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { env } from "@bible-reader/env/server";
-
-const groq = createOpenAI({
-  baseURL: "https://api.groq.com/openai/v1",
-  apiKey: env.GROQ_API_KEY,
-});
 
 const quizSchema = z.object({
   questions: z.array(
