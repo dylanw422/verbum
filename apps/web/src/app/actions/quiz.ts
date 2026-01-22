@@ -5,8 +5,9 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { env } from "@bible-reader/env/server";
 
-const openai = createOpenAI({
-  apiKey: env.OPENAI_API_KEY,
+const groq = createOpenAI({
+  baseURL: "https://api.groq.com/openai/v1",
+  apiKey: env.GROQ_API_KEY,
 });
 
 const quizSchema = z.object({
@@ -26,14 +27,14 @@ export type QuizQuestion = {
 };
 
 export async function generateQuiz(chapterText: string) {
-  console.log("Available Env Keys:", Object.keys(process.env).filter(k => k.includes("API") || k.includes("OPENAI")));
-  if (!env.OPENAI_API_KEY) {
-    return { success: false, error: "OpenAI API key is missing. Please check your .env file." };
+  console.log("Available Env Keys:", Object.keys(process.env).filter(k => k.includes("API") || k.includes("OPENAI") || k.includes("GROQ")));
+  if (!env.GROQ_API_KEY) {
+    return { success: false, error: "Groq API key is missing. Please check your .env file." };
   }
 
   try {
     const { object } = await generateObject({
-      model: openai("gpt-5-mini"),
+      model: groq("openai/gpt-oss-20b"),
       schema: quizSchema,
       prompt: `Generate 3 multiple-choice questions based on the following chapter text. The level of difficulty should be moderate. Ensure the questions test comprehension of the key events or themes in the chapter.
 

@@ -14,6 +14,7 @@ export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     OPENAI_API_KEY: z.string().min(1).optional(),
+    GROQ_API_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
