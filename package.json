@@ -27,6 +27,7 @@
   "dependencies": {
     "@ai-sdk/groq": "^3.0.15",
     "@bible-reader/env": "workspace:*",
+    "@upstash/redis": "^1.36.1",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
