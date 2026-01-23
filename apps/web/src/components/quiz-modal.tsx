@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Award } from "lucide-react";
+import { Loader2, Award, X } from "lucide-react";
 import { generateQuiz, type QuizQuestion } from "@/app/actions/quiz";
 import { Button } from "@/components/ui/button";
 
@@ -78,21 +78,21 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-lg bg-zinc-900/80 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden"
+        className="w-full max-w-lg bg-zinc-900/80 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden relative"
       >
+        <button
+          onClick={resetQuiz}
+          className="absolute top-6 right-6 text-zinc-500 hover:text-zinc-300 transition-colors z-10"
+          aria-label="Close quiz"
+        >
+          <X className="w-4 h-4" />
+        </button>
         <div className="p-6">
           {status === "idle" && (
             <div className="text-center space-y-4">
               <h2 className="text-xl font-mono tracking-[0.2em] text-zinc-100 uppercase">Chapter Complete!</h2>
               <p className="text-zinc-400">Would you like to take a quick quiz to test your comprehension?</p>
               <div className="flex gap-3 justify-center mt-6 flex-wrap">
-                 <Button
-                  variant="ghost"
-                  onClick={onClose}
-                  className="w-32 hover:bg-zinc-800 hover:text-zinc-100"
-                >
-                  No Thanks
-                </Button>
                 {hasNextChapter && onNextChapter && (
                   <Button
                     variant="outline"
@@ -121,7 +121,7 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
 
           {status === "quiz" && questions.length > 0 && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center font-mono text-xs tracking-widest uppercase text-zinc-500">
+              <div className="flex justify-between items-center font-mono text-xs tracking-widest uppercase text-zinc-500 pr-10">
                 <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
                 <span>Score: {score}</span>
               </div>
