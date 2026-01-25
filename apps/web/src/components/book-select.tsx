@@ -3,10 +3,14 @@
 import { Points, PointMaterial } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { motion } from "framer-motion";
-import { BookOpen, Database, ScanLine, Command } from "lucide-react";
+import { BookOpen, Database, ScanLine, Command, User } from "lucide-react";
 import * as random from "maath/random/dist/maath-random.cjs";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, Suspense } from "react";
+
+import { authClient } from "@/lib/auth-client";
+import UserMenu from "./user-menu";
 
 // --- Hardcoded Data ---
 
@@ -126,6 +130,26 @@ const SectionHeader = ({ title, icon: Icon }: { title: string; icon: any }) => (
   </div>
 );
 
+const AuthButton = () => {
+  const { data: session } = authClient.useSession();
+
+  if (session) {
+    return <UserMenu />;
+  }
+
+  return (
+    <Link
+      href="/auth"
+      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-all duration-200 group/auth"
+    >
+      <User className="w-3.5 h-3.5 text-zinc-500 group-hover/auth:text-rose-500 transition-colors" />
+      <span className="text-[10px] font-mono tracking-widest text-zinc-400 group-hover/auth:text-zinc-100 uppercase">
+        Sign_In
+      </span>
+    </Link>
+  );
+};
+
 const BookCard = ({ book, index, router }: { book: string; index: number; router: any }) => {
   return (
     <motion.button
@@ -216,10 +240,13 @@ export default function BookSelect() {
             </div>
 
             {/* Version / Date Stamp */}
-            <div className="hidden sm:block text-right">
-              <div className="text-[10px] font-mono text-zinc-600 tracking-widest">
-                BUILD_2026.1
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:block text-right">
+                <div className="text-[10px] font-mono text-zinc-600 tracking-widest">
+                  BUILD_2026.1
+                </div>
               </div>
+              <AuthButton />
             </div>
           </motion.div>
 
