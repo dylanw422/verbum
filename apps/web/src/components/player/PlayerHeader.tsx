@@ -11,6 +11,7 @@ interface PlayerHeaderProps {
   showChapters: boolean;
   availableChapters: number[];
   playing: boolean;
+  activeReaders?: number;
   onToggleChapters: () => void;
   onSelectChapter: (chapter: number) => void;
   onTogglePlay: () => void;
@@ -27,6 +28,7 @@ export function PlayerHeader({
   showChapters,
   availableChapters,
   playing,
+  activeReaders = 0,
   onToggleChapters,
   onSelectChapter,
   onTogglePlay,
@@ -66,6 +68,15 @@ export function PlayerHeader({
                 <span className="font-medium tracking-tight text-sm leading-none">{book}</span>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-xs text-zinc-500">Chapter {chapter}</span>
+                  {activeReaders > 1 && (
+                    <>
+                      <span className="text-zinc-700">•</span>
+                      <span className="text-xs text-zinc-500 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        {activeReaders} reading
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

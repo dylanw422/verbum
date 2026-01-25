@@ -29,6 +29,7 @@ This document outlines high-impact features to evolve Verbum from a focused RSVP
 - **Concept:** Subtle connection to the global church.
 - **Feature:** A non-intrusive indicator showing "12 others reading Romans 8 right now."
 - **Why:** Creates a sense of shared experience without the distraction of a full social feed.
+- **Status:** ✅ Implemented via Redis presence tracking.
 
 ## 3. Habit & Gamification
 

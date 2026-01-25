@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 
+import { updatePresence } from "@/app/actions/presence";
 import { useKeyboardControls } from "@/hooks/use-keyboard-controls";
 import { useLibrary } from "@/hooks/use-library";
 import { usePlayerEngine } from "@/hooks/use-player-engine";
@@ -32,10 +33,32 @@ export default function Player({ book }: PlayerProps) {
   const [words, setWords] = useState<WordData[]>([]);
   const [showChapters, setShowChapters] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [activeReaders, setActiveReaders] = useState(0);
 
   const handleComplete = useCallback(() => {
     setShowQuizModal(true);
   }, []);
+
+  // --- Presence Logic ---
+  useEffect(() => {
+    let sessionId = sessionStorage.getItem("verbum-session-id");
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      sessionStorage.setItem("verbum-session-id", sessionId);
+    }
+
+    const update = async () => {
+      if (!sessionId) return;
+      const res = await updatePresence(book, chapter.toString(), sessionId);
+      if (res.success) {
+        setActiveReaders(res.count);
+      }
+    };
+
+    update();
+    const interval = setInterval(update, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, [book, chapter]);
 
   // --- Player Engine ---
   const { wordIndex, playing, isWarmingUp, togglePlay, seekTo, resetToStart } = usePlayerEngine({
@@ -179,6 +202,7 @@ export default function Player({ book }: PlayerProps) {
         showChapters={showChapters}
         availableChapters={availableChapters}
         playing={playing}
+        activeReaders={activeReaders}
         onToggleChapters={() => setShowChapters(!showChapters)}
         onSelectChapter={handleSelectChapter}
         onTogglePlay={togglePlay}
