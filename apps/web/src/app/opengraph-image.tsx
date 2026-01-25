@@ -18,226 +18,224 @@ export default async function Image() {
   // The 'monospace' look fits the terminal aesthetic perfectly.
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#09090b", // zinc-950
+        fontFamily: "monospace", // Reliable system font
+        position: "relative",
+      }}
+    >
+      {/* --- Background Layers --- */}
+
+      {/* 1. Grid Pattern */}
       <div
         style={{
-          height: "100%",
-          width: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: "radial-gradient(circle at 2px 2px, #27272a 1px, transparent 0)",
+          backgroundSize: "40px 40px",
+          opacity: 0.3,
+        }}
+      />
+
+      {/* 2. Central Glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background:
+            "radial-gradient(circle at center, rgba(244, 63, 94, 0.1) 0%, rgba(9, 9, 11, 0) 60%)",
+        }}
+      />
+
+      {/* --- HUD Elements --- */}
+
+      {/* Crosshair Lines */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: "600px", // Center
+          width: "1px",
+          backgroundColor: "#f43f5e",
+          opacity: 0.15,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: "315px", // Center
+          height: "1px",
+          backgroundColor: "#27272a",
+          opacity: 0.5,
+        }}
+      />
+
+      {/* Corners */}
+      <div
+        style={{
+          position: "absolute",
+          top: 40,
+          left: 40,
+          borderTop: "2px solid #3f3f46",
+          borderLeft: "2px solid #3f3f46",
+          width: 40,
+          height: 40,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 40,
+          right: 40,
+          borderTop: "2px solid #3f3f46",
+          borderRight: "2px solid #3f3f46",
+          width: 40,
+          height: 40,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: 40,
+          left: 40,
+          borderBottom: "2px solid #3f3f46",
+          borderLeft: "2px solid #3f3f46",
+          width: 40,
+          height: 40,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: 40,
+          right: 40,
+          borderBottom: "2px solid #3f3f46",
+          borderRight: "2px solid #3f3f46",
+          width: 40,
+          height: 40,
+        }}
+      />
+
+      {/* --- Main Content --- */}
+
+      <div
+        style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#09090b", // zinc-950
-          fontFamily: "monospace", // Reliable system font
-          position: "relative",
+          zIndex: 10,
+          paddingBottom: 20,
         }}
       >
-        {/* --- Background Layers --- */}
-
-        {/* 1. Grid Pattern */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: "radial-gradient(circle at 2px 2px, #27272a 1px, transparent 0)",
-            backgroundSize: "40px 40px",
-            opacity: 0.3,
-          }}
-        />
-
-        {/* 2. Central Glow */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "radial-gradient(circle at center, rgba(244, 63, 94, 0.1) 0%, rgba(9, 9, 11, 0) 60%)",
-          }}
-        />
-
-        {/* --- HUD Elements --- */}
-
-        {/* Crosshair Lines */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: "600px", // Center
-            width: "1px",
-            backgroundColor: "#f43f5e",
-            opacity: 0.15,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: "315px", // Center
-            height: "1px",
-            backgroundColor: "#27272a",
-            opacity: 0.5,
-          }}
-        />
-
-        {/* Corners */}
-        <div
-          style={{
-            position: "absolute",
-            top: 40,
-            left: 40,
-            borderTop: "2px solid #3f3f46",
-            borderLeft: "2px solid #3f3f46",
-            width: 40,
-            height: 40,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 40,
-            right: 40,
-            borderTop: "2px solid #3f3f46",
-            borderRight: "2px solid #3f3f46",
-            width: 40,
-            height: 40,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 40,
-            left: 40,
-            borderBottom: "2px solid #3f3f46",
-            borderLeft: "2px solid #3f3f46",
-            width: 40,
-            height: 40,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 40,
-            right: 40,
-            borderBottom: "2px solid #3f3f46",
-            borderRight: "2px solid #3f3f46",
-            width: 40,
-            height: 40,
-          }}
-        />
-
-        {/* --- Main Content --- */}
-
+        {/* Top Pill */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            zIndex: 10,
-            paddingBottom: 20,
+            marginBottom: 30,
+            border: "1px solid #3f3f46",
+            padding: "8px 24px",
+            borderRadius: 50,
+            backgroundColor: "#09090b",
+            color: "#a1a1aa",
+            fontSize: 14,
+            letterSpacing: 4,
+            textTransform: "uppercase",
           }}
         >
-          {/* Top Pill */}
-          <div
-            style={{
-              display: "flex",
-              marginBottom: 30,
-              border: "1px solid #3f3f46",
-              padding: "8px 24px",
-              borderRadius: 50,
-              backgroundColor: "#09090b",
-              color: "#a1a1aa",
-              fontSize: 14,
-              letterSpacing: 4,
-              textTransform: "uppercase",
-            }}
-          >
-            Scripture Engine
-          </div>
-
-          {/* THE WORD - RSVP STYLE */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              fontSize: 140,
-              fontWeight: 700,
-              lineHeight: 1,
-              letterSpacing: -5,
-            }}
-          >
-            {/* Left */}
-            <span style={{ color: "#3f3f46" }}>VE</span>
-
-            {/* Center (Red + Glow) */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                color: "#f43f5e",
-                position: "relative",
-                margin: "0 5px",
-                textShadow: "0 0 40px rgba(244, 63, 94, 0.6)", // Text glow
-              }}
-            >
-              R{/* Decorative mark under letter */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: -20,
-                  width: 8,
-                  height: 8,
-                  backgroundColor: "#f43f5e",
-                  borderRadius: "50%",
-                }}
-              />
-            </div>
-
-            {/* Right */}
-            <span style={{ color: "#e4e4e7" }}>BUM</span>
-          </div>
-
-          {/* Slogan Row */}
-          <div
-            style={{
-              marginTop: 50,
-              display: "flex",
-              alignItems: "center",
-              color: "#71717a", // zinc-500
-              fontSize: 22,
-              letterSpacing: 6,
-              textTransform: "uppercase",
-              textAlign: "center",
-            }}
-          >
-            Experience scripture in a new way
-          </div>
+          Scripture Engine
         </div>
 
-        {/* Version Number */}
+        {/* THE WORD - RSVP STYLE */}
         <div
           style={{
-            position: "absolute",
-            bottom: 50,
-            color: "#27272a",
-            fontSize: 14,
-            letterSpacing: 2,
+            display: "flex",
+            alignItems: "baseline",
+            fontSize: 140,
+            fontWeight: 700,
+            lineHeight: 1,
+            letterSpacing: -5,
           }}
         >
-          SYS.VER.1.0
+          {/* Left */}
+          <span style={{ color: "#3f3f46" }}>VE</span>
+
+          {/* Center (Red + Glow) */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              color: "#f43f5e",
+              position: "relative",
+              margin: "0 5px",
+              textShadow: "0 0 40px rgba(244, 63, 94, 0.6)", // Text glow
+            }}
+          >
+            R{/* Decorative mark under letter */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: -20,
+                width: 8,
+                height: 8,
+                backgroundColor: "#f43f5e",
+                borderRadius: "50%",
+              }}
+            />
+          </div>
+
+          {/* Right */}
+          <span style={{ color: "#e4e4e7" }}>BUM</span>
+        </div>
+
+        {/* Slogan Row */}
+        <div
+          style={{
+            marginTop: 50,
+            display: "flex",
+            alignItems: "center",
+            color: "#71717a", // zinc-500
+            fontSize: 22,
+            letterSpacing: 6,
+            textTransform: "uppercase",
+            textAlign: "center",
+          }}
+        >
+          Experience scripture in a new way
         </div>
       </div>
-    ),
+
+      {/* Version Number */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 50,
+          color: "#27272a",
+          fontSize: 14,
+          letterSpacing: 2,
+        }}
+      >
+        SYS.VER.1.0
+      </div>
+    </div>,
     {
       ...size,
-    }
+    },
   );
 }

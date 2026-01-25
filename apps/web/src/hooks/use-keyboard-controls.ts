@@ -64,5 +64,15 @@ export function useKeyboardControls({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isLoading, playing, wordsLength, wordIndex, togglePlay, seekTo, adjustSpeed, toggleStudyMode, closeChapters]);
+  }, [
+    isLoading,
+    playing,
+    wordsLength,
+    wordIndex,
+    togglePlay,
+    seekTo,
+    adjustSpeed,
+    toggleStudyMode,
+    closeChapters,
+  ]);
 }

@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { BookOpen, ChevronDown, ChevronUp, ArrowLeft, GraduationCap } from "lucide-react";
+import Link from "next/link";
+
 import { ChapterSelector } from "./ChapterSelector";
 
 interface PlayerHeaderProps {

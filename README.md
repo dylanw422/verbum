@@ -1,6 +1,6 @@
 # verbum
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, TRPC, and more.
+This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Convex, and more.
 
 ## Features
 
@@ -8,7 +8,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Next.js** - Full-stack React framework
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **shadcn/ui** - Reusable UI components
-- **tRPC** - End-to-end type-safe APIs
+- **Convex** - Reactive backend-as-a-service platform
 - **Authentication** - Better-Auth
 - **Turborepo** - Optimized monorepo build system
 
@@ -20,28 +20,41 @@ First, install the dependencies:
 bun install
 ```
 
+## Convex Setup
+
+This project uses Convex as a backend. You'll need to set up Convex before running the app:
+
+```bash
+bun run dev:setup
+```
+
+Follow the prompts to create a new Convex project and connect it to your application.
+
+Copy environment variables from `packages/backend/.env.local` to `apps/*/.env`.
+
 Then, run the development server:
 
 ```bash
 bun run dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
+Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
+Your app will connect to the Convex cloud backend automatically.
 
 ## Project Structure
 
 ```
 verbum/
 ├── apps/
-│   └── web/         # Fullstack application (Next.js)
+│   ├── web/         # Frontend application (Next.js)
 ├── packages/
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
+│   ├── backend/     # Convex backend functions and schema
 ```
 
 ## Available Scripts
 
 - `bun run dev`: Start all applications in development mode
 - `bun run build`: Build all applications
+- `bun run dev:web`: Start only the web application
+- `bun run dev:setup`: Setup and configure your Convex project
 - `bun run check-types`: Check TypeScript types across all apps

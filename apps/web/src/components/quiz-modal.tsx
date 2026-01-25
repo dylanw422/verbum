@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Award, X } from "lucide-react";
+import { useState } from "react";
+
 import { generateQuiz, type QuizQuestion } from "@/app/actions/quiz";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +15,13 @@ interface QuizModalProps {
   hasNextChapter?: boolean;
 }
 
-export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNextChapter }: QuizModalProps) {
+export function QuizModal({
+  isOpen,
+  onClose,
+  chapterText,
+  onNextChapter,
+  hasNextChapter,
+}: QuizModalProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "quiz" | "results">("idle");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -31,7 +38,7 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
       setStatus("quiz");
     } else {
       // Handle error (could add an error state)
-      setStatus("idle"); 
+      setStatus("idle");
       alert("Failed to generate quiz. Please try again.");
     }
   };
@@ -90,8 +97,12 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
         <div className="p-6">
           {status === "idle" && (
             <div className="text-center space-y-4">
-              <h2 className="text-xl font-mono tracking-[0.2em] text-zinc-100 uppercase">Chapter Complete!</h2>
-              <p className="text-zinc-400">Would you like to take a quick quiz to test your comprehension?</p>
+              <h2 className="text-xl font-mono tracking-[0.2em] text-zinc-100 uppercase">
+                Chapter Complete!
+              </h2>
+              <p className="text-zinc-400">
+                Would you like to take a quick quiz to test your comprehension?
+              </p>
               <div className="flex gap-3 justify-center mt-6 flex-wrap">
                 {hasNextChapter && onNextChapter && (
                   <Button
@@ -122,29 +133,31 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
           {status === "quiz" && questions.length > 0 && (
             <div className="space-y-6">
               <div className="flex justify-between items-center font-mono text-xs tracking-widest uppercase text-zinc-500 pr-10">
-                <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+                <span>
+                  Question {currentQuestionIndex + 1} of {questions.length}
+                </span>
                 <span>Score: {score}</span>
               </div>
-              
+
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-zinc-100 leading-relaxed">
                   {questions[currentQuestionIndex].question}
                 </h3>
-                
+
                 <div className="space-y-3 pt-2">
                   {questions[currentQuestionIndex].options.map((option, idx) => {
                     const isSelected = selectedAnswer === option;
-                    
+
                     return (
                       <button
                         key={idx}
                         onClick={() => handleAnswerSelect(option)}
                         className={`w-full p-4 text-left rounded-md transition-all border text-zinc-300
                           ${
-                          isSelected
-                            ? "bg-rose-500/20 border-rose-500 text-rose-100"
-                            : "bg-zinc-800/50 border-zinc-700 hover:bg-rose-500/10 hover:border-rose-500/50"
-                        }`}
+                            isSelected
+                              ? "bg-rose-500/20 border-rose-500 text-rose-100"
+                              : "bg-zinc-800/50 border-zinc-700 hover:bg-rose-500/10 hover:border-rose-500/50"
+                          }`}
                       >
                         {option}
                       </button>
@@ -168,13 +181,13 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
           {status === "results" && (
             <div className="text-center space-y-6 py-6">
               <div className="flex justify-center">
-                 <Award
+                <Award
                   className={`w-16 h-16 ${
                     score === questions.length ? "text-rose-400" : "text-zinc-500"
                   }`}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-zinc-100">Quiz Complete!</h2>
                 <p className="text-2xl text-zinc-400 font-mono tracking-widest">
@@ -186,22 +199,29 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
                 {questions.map((q, idx) => {
                   const userAnswer = userAnswers[idx];
                   const isCorrect = userAnswer === q.correctAnswer;
-                  
+
                   if (isCorrect) return null;
 
                   return (
-                    <div key={idx} className="bg-zinc-800/50 p-4 rounded-lg border border-red-500/20">
+                    <div
+                      key={idx}
+                      className="bg-zinc-800/50 p-4 rounded-lg border border-red-500/20"
+                    >
                       <p className="text-sm font-medium text-zinc-200 mb-2">
                         <span className="text-zinc-500 mr-2">{idx + 1}.</span>
                         {q.question}
                       </p>
                       <div className="space-y-1 text-sm">
                         <p className="text-red-400">
-                          <span className="text-zinc-500 uppercase text-xs tracking-wider mr-2">You selected:</span>
+                          <span className="text-zinc-500 uppercase text-xs tracking-wider mr-2">
+                            You selected:
+                          </span>
                           {userAnswer}
                         </p>
                         <p className="text-emerald-400">
-                          <span className="text-zinc-500 uppercase text-xs tracking-wider mr-2">Correct answer:</span>
+                          <span className="text-zinc-500 uppercase text-xs tracking-wider mr-2">
+                            Correct answer:
+                          </span>
                           {q.correctAnswer}
                         </p>
                       </div>
@@ -211,11 +231,17 @@ export function QuizModal({ isOpen, onClose, chapterText, onNextChapter, hasNext
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button onClick={resetQuiz} className="flex-1 bg-zinc-100 text-zinc-900 hover:bg-zinc-200">
+                <Button
+                  onClick={resetQuiz}
+                  className="flex-1 bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+                >
                   Back to Reading
                 </Button>
                 {hasNextChapter && onNextChapter && (
-                  <Button onClick={onNextChapter} className="flex-1 bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 hover:border-rose-500/50">
+                  <Button
+                    onClick={onNextChapter}
+                    className="flex-1 bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 hover:border-rose-500/50"
+                  >
                     Next Chapter
                   </Button>
                 )}

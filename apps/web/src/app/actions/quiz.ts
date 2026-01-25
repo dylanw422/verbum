@@ -1,9 +1,9 @@
 "use server";
 
-import { generateObject } from "ai";
 import { groq } from "@ai-sdk/groq";
-import { z } from "zod";
 import { env } from "@verbum/env/server";
+import { generateObject } from "ai";
+import { z } from "zod";
 
 const quizSchema = z.object({
   questions: z.array(
@@ -11,7 +11,7 @@ const quizSchema = z.object({
       question: z.string(),
       options: z.array(z.string()),
       correctAnswer: z.string().describe("The correct answer from the options array"),
-    })
+    }),
   ),
 });
 
@@ -22,7 +22,12 @@ export type QuizQuestion = {
 };
 
 export async function generateQuiz(chapterText: string) {
-  console.log("Available Env Keys:", Object.keys(process.env).filter(k => k.includes("API") || k.includes("OPENAI") || k.includes("GROQ")));
+  console.log(
+    "Available Env Keys:",
+    Object.keys(process.env).filter(
+      (k) => k.includes("API") || k.includes("OPENAI") || k.includes("GROQ"),
+    ),
+  );
   if (!env.GROQ_API_KEY) {
     return { success: false, error: "Groq API key is missing. Please check your .env file." };
   }

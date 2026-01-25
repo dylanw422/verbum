@@ -1,11 +1,8 @@
 "use client";
 
-import { useRef, Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
-import * as random from "maath/random/dist/maath-random.cjs";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Zap,
@@ -20,12 +17,15 @@ import {
   Keyboard,
   MousePointer2,
 } from "lucide-react";
+import * as random from "maath/random/dist/maath-random.cjs";
+import { useRouter } from "next/navigation";
+import { useRef, Suspense, useState } from "react";
 
 // --- Reusing the StarField for consistency ---
 function StarField(props: any) {
   const ref = useRef<any>(null);
   const [sphere] = useState(
-    () => random.inSphere(new Float32Array(6000), { radius: 1.5 }) as Float32Array
+    () => random.inSphere(new Float32Array(6000), { radius: 1.5 }) as Float32Array,
   );
 
   useFrame((state, delta) => {

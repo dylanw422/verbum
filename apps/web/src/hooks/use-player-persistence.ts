@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { MIN_WPM, MAX_WPM } from "@/components/player/constants";
 
 interface UsePlayerPersistenceReturn {

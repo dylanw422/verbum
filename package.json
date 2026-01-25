@@ -10,10 +10,12 @@
       "dotenv": "^17.2.2",
       "zod": "^4.1.13",
       "typescript": "^5",
-      "next": "^16.1.1",
-      "@trpc/server": "^11.7.2",
+      "convex": "^1.31.2",
+      "better-auth": "1.4.9",
+      "@convex-dev/better-auth": "^0.10.9",
       "@trpc/client": "^11.7.2",
-      "better-auth": "^1.4.9"
+      "@trpc/server": "^11.7.2",
+      "next": "^16.1.1"
     }
   },
   "type": "module",
@@ -22,18 +24,18 @@
     "build": "turbo build",
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
-    "dev:web": "turbo -F web dev"
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F @verbum/backend dev",
+    "dev:setup": "turbo -F @verbum/backend dev:setup"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.15",
     "@verbum/env": "workspace:*",
-    "@upstash/redis": "^1.36.1",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@verbum/config": "workspace:*",
-    "@types/node": "^22.13.14",
     "turbo": "^2.6.3",
     "typescript": "catalog:"
   },

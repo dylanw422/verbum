@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import type { WordData, LibraryData, VerseContext } from "./player/types";
-import { tokenizeToData } from "./player/utils";
+
+import { useKeyboardControls } from "@/hooks/use-keyboard-controls";
 import { useLibrary } from "@/hooks/use-library";
 import { usePlayerEngine } from "@/hooks/use-player-engine";
 import { usePlayerPersistence } from "@/hooks/use-player-persistence";
-import { useKeyboardControls } from "@/hooks/use-keyboard-controls";
+import { useSwipe } from "@/hooks/use-swipe";
+
+import type { WordData, LibraryData, VerseContext } from "./player/types";
+
+import { ControlDeck } from "./player/ControlDeck";
+import { KeyboardHints } from "./player/KeyboardHints";
 import { LoadingState } from "./player/LoadingState";
 import { PlayerHeader } from "./player/PlayerHeader";
 import { ReaderStage } from "./player/ReaderStage";
-import { ControlDeck } from "./player/ControlDeck";
-import { KeyboardHints } from "./player/KeyboardHints";
+import { tokenizeToData } from "./player/utils";
 import { QuizModal } from "./quiz-modal";
-import { useSwipe } from "@/hooks/use-swipe";
 
 interface PlayerProps {
   book: string;
@@ -52,7 +55,7 @@ export default function Player({ book }: PlayerProps) {
       parsedWords = tokenizeToData(chapterData, "1", 0);
     } else {
       const sortedVerses = Object.entries(chapterData).sort(
-        (a, b) => parseInt(a[0]) - parseInt(b[0])
+        (a, b) => parseInt(a[0]) - parseInt(b[0]),
       );
       let currentIndex = 0;
       sortedVerses.forEach(([verseNum, text]) => {
@@ -117,7 +120,7 @@ export default function Player({ book }: PlayerProps) {
       const newIndex = Math.floor(percentage * words.length);
       seekTo(newIndex);
     },
-    [words.length, seekTo]
+    [words.length, seekTo],
   );
 
   const handleSelectChapter = useCallback((ch: number) => {
@@ -138,8 +141,8 @@ export default function Player({ book }: PlayerProps) {
     onSwipeLeft: () => {
       // Go to next chapter
       if (chapter < availableChapters.length) {
-         setChapter((prev) => prev + 1);
-         resetToStart();
+        setChapter((prev) => prev + 1);
+        resetToStart();
       }
     },
     onSwipeRight: () => {
@@ -158,7 +161,7 @@ export default function Player({ book }: PlayerProps) {
 
   // --- Render ---
   return (
-    <div 
+    <div
       className="fixed inset-0 w-full h-full bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden font-sans selection:bg-rose-500/30"
       {...swipeHandlers}
     >
@@ -209,7 +212,7 @@ export default function Player({ book }: PlayerProps) {
       <QuizModal
         isOpen={showQuizModal}
         onClose={() => setShowQuizModal(false)}
-        chapterText={words.map(w => w.text).join(" ")}
+        chapterText={words.map((w) => w.text).join(" ")}
         onNextChapter={handleNextChapter}
         hasNextChapter={chapter < availableChapters.length}
       />

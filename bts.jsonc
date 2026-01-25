@@ -3,11 +3,11 @@
 
 {
   "$schema": "https://r2.better-t-stack.dev/schema.json",
-  "version": "3.15.1",
-  "createdAt": "2026-01-15T22:25:38.398Z",
+  "version": "3.18.0",
+  "createdAt": "2026-01-25T00:42:48.692Z",
   "database": "none",
   "orm": "none",
-  "backend": "self",
+  "backend": "convex",
   "runtime": "none",
   "frontend": ["next"],
   "addons": ["turborepo"],
@@ -16,7 +16,7 @@
   "payments": "none",
   "packageManager": "bun",
   "dbSetup": "none",
-  "api": "trpc",
+  "api": "none",
   "webDeploy": "none",
   "serverDeploy": "none",
 }

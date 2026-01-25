@@ -42,9 +42,7 @@ export function ControlDeck({
                 {targetWpm}
               </span>
             </div>
-            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider">
-              WPM
-            </span>
+            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider">WPM</span>
           </div>
           <button
             onClick={() => onAdjustSpeed(50)}

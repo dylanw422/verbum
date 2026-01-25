@@ -1,4 +1,5 @@
 import type { WordData } from "./types";
+
 import { DIVINE_TERMS, NEGATIVE_TERMS, CONNECTORS } from "./constants";
 
 interface RSVPWordDisplayProps {

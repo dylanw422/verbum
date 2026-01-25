@@ -1,7 +1,9 @@
 import { Quote, RefreshCw } from "lucide-react";
+
 import type { WordData, VerseContext } from "./types";
-import { RSVPWordDisplay } from "./RSVPWordDisplay";
+
 import { ProgressBar } from "./ProgressBar";
+import { RSVPWordDisplay } from "./RSVPWordDisplay";
 
 interface ReaderStageProps {
   words: WordData[];
@@ -77,10 +79,7 @@ export function ReaderStage({
             <span className="text-zinc-600 font-mono text-sm tracking-widest uppercase">
               End of Chapter
             </span>
-            <button
-              onClick={onRestart}
-              className="text-xs text-rose-500 hover:underline"
-            >
+            <button onClick={onRestart} className="text-xs text-rose-500 hover:underline">
               Restart
             </button>
           </div>

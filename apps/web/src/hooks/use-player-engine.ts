@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
+
 import type { WordData } from "@/components/player/types";
+
 import { REWIND_ON_PAUSE, WARMUP_DURATION } from "@/components/player/constants";
 
 interface UsePlayerEngineOptions {
@@ -123,14 +125,17 @@ export function usePlayerEngine(options: UsePlayerEngineOptions): UsePlayerEngin
     }
   }, [playing, animate]);
 
-  const seekTo = useCallback((index: number) => {
-    if (playing) {
-      setPlaying(false);
-      cancelAnimationFrame(requestRef.current);
-    }
-    indexRef.current = index;
-    setWordIndex(index);
-  }, [playing]);
+  const seekTo = useCallback(
+    (index: number) => {
+      if (playing) {
+        setPlaying(false);
+        cancelAnimationFrame(requestRef.current);
+      }
+      indexRef.current = index;
+      setWordIndex(index);
+    },
+    [playing],
+  );
 
   const resetToStart = useCallback(() => {
     indexRef.current = 0;

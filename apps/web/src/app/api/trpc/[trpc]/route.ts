@@ -1,6 +1,6 @@
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { createContext } from "@verbum/api/context";
 import { appRouter } from "@verbum/api/routers/index";
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { NextRequest } from "next/server";
 
 function handler(req: NextRequest) {

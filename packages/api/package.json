@@ -11,10 +11,10 @@
   },
   "scripts": {},
   "dependencies": {
-    "@verbum/auth": "workspace:*",
-    "@verbum/env": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
+    "@verbum/auth": "workspace:*",
+    "@verbum/env": "workspace:*",
     "dotenv": "catalog:",
     "next": "catalog:",
     "zod": "catalog:"

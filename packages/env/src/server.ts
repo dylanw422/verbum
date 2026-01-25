@@ -1,7 +1,7 @@
-import { config } from "dotenv";
 import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod";
+import { config } from "dotenv";
 import path from "path";
+import { z } from "zod";
 
 // Try root .env first
 config({ path: path.join(process.cwd(), ".env") });
