@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import { auth } from "@bible-reader/auth";
+import { auth } from "@verbum/auth";
 
 export async function createContext(req: NextRequest) {
   const session = await auth.api.getSession({

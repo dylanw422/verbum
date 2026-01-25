@@ -1,4 +1,4 @@
-import type { AppRouter } from "@bible-reader/api/routers/index";
+import type { AppRouter } from "@verbum/api/routers/index";
 
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";

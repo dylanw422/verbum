@@ -1,4 +1,4 @@
-# bible-reader
+# verbum
 
 This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, TRPC, and more.
 
@@ -31,7 +31,7 @@ Open [http://localhost:3001](http://localhost:3001) in your browser to see the f
 ## Project Structure
 
 ```
-bible-reader/
+verbum/
 ├── apps/
 │   └── web/         # Fullstack application (Next.js)
 ├── packages/

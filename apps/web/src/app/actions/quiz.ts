@@ -3,7 +3,7 @@
 import { generateObject } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
-import { env } from "@bible-reader/env/server";
+import { env } from "@verbum/env/server";
 
 const quizSchema = z.object({
   questions: z.array(

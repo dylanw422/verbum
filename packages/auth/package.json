@@ -1,5 +1,5 @@
 {
-  "name": "@bible-reader/auth",
+  "name": "@verbum/auth",
   "type": "module",
   "exports": {
     ".": {
@@ -11,13 +11,13 @@
   },
   "scripts": {},
   "dependencies": {
-    "@bible-reader/env": "workspace:*",
+    "@verbum/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@bible-reader/config": "workspace:*",
+    "@verbum/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

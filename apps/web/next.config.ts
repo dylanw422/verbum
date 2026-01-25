@@ -1,4 +1,4 @@
-import "@bible-reader/env/web";
+import "@verbum/env/web";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

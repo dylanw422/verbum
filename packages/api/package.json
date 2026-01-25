@@ -1,5 +1,5 @@
 {
-  "name": "@bible-reader/api",
+  "name": "@verbum/api",
   "type": "module",
   "exports": {
     ".": {
@@ -11,8 +11,8 @@
   },
   "scripts": {},
   "dependencies": {
-    "@bible-reader/auth": "workspace:*",
-    "@bible-reader/env": "workspace:*",
+    "@verbum/auth": "workspace:*",
+    "@verbum/env": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "dotenv": "catalog:",
@@ -20,7 +20,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@bible-reader/config": "workspace:*",
+    "@verbum/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "bible-reader",
+  "name": "verbum",
   "private": true,
   "workspaces": {
     "packages": [
@@ -26,13 +26,13 @@
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.15",
-    "@bible-reader/env": "workspace:*",
+    "@verbum/env": "workspace:*",
     "@upstash/redis": "^1.36.1",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@bible-reader/config": "workspace:*",
+    "@verbum/config": "workspace:*",
     "@types/node": "^22.13.14",
     "turbo": "^2.6.3",
     "typescript": "catalog:"

@@ -2,16 +2,16 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "bible-reader",
+      "name": "verbum",
       "dependencies": {
         "@ai-sdk/groq": "^3.0.15",
-        "@bible-reader/env": "workspace:*",
+        "@verbum/env": "workspace:*",
         "@upstash/redis": "^1.36.1",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@bible-reader/config": "workspace:*",
+        "@verbum/config": "workspace:*",
         "@types/node": "^22.13.14",
         "turbo": "^2.6.3",
         "typescript": "catalog:",
@@ -23,9 +23,9 @@
       "dependencies": {
         "@ai-sdk/openai": "^3.0.18",
         "@base-ui/react": "^1.0.0",
-        "@bible-reader/api": "workspace:*",
-        "@bible-reader/auth": "workspace:*",
-        "@bible-reader/env": "workspace:*",
+        "@verbum/api": "workspace:*",
+        "@verbum/auth": "workspace:*",
+        "@verbum/env": "workspace:*",
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.5.0",
         "@tanstack/react-form": "^1.27.3",
@@ -54,7 +54,7 @@
         "zod": "^4.3.5",
       },
       "devDependencies": {
-        "@bible-reader/config": "workspace:*",
+        "@verbum/config": "workspace:*",
         "@tailwindcss/postcss": "^4.1.10",
         "@tanstack/react-query-devtools": "^5.91.1",
         "@types/node": "^20",
@@ -65,10 +65,10 @@
       },
     },
     "packages/api": {
-      "name": "@bible-reader/api",
+      "name": "@verbum/api",
       "dependencies": {
-        "@bible-reader/auth": "workspace:*",
-        "@bible-reader/env": "workspace:*",
+        "@verbum/auth": "workspace:*",
+        "@verbum/env": "workspace:*",
         "@trpc/client": "catalog:",
         "@trpc/server": "catalog:",
         "dotenv": "catalog:",
@@ -76,29 +76,29 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@bible-reader/config": "workspace:*",
+        "@verbum/config": "workspace:*",
         "typescript": "catalog:",
       },
     },
     "packages/auth": {
-      "name": "@bible-reader/auth",
+      "name": "@verbum/auth",
       "dependencies": {
-        "@bible-reader/env": "workspace:*",
+        "@verbum/env": "workspace:*",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@bible-reader/config": "workspace:*",
+        "@verbum/config": "workspace:*",
         "typescript": "catalog:",
       },
     },
     "packages/config": {
-      "name": "@bible-reader/config",
+      "name": "@verbum/config",
       "version": "0.0.0",
     },
     "packages/env": {
-      "name": "@bible-reader/env",
+      "name": "@verbum/env",
       "version": "0.0.0",
       "dependencies": {
         "@t3-oss/env-core": "^0.13.1",
@@ -107,7 +107,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@bible-reader/config": "workspace:*",
+        "@verbum/config": "workspace:*",
         "@types/node": "^22.13.14",
         "typescript": "catalog:",
       },
@@ -207,13 +207,13 @@
 
     "@better-fetch/fetch": ["@better-fetch/fetch@1.1.21", "", {}, "sha512-/ImESw0sskqlVR94jB+5+Pxjf+xBwDZF/N5+y2/q4EqD7IARUTSpPfIo8uf39SYpCxyOCtbyYpUrZ3F/k0zT4A=="],
 
-    "@bible-reader/api": ["@bible-reader/api@workspace:packages/api"],
+    "@verbum/api": ["@verbum/api@workspace:packages/api"],
 
-    "@bible-reader/auth": ["@bible-reader/auth@workspace:packages/auth"],
+    "@verbum/auth": ["@verbum/auth@workspace:packages/auth"],
 
-    "@bible-reader/config": ["@bible-reader/config@workspace:packages/config"],
+    "@verbum/config": ["@verbum/config@workspace:packages/config"],
 
-    "@bible-reader/env": ["@bible-reader/env@workspace:packages/env"],
+    "@verbum/env": ["@verbum/env@workspace:packages/env"],
 
     "@dimforge/rapier3d-compat": ["@dimforge/rapier3d-compat@0.12.0", "", {}, "sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow=="],
 

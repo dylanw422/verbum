@@ -1,5 +1,5 @@
 {
-  "name": "@bible-reader/env",
+  "name": "@verbum/env",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@bible-reader/config": "workspace:*",
+    "@verbum/config": "workspace:*",
     "@types/node": "^22.13.14",
     "typescript": "catalog:"
   }

@@ -1,5 +1,5 @@
-import { createContext } from "@bible-reader/api/context";
-import { appRouter } from "@bible-reader/api/routers/index";
+import { createContext } from "@verbum/api/context";
+import { appRouter } from "@verbum/api/routers/index";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { NextRequest } from "next/server";
 
