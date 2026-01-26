@@ -30,7 +30,7 @@ export default function Player({ book }: PlayerProps) {
   const { targetWpm, studyMode, adjustSpeed, toggleStudyMode } = usePlayerPersistence();
 
   // --- Convex Mutations ---
-  const updateUserStreak = useMutation("userStats:updateStreak" as any);
+  const logSession = useMutation("userStats:logSession" as any);
 
   // --- Chapter & Word State ---
   const [chapter, setChapter] = useState(1);
@@ -40,14 +40,18 @@ export default function Player({ book }: PlayerProps) {
   const [activeReaders, setActiveReaders] = useState(0);
 
   const handleComplete = useCallback(() => {
-    // Update Streak
+    // Update Streak & Stats
     const clientDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-    updateUserStreak({ clientDate }).catch((err) => {
-        console.error("Failed to update streak:", err);
+    
+    // Calculate unique verses
+    const uniqueVerses = new Set(words.map(w => w.verse)).size;
+
+    logSession({ clientDate, versesRead: uniqueVerses }).catch((err) => {
+        console.error("Failed to log session:", err);
     });
     
     setShowQuizModal(true);
-  }, [updateUserStreak]);
+  }, [logSession, words]);
 
   // --- Presence Logic ---
   useEffect(() => {

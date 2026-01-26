@@ -93,8 +93,10 @@ const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: numb
 export default function JournalPage() {
   const router = useRouter();
   const userStats = useQuery("userStats:getStats" as any);
+  const recentEntries = useQuery("journalEntries:getEntries" as any);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
+  const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -153,7 +155,7 @@ export default function JournalPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
             <StatBadge label="Current Streak" value={streakDisplay} icon={Zap} />
-            <StatBadge label="Verses Engaged" value="1,248" icon={BookOpen} />
+            <StatBadge label="Verses Engaged" value={versesDisplay} icon={BookOpen} />
             <StatBadge label="Journal Entries" value="42" icon={PenTool} />
             <StatBadge label="Study Hours" value="18.5" icon={Calendar} />
           </div>
@@ -196,24 +198,36 @@ export default function JournalPage() {
               <DashboardCard 
                 title="Codex Entries" 
                 icon={PenTool}
-                action={{ label: "View All", onClick: () => {} }}
+                action={{ label: "View All", onClick: () => router.push("/entries") }}
                 className="h-full"
               >
                 <div className="space-y-4">
-                  {[
-                    { date: "Oct 24", title: "Reflections on Psalm 23", preview: "The Lord is my shepherd..." },
-                    { date: "Oct 22", title: "The Sermon on the Mount", preview: "Blessed are the poor in spirit..." },
-                    { date: "Oct 20", title: "Morning Prayer", preview: "Lord, guide my steps today..." },
-                  ].map((entry, i) => (
-                    <div key={i} className="group cursor-pointer p-3 hover:bg-zinc-800/30 rounded transition-colors border border-transparent hover:border-zinc-800">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-zinc-200 group-hover:text-rose-400 transition-colors">{entry.title}</h4>
-                        <span className="text-[10px] font-mono text-zinc-600 uppercase">{entry.date}</span>
-                      </div>
-                      <p className="text-xs text-zinc-500 line-clamp-1">{entry.preview}</p>
+                  {recentEntries === undefined ? (
+                    // Loading skeleton
+                    [1, 2, 3].map(i => (
+                        <div key={i} className="h-12 bg-zinc-900/50 rounded animate-pulse" />
+                    ))
+                  ) : recentEntries.length === 0 ? (
+                    <div className="text-center py-4">
+                        <span className="text-xs text-zinc-500">No entries yet.</span>
                     </div>
-                  ))}
-                  <button className="w-full py-3 border border-dashed border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-500 hover:text-rose-500 hover:border-rose-500/30 transition-all group">
+                  ) : (
+                    recentEntries.slice(0, 3).map((entry: any) => (
+                        <div key={entry._id} className="group cursor-pointer p-3 hover:bg-zinc-800/30 rounded transition-colors border border-transparent hover:border-zinc-800" onClick={() => router.push("/entries")}>
+                        <div className="flex justify-between items-start mb-1">
+                            <h4 className="text-sm font-bold text-zinc-200 group-hover:text-rose-400 transition-colors line-clamp-1">{entry.title}</h4>
+                            <span className="text-[10px] font-mono text-zinc-600 uppercase whitespace-nowrap ml-2">
+                                {new Date(entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </span>
+                        </div>
+                        <p className="text-xs text-zinc-500 line-clamp-1">{entry.content}</p>
+                        </div>
+                    ))
+                  )}
+                  <button 
+                    onClick={() => router.push("/entries")}
+                    className="w-full py-3 border border-dashed border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-500 hover:text-rose-500 hover:border-rose-500/30 transition-all group"
+                  >
                     <Plus className="w-4 h-4" />
                     <span className="text-xs font-mono uppercase tracking-widest">New Entry</span>
                   </button>

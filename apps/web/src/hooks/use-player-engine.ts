@@ -39,11 +39,16 @@ export function usePlayerEngine(options: UsePlayerEngineOptions): UsePlayerEngin
   const indexRef = useRef(0);
   const wordsRef = useRef<WordData[]>([]);
   const warmupStartRef = useRef<number>(0);
+  const onCompleteRef = useRef(options.onComplete);
 
   // Keep refs in sync
   useEffect(() => {
     wpmRef.current = targetWpm;
   }, [targetWpm]);
+
+  useEffect(() => {
+    onCompleteRef.current = options.onComplete;
+  }, [options.onComplete]);
 
   useEffect(() => {
     wordsRef.current = words;
@@ -91,8 +96,8 @@ export function usePlayerEngine(options: UsePlayerEngineOptions): UsePlayerEngin
       if (nextIndex >= wordsRef.current.length) {
         setPlaying(false);
         setWordIndex(wordsRef.current.length - 1);
-        if (options.onComplete) {
-          options.onComplete();
+        if (onCompleteRef.current) {
+          onCompleteRef.current();
         }
         return;
       }

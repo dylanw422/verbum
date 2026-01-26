@@ -1,0 +1,120 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { ArrowLeft, BookOpen, PenTool, Plus, Search, Settings } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
+import { useState } from "react";
+import { EntryModal } from "@/components/entry-modal";
+
+// --- Components ---
+
+const EntryCard = ({ entry }: { entry: any }) => (
+  <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg p-6 hover:border-rose-500/30 transition-all duration-300 group cursor-pointer flex flex-col gap-4">
+    <div className="flex justify-between items-start">
+      <div className="flex flex-col gap-1">
+        <h3 className="text-lg font-bold text-zinc-200 group-hover:text-rose-400 transition-colors">
+          {entry.title}
+        </h3>
+        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+          {new Date(entry.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+        </span>
+      </div>
+      {entry.linkedVerse && (
+        <div className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-[10px] font-mono text-rose-400 uppercase tracking-tight">
+          {entry.linkedVerse}
+        </div>
+      )}
+    </div>
+    <p className="text-sm text-zinc-400 leading-relaxed line-clamp-3">
+      {entry.content}
+    </p>
+  </div>
+);
+
+export default function EntriesPage() {
+  const router = useRouter();
+  // We'll replace this with real data later
+  const entries = useQuery("journalEntries:getEntries" as any) || [];
+  
+  // Placeholder for "New Entry" modal state
+  const [isCreating, setIsCreating] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
+      {/* --- Header --- */}
+      <header className="border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="text-xl font-bold tracking-tighter text-rose-500">
+              VERBUM
+            </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/journal" className="text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors">
+                Journal
+              </Link>
+              <Link href="/entries" className="text-xs font-mono uppercase tracking-widest text-rose-500">
+                Entries
+              </Link>
+              <Link href="/" className="text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors">
+                Archive
+              </Link>
+            </nav>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-500 font-bold text-xs">
+              DW
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex flex-col gap-2">
+            <Link href="/journal" className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors uppercase tracking-widest mb-2">
+              <ArrowLeft className="w-3 h-3" /> Back to Dashboard
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-100">
+              Personal Codex
+            </h1>
+            <p className="text-zinc-400">
+              Reflections, prayers, and study notes.
+            </p>
+          </div>
+          
+          <button 
+            onClick={() => setIsCreating(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-rose-600 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:shadow-[0_0_30px_rgba(244,63,94,0.5)]"
+          >
+            <Plus className="w-4 h-4" /> New Entry
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
+          {entries === undefined ? (
+             // Loading skeleton
+             [1,2,3].map(i => (
+               <div key={i} className="h-32 bg-zinc-900/20 border border-zinc-800 rounded-lg animate-pulse" />
+             ))
+          ) : entries.length === 0 ? (
+            <div className="text-center py-20 border border-dashed border-zinc-800 rounded-lg">
+              <PenTool className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+              <h3 className="text-zinc-400 font-mono uppercase tracking-widest mb-2">No Entries Found</h3>
+              <p className="text-zinc-600 text-sm max-w-xs mx-auto">
+                Begin your codex by creating a new entry linked to your readings.
+              </p>
+            </div>
+          ) : (
+            entries.map((entry: any) => (
+              <EntryCard key={entry._id} entry={entry} />
+            ))
+          )}
+        </div>
+      </main>
+      
+      <EntryModal isOpen={isCreating} onClose={() => setIsCreating(false)} />
+    </div>
+  );
+}
