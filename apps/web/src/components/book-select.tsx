@@ -102,7 +102,7 @@ const BookCard = ({ book, index, router }: { book: string; index: number; router
       }}
       whileTap={{ scale: 0.98 }}
       onClick={() => router.push(`/${book.replaceAll(" ", "-")}`)}
-      className="will-change-transform group relative flex flex-col items-start justify-between p-4 h-24 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-colors duration-200 text-left overflow-hidden"
+      className="will-change-transform group relative flex flex-col items-start justify-between p-4 h-24 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-colors duration-200 text-left overflow-hidden hover:cursor-pointer"
     >
       <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-zinc-700 group-hover:border-rose-500 transition-colors duration-200" />
       <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-zinc-700 group-hover:border-rose-500 transition-colors duration-200" />

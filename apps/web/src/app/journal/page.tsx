@@ -46,7 +46,7 @@ const DashboardCard = ({
       {action && (
         <button
           onClick={action.onClick}
-          className="text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors uppercase tracking-wider flex items-center gap-1"
+          className="text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors uppercase tracking-wider flex items-center gap-1 hover:cursor-pointer"
         >
           {action.label} <ChevronRight className="w-3 h-3" />
         </button>
@@ -69,7 +69,7 @@ const StatBadge = ({ label, value, icon: Icon }: { label: string; value: string;
 );
 
 const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: number; daysLeft: number }) => (
-  <div className="group cursor-pointer bg-zinc-950/30 border border-zinc-800/50 p-4 rounded-lg hover:border-rose-500/30 transition-all">
+  <div className="group bg-zinc-950/30 border border-zinc-800/50 p-4 rounded-lg hover:border-rose-500/30 transition-all">
     <div className="flex justify-between text-sm mb-3">
       <span className="text-zinc-200 font-bold group-hover:text-rose-400 transition-colors uppercase tracking-tight">{title}</span>
       <span className="text-rose-500 font-mono text-xs">{progress}%</span>
@@ -84,7 +84,7 @@ const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: numb
       <div className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter">
         {daysLeft} sessions left
       </div>
-      <button className="text-[10px] font-mono text-rose-500 uppercase tracking-widest border border-rose-500/20 px-2 py-1 rounded bg-rose-500/5 hover:bg-rose-500/20 transition-all">
+      <button className="text-[10px] font-mono text-rose-500 uppercase tracking-widest border border-rose-500/20 px-2 py-1 rounded bg-rose-500/5 hover:bg-rose-500/20 transition-all hover:cursor-pointer">
         Initiate
       </button>
     </div>
@@ -240,7 +240,7 @@ export default function JournalPage() {
                   )}
                   <button 
                     onClick={() => router.push("/entries")}
-                    className="w-full py-3 border border-dashed border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-500 hover:text-rose-500 hover:border-rose-500/30 transition-all group"
+                    className="w-full py-3 border border-dashed border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-500 hover:text-rose-500 hover:border-rose-500/30 transition-all group hover:cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span className="text-xs font-mono uppercase tracking-widest">New Entry</span>
@@ -285,7 +285,7 @@ export default function JournalPage() {
                 <PlanItem title="Pauline Epistles" progress={8} daysLeft={60} />
                 
                 <div className="mt-auto pt-4 border-t border-zinc-900">
-                  <button className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-300 hover:bg-zinc-800 transition-all">
+                  <button className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-300 hover:bg-zinc-800 transition-all hover:cursor-pointer">
                     <History className="w-4 h-4" />
                     <span className="text-xs font-mono uppercase tracking-widest">Protocol History</span>
                   </button>
