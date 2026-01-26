@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, PenTool, Plus, Search, Settings, Hash } from "lucide-react";
+import { ArrowLeft, PenTool, Plus, Hash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { EntryModal } from "@/components/entry-modal";
+import { JournalHeader } from "@/components/journal-header";
 
 // --- Components ---
 
@@ -66,31 +67,7 @@ export default function EntriesPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
       {/* --- Header --- */}
-      <header className="border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold tracking-tighter text-rose-500">
-              VERBUM
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/journal" className="text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors">
-                Journal
-              </Link>
-              <Link href="/entries" className="text-xs font-mono uppercase tracking-widest text-rose-500">
-                Entries
-              </Link>
-              <Link href="/" className="text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors">
-                Archive
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-500 font-bold text-xs">
-              DW
-            </div>
-          </div>
-        </div>
-      </header>
+      <JournalHeader />
 
       <main className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
