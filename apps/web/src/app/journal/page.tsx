@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
+import { authClient } from "@/lib/auth-client";
 
 // --- Mock Components ---
 
@@ -92,13 +93,24 @@ const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: numb
 
 export default function JournalPage() {
   const router = useRouter();
+  const { data: session } = authClient.useSession();
   const userStats = useQuery("userStats:getStats" as any);
   const recentEntries = useQuery("journalEntries:getEntries" as any);
   const entriesCount = useQuery("journalEntries:getEntriesCount" as any);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
   const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
-  const entriesDisplay = entriesCount !== undefined ? entriesCount.toLocaleString() : "-";
+  const entriesDisplay = entriesCount !== undefined ? entriesCount.toLocaleString() : "0";
+
+  const firstName = session?.user?.name?.split(" ")[0] ?? "Seeker";
+  const initials = session?.user?.name
+    ? session.user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "??";
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -128,8 +140,8 @@ export default function JournalPage() {
             <button className="p-2 text-zinc-500 hover:text-zinc-100 transition-colors">
               <Settings className="w-5 h-5" />
             </button>
-            <div className="w-8 h-8 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-500 font-bold text-xs">
-              DW
+            <div className="w-8 h-8 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-500 font-bold text-xs uppercase">
+              {initials}
             </div>
           </div>
         </div>
@@ -147,7 +159,7 @@ export default function JournalPage() {
               Sanctuary Dashboard
             </span>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-100 mb-4">
-              Peace be with you, <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-rose-200">Dylan</span>
+              Peace be with you, <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-rose-200">{firstName}</span>
             </h1>
             <p className="text-zinc-400 max-w-2xl leading-relaxed">
               Continue your journey through the sacred texts. Your current focus is on the 

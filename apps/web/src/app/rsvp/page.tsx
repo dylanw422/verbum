@@ -162,7 +162,7 @@ export default function RSVPLanding() {
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors mb-16 uppercase tracking-widest group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

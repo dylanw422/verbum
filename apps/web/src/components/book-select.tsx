@@ -198,12 +198,12 @@ export default function BookSelect() {
             </h1>
             <p className="text-zinc-500 font-mono text-sm max-w-md border-l-2 border-rose-500/30 pl-4 mt-2 leading-relaxed">
               Select a volume to initiate rapid serial visual presentation protocol.{" "}
-              <a
+              <Link
                 href="/rsvp"
                 className="inline-block border-b border-zinc-700 text-zinc-400 hover:text-rose-500 hover:border-rose-500 transition-colors duration-200"
               >
                 What is RSVP? ↗
-              </a>
+              </Link>
             </p>
           </motion.div>
 
