@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
 
 // --- Mock Components ---
 
@@ -91,6 +92,9 @@ const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: numb
 
 export default function JournalPage() {
   const router = useRouter();
+  const userStats = useQuery("userStats:getStats" as any);
+
+  const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -148,7 +152,7 @@ export default function JournalPage() {
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <StatBadge label="Current Streak" value="12 Days" icon={Zap} />
+            <StatBadge label="Current Streak" value={streakDisplay} icon={Zap} />
             <StatBadge label="Verses Engaged" value="1,248" icon={BookOpen} />
             <StatBadge label="Journal Entries" value="42" icon={PenTool} />
             <StatBadge label="Study Hours" value="18.5" icon={Calendar} />

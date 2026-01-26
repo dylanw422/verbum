@@ -9,6 +9,7 @@ import { usePlayerEngine } from "@/hooks/use-player-engine";
 import { usePlayerPersistence } from "@/hooks/use-player-persistence";
 import { useSwipe } from "@/hooks/use-swipe";
 
+import { useMutation } from "convex/react";
 import type { WordData, LibraryData, VerseContext } from "./player/types";
 
 import { ControlDeck } from "./player/ControlDeck";
@@ -28,6 +29,9 @@ export default function Player({ book }: PlayerProps) {
   const { library, isLoading, availableChapters } = useLibrary(book);
   const { targetWpm, studyMode, adjustSpeed, toggleStudyMode } = usePlayerPersistence();
 
+  // --- Convex Mutations ---
+  const updateUserStreak = useMutation("userStats:updateStreak" as any);
+
   // --- Chapter & Word State ---
   const [chapter, setChapter] = useState(1);
   const [words, setWords] = useState<WordData[]>([]);
@@ -36,8 +40,14 @@ export default function Player({ book }: PlayerProps) {
   const [activeReaders, setActiveReaders] = useState(0);
 
   const handleComplete = useCallback(() => {
+    // Update Streak
+    const clientDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+    updateUserStreak({ clientDate }).catch((err) => {
+        console.error("Failed to update streak:", err);
+    });
+    
     setShowQuizModal(true);
-  }, []);
+  }, [updateUserStreak]);
 
   // --- Presence Logic ---
   useEffect(() => {
