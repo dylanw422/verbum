@@ -8,6 +8,7 @@ import { useLibrary } from "@/hooks/use-library";
 import { usePlayerEngine } from "@/hooks/use-player-engine";
 import { usePlayerPersistence } from "@/hooks/use-player-persistence";
 import { useSwipe } from "@/hooks/use-swipe";
+import { useStudyTimer } from "@/hooks/use-study-timer";
 
 import { useMutation } from "convex/react";
 import type { WordData, LibraryData, VerseContext } from "./player/types";
@@ -80,6 +81,9 @@ export default function Player({ book }: PlayerProps) {
     targetWpm,
     onComplete: handleComplete,
   });
+
+  // --- Study Timer ---
+  useStudyTimer(playing);
 
   // --- Parse Chapter Text into Words ---
   useEffect(() => {

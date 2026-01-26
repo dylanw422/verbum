@@ -101,6 +101,7 @@ export default function JournalPage() {
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
   const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
   const entriesDisplay = entriesCount !== undefined ? entriesCount.toLocaleString() : "0";
+  const studyHoursDisplay = userStats?.totalStudyTime ? (userStats.totalStudyTime / 3600).toFixed(1) : "0.0";
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "Seeker";
   const initials = session?.user?.name
@@ -171,7 +172,7 @@ export default function JournalPage() {
             <StatBadge label="Current Streak" value={streakDisplay} icon={Zap} />
             <StatBadge label="Verses Engaged" value={versesDisplay} icon={BookOpen} />
             <StatBadge label="Journal Entries" value={entriesDisplay} icon={PenTool} />
-            <StatBadge label="Study Hours" value="18.5" icon={Calendar} />
+            <StatBadge label="Study Hours" value={studyHoursDisplay} icon={Calendar} />
           </div>
         </section>
 

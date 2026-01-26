@@ -51,10 +51,9 @@ export const logSession = mutation({
     let newStreak = stats.currentStreak;
     
     // Normalize logic
-    const lastDate = new Date(stats.lastEngagedDate);
+    // Check if yesterday.
     const clientDate = new Date(args.clientDate);
     
-    // Check if yesterday.
     const yesterday = new Date(clientDate);
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -80,5 +79,42 @@ export const logSession = mutation({
     });
 
     return { streak: newStreak, newRecord };
+  },
+});
+
+export const logStudyTime = mutation({
+  args: {
+    duration: v.number(), // in seconds
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    const stats = await ctx.db
+      .query("userStats")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (!stats) {
+        // Should generally exist if they are reading, but handle safe fallback or init
+        // If we want to allow time logging before first "completion", we create it here.
+        // But usually logSession creates it. Let's create if missing to be safe.
+        await ctx.db.insert("userStats", {
+            userId: user._id,
+            currentStreak: 0,
+            highestStreak: 0,
+            versesEngaged: 0,
+            totalStudyTime: args.duration,
+            lastEngagedDate: new Date().toISOString().split('T')[0]!, // Default to today
+        });
+        return;
+    }
+
+    const currentTotal = stats.totalStudyTime ?? 0;
+    
+    // Simple increment
+    await ctx.db.patch(stats._id, {
+        totalStudyTime: currentTotal + args.duration,
+    });
   },
 });

@@ -7,6 +7,7 @@ export default defineSchema({
     currentStreak: v.number(),
     highestStreak: v.number(),
     versesEngaged: v.optional(v.number()), // Cumulative total
+    totalStudyTime: v.optional(v.number()), // Total time in seconds
     lastEngagedDate: v.string(), // YYYY-MM-DD
   }).index("by_userId", ["userId"]),
 
