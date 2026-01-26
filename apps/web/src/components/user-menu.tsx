@@ -44,7 +44,7 @@ export default function UserMenu() {
           
           <DropdownMenuSeparator className="bg-zinc-800/50 mx-1" />
           
-          <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 text-zinc-400 focus:text-rose-400 focus:bg-rose-500/10 cursor-pointer group/item">
+          <DropdownMenuItem onClick={() => router.push("/journal")} className="flex items-center gap-3 px-3 py-2 text-zinc-400 focus:text-rose-400 focus:bg-rose-500/10 cursor-pointer group/item">
             <Terminal className="w-4 h-4 text-zinc-600 group-focus/item:text-rose-500 transition-colors" />
             <span className="text-[10px] font-mono uppercase tracking-widest">Journal</span>
           </DropdownMenuItem>
