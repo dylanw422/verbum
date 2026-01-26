@@ -18,11 +18,27 @@ export const getEntries = query({
   },
 });
 
+export const getEntriesCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) return 0;
+
+    const entries = await ctx.db
+      .query("journalEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .collect();
+    
+    return entries.length;
+  },
+});
+
 export const createEntry = mutation({
   args: {
     title: v.string(),
     content: v.string(),
     linkedVerse: v.optional(v.string()),
+    collections: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const user = await authComponent.safeGetAuthUser(ctx);
@@ -33,6 +49,7 @@ export const createEntry = mutation({
       title: args.title,
       content: args.content,
       linkedVerse: args.linkedVerse,
+      collections: args.collections,
       createdAt: new Date().toISOString(),
     });
   },

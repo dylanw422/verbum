@@ -94,9 +94,11 @@ export default function JournalPage() {
   const router = useRouter();
   const userStats = useQuery("userStats:getStats" as any);
   const recentEntries = useQuery("journalEntries:getEntries" as any);
+  const entriesCount = useQuery("journalEntries:getEntriesCount" as any);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
   const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
+  const entriesDisplay = entriesCount !== undefined ? entriesCount.toLocaleString() : "-";
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -156,7 +158,7 @@ export default function JournalPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
             <StatBadge label="Current Streak" value={streakDisplay} icon={Zap} />
             <StatBadge label="Verses Engaged" value={versesDisplay} icon={BookOpen} />
-            <StatBadge label="Journal Entries" value="42" icon={PenTool} />
+            <StatBadge label="Journal Entries" value={entriesDisplay} icon={PenTool} />
             <StatBadge label="Study Hours" value="18.5" icon={Calendar} />
           </div>
         </section>

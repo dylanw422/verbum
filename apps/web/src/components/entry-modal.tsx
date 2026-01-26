@@ -1,10 +1,10 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Save, Loader2 } from "lucide-react";
+import { X, BookOpen, Save, Loader2, Tag, Hash, Plus } from "lucide-react";
 import { useState } from "react";
-import { useMutation } from "convex/react";
-import { BOOKS } from "@/lib/constants";
+import { useMutation, useQuery } from "convex/react";
+import { SmartVerseInput } from "./smart-verse-input";
 
 interface EntryModalProps {
   isOpen: boolean;
@@ -15,39 +15,78 @@ export function EntryModal({ isOpen, onClose }: EntryModalProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   
-  // Verse Selector State
-  const [selectedBook, setSelectedBook] = useState("");
-  const [chapter, setChapter] = useState("");
-  const [verse, setVerse] = useState("");
+  // Verse State
+  const [verseInput, setVerseInput] = useState("");
   
+  // Collections State
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [showCollectionInput, setShowCollectionInput] = useState(false);
+  // Optimistic collections for immediate UI feedback
+  const [tempCollections, setTempCollections] = useState<{_id: string, name: string}[]>([]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createEntry = useMutation("journalEntries:createEntry" as any);
+  const createCollection = useMutation("collections:createCollection" as any);
+  const existingCollectionsQuery = useQuery("collections:getCollections" as any) || [];
+  
+  // Merge query results with temp collections, avoiding duplicates
+  const existingCollections = [
+      ...existingCollectionsQuery,
+      ...tempCollections.filter(tc => !existingCollectionsQuery.find((ec: any) => ec._id === tc._id))
+  ];
+
+  const handleCreateCollection = async () => {
+    if (!newCollectionName.trim()) return;
+    try {
+        const name = newCollectionName.trim();
+        console.log("Creating collection:", name);
+        const id = await createCollection({ name });
+        console.log("Created collection ID:", id);
+        if (id) {
+            if (!selectedCollections.includes(id)) {
+                const newSelection = [...selectedCollections, id];
+                console.log("Updating selected collections:", newSelection);
+                setSelectedCollections(newSelection);
+            }
+            setTempCollections([...tempCollections, { _id: id, name }]);
+        }
+        setNewCollectionName("");
+        setShowCollectionInput(false);
+    } catch (e) {
+        console.error("Failed to create collection:", e);
+    }
+  };
+
+  const toggleCollection = (id: string) => {
+    if (selectedCollections.includes(id)) {
+        setSelectedCollections(selectedCollections.filter(c => c !== id));
+    } else {
+        setSelectedCollections([...selectedCollections, id]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !content) return;
 
+    console.log("Submitting entry with collections:", selectedCollections);
     setIsSubmitting(true);
     
-    let linkedVerse = undefined;
-    if (selectedBook && chapter && verse) {
-        linkedVerse = `${selectedBook} ${chapter}:${verse}`;
-    }
-
     try {
       await createEntry({
         title,
         content,
-        linkedVerse,
+        linkedVerse: verseInput || undefined,
+        collections: selectedCollections,
       });
       onClose();
       // Reset form
       setTitle("");
       setContent("");
-      setSelectedBook("");
-      setChapter("");
-      setVerse("");
+      setVerseInput("");
+      setSelectedCollections([]);
     } catch (error) {
       console.error("Failed to create entry:", error);
     } finally {
@@ -95,38 +134,64 @@ export function EntryModal({ isOpen, onClose }: EntryModalProps) {
                   <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-2">
                     <BookOpen className="w-3 h-3" /> Link Scripture (Optional)
                   </label>
-                  <div className="grid grid-cols-12 gap-2">
-                    <div className="col-span-6 md:col-span-6">
-                        <select
-                            value={selectedBook}
-                            onChange={(e) => setSelectedBook(e.target.value)}
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-zinc-200 focus:outline-none focus:border-rose-500/50 transition-colors appearance-none"
-                        >
-                            <option value="">Select Book...</option>
-                            {BOOKS.map(b => (
-                                <option key={b} value={b}>{b}</option>
-                            ))}
-                        </select>
+                  <SmartVerseInput 
+                    value={verseInput} 
+                    onChange={setVerseInput} 
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-rose-500/50 transition-colors font-mono"
+                  />
+                </div>
+
+                {/* Collections / Tags */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                        <Tag className="w-3 h-3" /> Collections
+                    </label>
+                    <div className="flex flex-wrap gap-2 items-center">
+                        {existingCollections.map((col: any) => (
+                            <button
+                                key={col._id}
+                                type="button"
+                                onClick={() => toggleCollection(col._id)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1 ${
+                                    selectedCollections.includes(col._id)
+                                    ? "bg-rose-500/20 border-rose-500/50 text-rose-300"
+                                    : "bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500"
+                                }`}
+                            >
+                                <Hash className="w-3 h-3 opacity-50" /> {col.name}
+                            </button>
+                        ))}
+                        
+                        {/* New Collection Input */}
+                        {showCollectionInput ? (
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={newCollectionName}
+                                    onChange={(e) => setNewCollectionName(e.target.value)}
+                                    placeholder="Name..."
+                                    className="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200 w-24 focus:outline-none focus:border-rose-500"
+                                    autoFocus
+                                    onBlur={handleCreateCollection}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            handleCreateCollection();
+                                        }
+                                    }}
+                                />
+                                <button type="button" onClick={handleCreateCollection} className="text-rose-500 hover:text-rose-400"><Plus className="w-4 h-4" /></button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setShowCollectionInput(true)}
+                                className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors flex items-center gap-1"
+                            >
+                                <Plus className="w-3 h-3" /> New
+                            </button>
+                        )}
                     </div>
-                    <div className="col-span-3 md:col-span-3">
-                        <input
-                            type="text"
-                            value={chapter}
-                            onChange={(e) => setChapter(e.target.value)}
-                            placeholder="Ch"
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-rose-500/50 transition-colors text-center"
-                        />
-                    </div>
-                    <div className="col-span-3 md:col-span-3">
-                        <input
-                            type="text"
-                            value={verse}
-                            onChange={(e) => setVerse(e.target.value)}
-                            placeholder="Vs"
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded p-3 text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-rose-500/50 transition-colors text-center"
-                        />
-                    </div>
-                  </div>
                 </div>
 
                 {/* Body */}

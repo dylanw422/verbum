@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, PenTool, Plus, Search, Settings } from "lucide-react";
+import { ArrowLeft, BookOpen, PenTool, Plus, Search, Settings, Hash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
@@ -10,7 +10,7 @@ import { EntryModal } from "@/components/entry-modal";
 
 // --- Components ---
 
-const EntryCard = ({ entry }: { entry: any }) => (
+const EntryCard = ({ entry, collectionsMap }: { entry: any, collectionsMap: Record<string, any> }) => (
   <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg p-6 hover:border-rose-500/30 transition-all duration-300 group cursor-pointer flex flex-col gap-4">
     <div className="flex justify-between items-start">
       <div className="flex flex-col gap-1">
@@ -18,14 +18,27 @@ const EntryCard = ({ entry }: { entry: any }) => (
           {entry.title}
         </h3>
         <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-          {new Date(entry.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+          {new Date(entry.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
         </span>
       </div>
-      {entry.linkedVerse && (
-        <div className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-[10px] font-mono text-rose-400 uppercase tracking-tight">
-          {entry.linkedVerse}
+      <div className="flex flex-col items-end gap-2">
+        {entry.linkedVerse && (
+            <div className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-[10px] font-mono text-rose-400 uppercase tracking-tight">
+            {entry.linkedVerse}
+            </div>
+        )}
+        <div className="flex flex-wrap gap-1 justify-end">
+            {entry.collections?.map((colId: string) => {
+                const col = collectionsMap[colId];
+                if (!col) return null;
+                return (
+                    <span key={colId} className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded-full text-[10px] text-zinc-400">
+                        #{col.name}
+                    </span>
+                );
+            })}
         </div>
-      )}
+      </div>
     </div>
     <p className="text-sm text-zinc-400 leading-relaxed line-clamp-3">
       {entry.content}
@@ -35,11 +48,20 @@ const EntryCard = ({ entry }: { entry: any }) => (
 
 export default function EntriesPage() {
   const router = useRouter();
-  // We'll replace this with real data later
-  const entries = useQuery("journalEntries:getEntries" as any) || [];
+  const rawEntries = useQuery("journalEntries:getEntries" as any) || [];
+  const collections = useQuery("collections:getCollections" as any) || [];
+  const collectionsMap = collections.reduce((acc: any, col: any) => {
+      acc[col._id] = col;
+      return acc;
+  }, {});
   
-  // Placeholder for "New Entry" modal state
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  // Filter Logic
+  const entries = selectedCollection 
+    ? rawEntries.filter((e: any) => e.collections?.includes(selectedCollection))
+    : rawEntries;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -71,7 +93,7 @@ export default function EntriesPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
           <div className="flex flex-col gap-2">
             <Link href="/journal" className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors uppercase tracking-widest mb-2">
               <ArrowLeft className="w-3 h-3" /> Back to Dashboard
@@ -86,14 +108,41 @@ export default function EntriesPage() {
           
           <button 
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-rose-600 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:shadow-[0_0_30px_rgba(244,63,94,0.5)]"
+            className="flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-rose-600 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:shadow-[0_0_30px_rgba(244,63,94,0.5)] self-start md:self-auto"
           >
             <Plus className="w-4 h-4" /> New Entry
           </button>
         </div>
 
+        {/* Collection Filter */}
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide">
+            <button
+                onClick={() => setSelectedCollection(null)}
+                className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors border ${
+                    selectedCollection === null
+                    ? "bg-zinc-100 text-zinc-900 border-zinc-100"
+                    : "bg-zinc-900/50 text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
+                }`}
+            >
+                All Entries
+            </button>
+            {collections.map((col: any) => (
+                <button
+                    key={col._id}
+                    onClick={() => setSelectedCollection(col._id)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-mono tracking-wider whitespace-nowrap transition-colors border flex items-center gap-2 ${
+                        selectedCollection === col._id
+                        ? "bg-rose-500/20 text-rose-300 border-rose-500/50"
+                        : "bg-zinc-900/50 text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
+                    }`}
+                >
+                    <Hash className="w-3 h-3" /> {col.name}
+                </button>
+            ))}
+        </div>
+
         <div className="grid grid-cols-1 gap-6">
-          {entries === undefined ? (
+          {rawEntries === undefined ? (
              // Loading skeleton
              [1,2,3].map(i => (
                <div key={i} className="h-32 bg-zinc-900/20 border border-zinc-800 rounded-lg animate-pulse" />
@@ -108,7 +157,7 @@ export default function EntriesPage() {
             </div>
           ) : (
             entries.map((entry: any) => (
-              <EntryCard key={entry._id} entry={entry} />
+              <EntryCard key={entry._id} entry={entry} collectionsMap={collectionsMap} />
             ))
           )}
         </div>

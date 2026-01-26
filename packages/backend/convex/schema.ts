@@ -15,6 +15,13 @@ export default defineSchema({
     title: v.string(),
     content: v.string(),
     linkedVerse: v.optional(v.string()), // e.g. "John 3:16"
+    collections: v.optional(v.array(v.string())), // Array of Collection IDs (or names if simple)
     createdAt: v.string(), // ISO string
+  }).index("by_userId", ["userId"]),
+
+  collections: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    color: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
 });
