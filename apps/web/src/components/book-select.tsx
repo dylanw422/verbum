@@ -7,7 +7,7 @@ import { BookOpen, Database, ScanLine, Command, User } from "lucide-react";
 import * as random from "maath/random/dist/maath-random.cjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useRef, Suspense } from "react";
+import { useState, useRef, Suspense, useEffect } from "react";
 
 import { authClient } from "@/lib/auth-client";
 import UserMenu from "./user-menu";
@@ -132,8 +132,13 @@ const SectionHeader = ({ title, icon: Icon }: { title: string; icon: any }) => (
 
 const AuthButton = () => {
   const { data: session } = authClient.useSession();
+  const [mounted, setMounted] = useState(false);
 
-  if (session) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (mounted && session) {
     return <UserMenu />;
   }
 

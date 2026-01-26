@@ -25,7 +25,7 @@ export default function UserMenu() {
           <User className="w-3 h-3 text-rose-500" />
         </div>
         <span className="text-[10px] font-mono tracking-widest text-zinc-300 group-hover:text-zinc-100 uppercase truncate max-w-[100px]">
-          {session.user.name}
+          {session.user.name.split(" ")[0]}
         </span>
         <ChevronDown className="w-3 h-3 text-zinc-600 group-hover:text-rose-500 transition-colors" />
       </DropdownMenuTrigger>
@@ -46,7 +46,7 @@ export default function UserMenu() {
           
           <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 text-zinc-400 focus:text-rose-400 focus:bg-rose-500/10 cursor-pointer group/item">
             <Terminal className="w-4 h-4 text-zinc-600 group-focus/item:text-rose-500 transition-colors" />
-            <span className="text-[10px] font-mono uppercase tracking-widest">Dashboard</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest">Journal</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem 

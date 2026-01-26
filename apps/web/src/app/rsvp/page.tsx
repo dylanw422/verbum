@@ -16,6 +16,8 @@ import {
   Cpu,
   Keyboard,
   MousePointer2,
+  Heart,
+  Flame,
 } from "lucide-react";
 import * as random from "maath/random/dist/maath-random.cjs";
 import { useRouter } from "next/navigation";
@@ -69,6 +71,23 @@ const TechCard = ({ title, value, label }: { title: string; value: string; label
   </div>
 );
 
+const SpeedBar = ({ label, speed, width }: { label: string; speed: string; width: string }) => (
+  <div className="mb-4">
+    <div className="flex justify-between text-xs font-mono text-zinc-500 mb-1">
+      <span>{label}</span>
+      <span className="text-rose-400">{speed} WPM</span>
+    </div>
+    <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden">
+      <motion.div
+        initial={{ width: 0 }}
+        whileInView={{ width: width }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="h-full bg-gradient-to-r from-zinc-600 to-rose-500"
+      />
+    </div>
+  </div>
+);
+
 const FeatureBlock = ({
   icon: Icon,
   title,
@@ -89,21 +108,36 @@ const FeatureBlock = ({
   </div>
 );
 
-const SpeedBar = ({ label, speed, width }: { label: string; speed: string; width: string }) => (
-  <div className="mb-4">
-    <div className="flex justify-between text-xs font-mono text-zinc-500 mb-1">
-      <span>{label}</span>
-      <span className="text-rose-400">{speed} WPM</span>
+const ResonanceCard = ({
+  icon: Icon,
+  title,
+  children,
+  index,
+}: {
+  icon: any;
+  title: string;
+  children: React.ReactNode;
+  index: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, x: -20 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    transition={{ delay: index * 0.1, duration: 0.5 }}
+    className="relative group overflow-hidden bg-zinc-900/10 border-l-2 border-zinc-800 hover:border-rose-500/50 pl-6 py-4 pr-4 transition-all duration-500"
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <div className="relative flex flex-col md:flex-row md:items-center gap-4">
+      <div className="flex items-center gap-3 min-w-[240px]">
+        <Icon className="w-5 h-5 text-rose-500/80 group-hover:text-rose-400 transition-colors" />
+        <h3 className="text-lg text-zinc-200 tracking-wide group-hover:text-white transition-colors">
+          {title}
+        </h3>
+      </div>
+      <p className="text-sm text-zinc-400 font-light leading-relaxed group-hover:text-zinc-300 transition-colors">
+        {children}
+      </p>
     </div>
-    <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden">
-      <motion.div
-        initial={{ width: 0 }}
-        whileInView={{ width: width }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="h-full bg-gradient-to-r from-zinc-600 to-rose-500"
-      />
-    </div>
-  </div>
+  </motion.div>
 );
 
 export default function RSVPLanding() {
@@ -169,6 +203,41 @@ export default function RSVPLanding() {
             <TechCard title="Saccade Latency" value="0" label="ms" />
           </motion.div>
         </div>
+
+        {/* --- SECTION: SPIRITUAL IMMERSION --- */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-24"
+        >
+          <SectionHeading title="Scriptural Resonance" icon={Flame} />
+
+          <div className="flex flex-col gap-4">
+            <ResonanceCard icon={Heart} title="Undivided Devotion" index={0}>
+              In a world of distraction, RSVP demands total engagement. It creates a{" "}
+              <strong className="text-zinc-200">sanctuary of attention</strong>, locking your focus
+              exclusively on the Word and silencing external noise.
+            </ResonanceCard>
+
+            <ResonanceCard icon={Zap} title="Flow State Access" index={1}>
+              Bypass the friction of traditional reading to enter a meditative "flow" state
+              instantly. By removing mechanical effort, the barrier between the text and your spirit
+              dissolves.
+            </ResonanceCard>
+
+            <ResonanceCard icon={Eye} title="Macro-Narrative Vision" index={2}>
+              Consume entire books in single sittings. Witness the sweeping arcs of biblical history
+              unfold without fatigue, revealing connections often lost in fragmented study.
+            </ResonanceCard>
+
+            <ResonanceCard icon={BrainCircuit} title="Pure Reception" index={3}>
+              Silence the analytical inner narrator. Receive scripture as a continuous stream of
+              revelation—a "download" of truth that bypasses skepticism and reaches the heart.
+            </ResonanceCard>
+          </div>
+        </motion.div>
 
         {/* --- SECTION 1: MECHANICS --- */}
         <motion.div
