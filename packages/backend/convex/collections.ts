@@ -40,3 +40,17 @@ export const createCollection = mutation({
     });
   },
 });
+
+export const deleteCollection = mutation({
+  args: { id: v.id("collections") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    const collection = await ctx.db.get(args.id);
+    if (!collection) throw new Error("Collection not found");
+    if (collection.userId !== user._id) throw new Error("Unauthorized");
+
+    await ctx.db.delete(args.id);
+  },
+});

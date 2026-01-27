@@ -49,8 +49,23 @@ export const createEntry = mutation({
       title: args.title,
       content: args.content,
       linkedVerse: args.linkedVerse,
-      collections: args.collections,
-      createdAt: new Date().toISOString(),
-    });
-  },
-});
+            collections: args.collections,
+            createdAt: new Date().toISOString(),
+          });
+        },
+      });
+      
+      export const deleteEntry = mutation({
+        args: { id: v.id("journalEntries") },
+        handler: async (ctx, args) => {
+          const user = await authComponent.safeGetAuthUser(ctx);
+          if (!user) throw new Error("Unauthorized");
+      
+          const entry = await ctx.db.get(args.id);
+          if (!entry) throw new Error("Entry not found");
+          if (entry.userId !== user._id) throw new Error("Unauthorized");
+      
+          await ctx.db.delete(args.id);
+        },
+      });
+      

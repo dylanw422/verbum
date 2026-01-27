@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, PenTool, Plus, Hash } from "lucide-react";
+import { ArrowLeft, PenTool, Plus, Hash, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { EntryModal } from "@/components/entry-modal";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { JournalHeader } from "@/components/journal-header";
 import { useLibrary } from "@/hooks/use-library";
 import { BOOKS } from "@/lib/constants";
@@ -70,11 +71,22 @@ const getVerseText = (library: any, reference: string) => {
   return null;
 };
 
-const EntryCard = ({ entry, collectionsMap, library }: { entry: any, collectionsMap: Record<string, any>, library: any }) => {
+const EntryCard = ({ entry, collectionsMap, library, onDelete }: { entry: any, collectionsMap: Record<string, any>, library: any, onDelete: (id: string) => void }) => {
   const verseText = getVerseText(library, entry.linkedVerse);
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg p-6 hover:border-rose-500/30 transition-all duration-300 group cursor-pointer flex flex-col gap-4">
+    <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-lg p-6 pr-12 hover:border-rose-500/30 transition-all duration-300 group cursor-pointer flex flex-col gap-4 relative">
+      <button 
+          onClick={(e) => {
+              e.stopPropagation();
+              onDelete(entry._id);
+          }}
+          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-zinc-800 rounded-md text-zinc-500 hover:text-red-400 z-10"
+          title="Delete Entry"
+      >
+          <Trash2 className="w-4 h-4" />
+      </button>
+
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-1">
           <h3 className="text-lg font-bold text-zinc-200 group-hover:text-rose-400 transition-colors">
@@ -85,11 +97,13 @@ const EntryCard = ({ entry, collectionsMap, library }: { entry: any, collections
           </span>
         </div>
         <div className="flex flex-col items-end gap-2">
-          {entry.linkedVerse && (
-              <div className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-[10px] font-mono text-rose-400 uppercase tracking-tight">
-              {entry.linkedVerse}
-              </div>
-          )}
+          <div className="flex gap-2 items-center">
+            {entry.linkedVerse && (
+                <div className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-[10px] font-mono text-rose-400 uppercase tracking-tight">
+                {entry.linkedVerse}
+                </div>
+            )}
+          </div>
           <div className="flex flex-wrap gap-1 justify-end">
               {entry.collections?.map((colId: string) => {
                   const col = collectionsMap[colId];
@@ -131,6 +145,44 @@ export default function EntriesPage() {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Deletion State
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+      isOpen: boolean;
+      type: 'entry' | 'collection';
+      id: string | null;
+  }>({ isOpen: false, type: 'entry', id: null });
+
+  const deleteEntry = useMutation("journalEntries:deleteEntry" as any);
+  const deleteCollection = useMutation("collections:deleteCollection" as any);
+
+  const confirmDelete = async () => {
+      if (!deleteConfirmation.id) return;
+      
+      if (deleteConfirmation.type === 'entry') {
+          await deleteEntry({ id: deleteConfirmation.id as any });
+      } else {
+          await deleteCollection({ id: deleteConfirmation.id as any });
+          if (selectedCollection === deleteConfirmation.id) setSelectedCollection(null);
+      }
+      setDeleteConfirmation({ ...deleteConfirmation, isOpen: false });
+  };
+
+  const openDeleteEntry = (id: string) => {
+      setDeleteConfirmation({
+          isOpen: true,
+          type: 'entry',
+          id
+      });
+  };
+
+  const openDeleteCollection = (id: string) => {
+      setDeleteConfirmation({
+          isOpen: true,
+          type: 'collection',
+          id
+      });
+  };
+
   // Filter Logic
   const entries = selectedCollection 
     ? rawEntries.filter((e: any) => e.collections?.includes(selectedCollection))
@@ -164,7 +216,7 @@ export default function EntriesPage() {
         </div>
 
         {/* Collection Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide items-center">
             <button
                 onClick={() => setSelectedCollection(null)}
                 className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors border ${
@@ -176,17 +228,29 @@ export default function EntriesPage() {
                 All Entries
             </button>
             {collections.map((col: any) => (
-                <button
-                    key={col._id}
-                    onClick={() => setSelectedCollection(col._id)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-mono tracking-wider whitespace-nowrap transition-colors border flex items-center gap-2 ${
+                <div key={col._id} className={`flex items-center rounded-full border transition-colors ${
                         selectedCollection === col._id
-                        ? "bg-rose-500/20 text-rose-300 border-rose-500/50"
-                        : "bg-zinc-900/50 text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
-                    }`}
-                >
-                    <Hash className="w-3 h-3" /> {col.name}
-                </button>
+                        ? "bg-rose-500/20 border-rose-500/50"
+                        : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-600"
+                }`}>
+                    <button
+                        onClick={() => setSelectedCollection(col._id)}
+                        className={`px-3 py-1.5 text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-2 ${
+                            selectedCollection === col._id ? "text-rose-300" : "text-zinc-500 hover:text-zinc-300"
+                        }`}
+                    >
+                        <Hash className="w-3 h-3" /> {col.name}
+                    </button>
+                    {selectedCollection === col._id && (
+                         <button
+                            onClick={() => openDeleteCollection(col._id)}
+                            className="pr-2 pl-1 py-1.5 text-rose-400 hover:text-rose-200 transition-colors"
+                            title="Delete Collection"
+                        >
+                            <X className="w-3 h-3" />
+                         </button>
+                    )}
+                </div>
             ))}
         </div>
 
@@ -206,13 +270,31 @@ export default function EntriesPage() {
             </div>
           ) : (
             entries.map((entry: any) => (
-              <EntryCard key={entry._id} entry={entry} collectionsMap={collectionsMap} library={library} />
+              <EntryCard 
+                key={entry._id} 
+                entry={entry} 
+                collectionsMap={collectionsMap} 
+                library={library} 
+                onDelete={openDeleteEntry}
+              />
             ))
           )}
         </div>
       </main>
       
       <EntryModal isOpen={isCreating} onClose={() => setIsCreating(false)} />
+      
+      <ConfirmationModal 
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ ...deleteConfirmation, isOpen: false })}
+        onConfirm={confirmDelete}
+        title={deleteConfirmation.type === 'entry' ? "Delete Entry?" : "Delete Collection?"}
+        message={deleteConfirmation.type === 'entry' 
+            ? "This action cannot be undone. The entry will be permanently removed from your codex." 
+            : "This will delete the collection tag. Entries tagged with this collection will NOT be deleted."}
+        confirmLabel="Delete"
+        isDestructive={true}
+      />
     </div>
   );
 }
