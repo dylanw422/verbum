@@ -25,4 +25,13 @@ export default defineSchema({
     name: v.string(),
     color: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
+
+  dailyVerses: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    verseText: v.string(),
+    reference: v.string(), // e.g. "John 1:5"
+    book: v.string(),
+    chapter: v.number(),
+    verse: v.number(),
+  }).index("by_date", ["date"]),
 });

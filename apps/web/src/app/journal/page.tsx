@@ -96,6 +96,7 @@ export default function JournalPage() {
   const userStats = useQuery("userStats:getStats" as any);
   const recentEntries = useQuery("journalEntries:getEntries" as any);
   const entriesCount = useQuery("journalEntries:getEntriesCount" as any);
+  const dailyVerse = useQuery("dailyBread:get" as any);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
   const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
@@ -152,18 +153,37 @@ export default function JournalPage() {
                   <Shield className="w-32 h-32 text-rose-500" />
                 </div>
                 <blockquote className="relative z-10">
-                  <p className="text-2xl md:text-3xl font-serif italic text-zinc-200 mb-6 leading-relaxed">
-                    "The light shines in the darkness, and the darkness has not overcome it."
-                  </p>
-                  <cite className="text-sm font-mono text-rose-500 uppercase tracking-widest not-italic">
-                    — John 1:5
-                  </cite>
+                  {dailyVerse === undefined ? (
+                    <div className="space-y-4 animate-pulse">
+                      <div className="h-6 bg-zinc-800/50 rounded w-full" />
+                      <div className="h-6 bg-zinc-800/50 rounded w-3/4" />
+                      <div className="h-4 bg-zinc-800/50 rounded w-1/4 mt-4" />
+                    </div>
+                  ) : dailyVerse === null ? (
+                    <>
+                      <p className="text-2xl md:text-3xl font-serif italic text-zinc-200 mb-6 leading-relaxed">
+                        "The light shines in the darkness, and the darkness has not overcome it."
+                      </p>
+                      <cite className="text-sm font-mono text-rose-500 uppercase tracking-widest not-italic">
+                        — John 1:5
+                      </cite>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-2xl md:text-3xl font-serif italic text-zinc-200 mb-6 leading-relaxed">
+                        "{dailyVerse.verseText}"
+                      </p>
+                      <cite className="text-sm font-mono text-rose-500 uppercase tracking-widest not-italic">
+                        — {dailyVerse.reference}
+                      </cite>
+                    </>
+                  )}
                 </blockquote>
                 <div className="mt-8 flex gap-4">
-                  <button className="px-6 py-2 bg-rose-500 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-rose-600 transition-colors">
+                  <button className="px-6 py-2 bg-rose-500 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-rose-600 transition-colors hover:cursor-pointer">
                     Meditate
                   </button>
-                  <button className="px-6 py-2 border border-zinc-700 text-zinc-300 text-xs font-bold uppercase tracking-widest rounded hover:bg-zinc-800 transition-colors">
+                  <button className="px-6 py-2 border border-zinc-700 text-zinc-300 text-xs font-bold uppercase tracking-widest rounded hover:bg-zinc-800 transition-colors hover:cursor-pointer">
                     Quick Journal
                   </button>
                 </div>

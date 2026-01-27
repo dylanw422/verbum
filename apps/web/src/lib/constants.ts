@@ -67,5 +67,7 @@ export const BOOKS = [
   "Revelation",
 ];
 
+export const BIBLE_JSON_URL = "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/BSB.json";
+
 export const OT_BOOKS = BOOKS.slice(0, 39);
 export const NT_BOOKS = BOOKS.slice(39);
