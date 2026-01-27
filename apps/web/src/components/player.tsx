@@ -221,6 +221,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         chapterData={chapterData}
         onSeek={handleSeek}
         onRestart={resetToStart}
+        onWordClick={seekTo}
       />
 
       {/* Control Deck */}

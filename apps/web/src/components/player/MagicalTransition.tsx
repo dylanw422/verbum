@@ -9,34 +9,32 @@ interface MagicalTransitionProps {
 }
 
 function ParticleBurst({ readingMode }: { readingMode: boolean }) {
-  const count = 2000;
+  const count = 4000; // Increased density
   const mesh = useRef<THREE.Points>(null);
   const prevMode = useRef(readingMode);
   
   // Particles state
-  const dummy = useMemo(() => new THREE.Object3D(), []);
   const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
-      const t = Math.random() * 100;
-      const factor = 20 + Math.random() * 100;
-      const speed = 0.01 + Math.random() / 200;
-      const x = Math.random() * 2 - 1;
-      const y = Math.random() * 2 - 1;
-      const z = Math.random() * 2 - 1;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = Math.pow(Math.random(), 1/3); 
       
-      // Normalize to sphere surface
-      const len = Math.sqrt(x*x + y*y + z*z);
-      const nx = x/len; 
-      const ny = y/len; 
-      const nz = z/len;
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.sin(phi) * Math.sin(theta);
+      const z = r * Math.cos(phi);
 
       temp.push({ 
-        t, factor, speed, 
-        mx: 0, my: 0, mz: 0, // current position
-        vx: nx, vy: ny, vz: nz, // velocity direction
+        baseX: x, baseY: y, baseZ: z,
+        mx: 0, my: 0, mz: 0, 
+        vx: (Math.random() - 0.5) * 0.02,
+        vy: (Math.random() - 0.5) * 0.02,
+        vz: (Math.random() - 0.5) * 0.02,
+        speed: 0.5 + Math.random() * 1.5,
         active: false,
-        life: 0
+        life: 0,
+        phase: Math.random() * Math.PI * 2 
       });
     }
     return temp;
@@ -45,29 +43,16 @@ function ParticleBurst({ readingMode }: { readingMode: boolean }) {
   const positions = useMemo(() => new Float32Array(count * 3), [count]);
   const colors = useMemo(() => new Float32Array(count * 3), [count]);
   const sizes = useMemo(() => new Float32Array(count), [count]);
-  const opacities = useMemo(() => new Float32Array(count), [count]);
 
-  // Trigger burst on mode change
   useEffect(() => {
     if (readingMode !== prevMode.current) {
-      // Trigger burst
       particles.forEach(p => {
         p.active = true;
         p.life = 1.0;
-        // If entering reading mode (Explode out)
         if (readingMode) {
-          p.mx = 0; p.my = 0; p.mz = 0;
-        } else {
-           // If entering RSVP mode (Implode in - optional, or just same burst)
-           // Let's make both "Explosions" for excitement, or implode for RSVP?
-           // Let's do Explode for Reading (Magic Reveal)
-           // And Implode for RSVP (Magic Focus)
-           if (!readingMode) {
-             // Start far away
-             p.mx = p.vx * 15;
-             p.my = p.vy * 15;
-             p.mz = p.vz * 15;
-           }
+          if (!prevMode.current) {
+             p.mx = 0; p.my = 0; p.mz = 0;
+          }
         }
       });
       prevMode.current = readingMode;
@@ -77,17 +62,21 @@ function ParticleBurst({ readingMode }: { readingMode: boolean }) {
   useFrame((state, delta) => {
     if (!mesh.current) return;
 
+    const time = state.clock.elapsedTime;
     let activeCount = 0;
 
     particles.forEach((p, i) => {
+      const driftX = Math.sin(time * 0.5 + p.phase) * 0.02;
+      const driftY = Math.cos(time * 0.3 + p.phase) * 0.02;
+      const driftZ = Math.sin(time * 0.4 + p.phase) * 0.02;
+
       if (!p.active) {
-        // Hide
         positions[i * 3] = 9999;
         return;
       }
       
       activeCount++;
-      p.life -= delta * 1.5; // Fade out speed
+      p.life -= delta * 0.8;
 
       if (p.life <= 0) {
         p.active = false;
@@ -96,46 +85,48 @@ function ParticleBurst({ readingMode }: { readingMode: boolean }) {
 
       if (readingMode) {
         // EXPLODE OUT
-        // Move along velocity vector
-        const moveSpeed = 15 * (1.0 - p.life) * (1.0 - p.life) + 2; // Accelerate?
-        p.mx += p.vx * delta * (p.factor * 0.1);
+        const targetX = p.baseX * 12; // Reduced spread
+        const targetY = p.baseY * 12;
+        const targetZ = p.baseZ * 4;
+
+        const ease = delta * (2.0 * p.speed); 
+        p.mx += (targetX - p.mx) * ease + driftX;
+        p.my += (targetY - p.my) * ease + driftY;
+        p.mz += (targetZ - p.mz) * ease + driftZ;
+
       } else {
-        // IMPLODE IN
-        // Move towards 0,0,0
-        // Lerp current pos to 0
-        const lerpFactor = delta * 5;
-        p.mx += (0 - p.mx) * lerpFactor;
-        p.my += (0 - p.my) * lerpFactor;
-        p.mz += (0 - p.mz) * lerpFactor;
+        // IMPLODE IN + SPIRAL
+        const pull = delta * (5.0 * p.speed);
+        
+        // Spiral rotation force (around Z axis)
+        const rotSpeed = 2.0 * delta;
+        const oldX = p.mx;
+        const oldY = p.my;
+        const newX = oldX * Math.cos(rotSpeed) - oldY * Math.sin(rotSpeed);
+        const newY = oldX * Math.sin(rotSpeed) + oldY * Math.cos(rotSpeed);
+        
+        // Apply spiral + pull
+        p.mx = newX + (0 - newX) * pull + driftX * 0.1;
+        p.my = newY + (0 - newY) * pull + driftY * 0.1;
+        p.mz += (0 - p.mz) * pull + driftZ * 0.1;
       }
 
-      // Update position buffer
       positions[i * 3] = p.mx;
       positions[i * 3 + 1] = p.my;
       positions[i * 3 + 2] = p.mz;
 
-      // Color (Gold/Rose mix)
-      const colorMix = Math.random();
-      if (colorMix > 0.5) {
-        // Rose-500: #f43f5e (approx 0.96, 0.25, 0.37)
-        colors[i * 3] = 0.96;
-        colors[i * 3 + 1] = 0.25;
-        colors[i * 3 + 2] = 0.37;
-      } else {
-        // Amber-400: #fbbf24 (approx 0.98, 0.75, 0.14)
-        colors[i * 3] = 0.98;
-        colors[i * 3 + 1] = 0.75;
-        colors[i * 3 + 2] = 0.14;
-      }
+      const flicker = 0.5 + 0.5 * Math.sin(time * 8 + p.phase); // Faster flicker
+      const alpha = p.life * flicker; 
 
-      // Size varies by life
-      sizes[i] = (Math.sin(p.life * Math.PI) * 2) * Math.random();
+      const mix = (Math.sin(p.phase) + 1) / 2;
+      colors[i * 3]     = 1.0 * mix + 1.0 * (1 - mix); // Boost red channel
+      colors[i * 3 + 1] = 0.2 * mix + 0.8 * (1 - mix); 
+      colors[i * 3 + 2] = 0.4 * mix + 0.1 * (1 - mix); 
+
+      sizes[i] = (0.5 + 0.5 * Math.sin(time * 5 + p.phase)) * Math.random();
+      sizes[i] *= alpha; 
     });
 
-    mesh.current.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    mesh.current.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    mesh.current.geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    
     mesh.current.geometry.attributes.position.needsUpdate = true;
     mesh.current.geometry.attributes.color.needsUpdate = true;
     mesh.current.geometry.attributes.size.needsUpdate = true;
@@ -161,10 +152,10 @@ function ParticleBurst({ readingMode }: { readingMode: boolean }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.15}
+        size={0.18}
         vertexColors
         transparent
-        opacity={0.8}
+        opacity={1}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
         sizeAttenuation={true}
