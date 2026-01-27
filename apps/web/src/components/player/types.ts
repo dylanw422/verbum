@@ -15,10 +15,3 @@ export type LibraryData = Record<string, Record<string, string | Record<string, 
 export interface PlayerProps {
   book: string;
 }
-
-// Verse context for study mode
-export interface VerseContext {
-  num: string;
-  text: string;
-  isCurrent: boolean;
-}

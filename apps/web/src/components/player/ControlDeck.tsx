@@ -1,26 +1,26 @@
-import { Play, Pause, Minus, Plus, Zap, GraduationCap } from "lucide-react";
+import { Play, Pause, Minus, Plus, Zap, BookOpen } from "lucide-react";
 
 interface ControlDeckProps {
   targetWpm: number;
   isWarmingUp: boolean;
   playing: boolean;
-  studyMode: boolean;
+  readingMode: boolean;
   onAdjustSpeed: (delta: number) => void;
   onTogglePlay: () => void;
-  onToggleStudyMode: () => void;
+  onToggleReadingMode: () => void;
 }
 
 /**
- * Bottom control deck with speed controls, play/pause, and study mode toggle.
+ * Bottom control deck with speed controls, play/pause, and reading mode toggle.
  */
 export function ControlDeck({
   targetWpm,
   isWarmingUp,
   playing,
-  studyMode,
+  readingMode,
   onAdjustSpeed,
   onTogglePlay,
-  onToggleStudyMode,
+  onToggleReadingMode,
 }: ControlDeckProps) {
   return (
     <div className="absolute bottom-8 md:bottom-12 z-40 w-full flex justify-center px-4">
@@ -72,17 +72,17 @@ export function ControlDeck({
 
         <div className="w-px h-8 bg-zinc-800/50" />
 
-        {/* Study Mode Toggle */}
+        {/* Reading Mode Toggle */}
         <button
-          onClick={onToggleStudyMode}
+          onClick={onToggleReadingMode}
           className={`w-12 h-12 flex items-center justify-center rounded-full transition-all active:scale-95 border ${
-            studyMode
+            readingMode
               ? "bg-zinc-800 text-rose-500 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]"
               : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 border-transparent"
           }`}
-          title="Toggle Study Mode (S)"
+          title="Toggle Reading Mode (R)"
         >
-          <GraduationCap className="w-5 h-5" />
+          <BookOpen className="w-5 h-5" />
         </button>
       </div>
     </div>

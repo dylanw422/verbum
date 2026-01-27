@@ -1,17 +1,16 @@
 import type { WordData } from "./types";
-
-import { DIVINE_TERMS, NEGATIVE_TERMS, CONNECTORS } from "./constants";
+import { motion } from "framer-motion";
 
 interface RSVPWordDisplayProps {
   wordData: WordData;
-  studyMode: boolean;
+  layoutId?: string;
 }
 
 /**
  * RSVP word display with Optimal Recognition Point (ORP) highlighting.
- * Highlights the center character and applies study mode styling.
+ * Highlights the center character.
  */
-export function RSVPWordDisplay({ wordData, studyMode }: RSVPWordDisplayProps) {
+export function RSVPWordDisplay({ wordData, layoutId }: RSVPWordDisplayProps) {
   const { text, cleanText, orpIndex } = wordData;
 
   // VISUAL PROCESSING
@@ -43,28 +42,16 @@ export function RSVPWordDisplay({ wordData, studyMode }: RSVPWordDisplayProps) {
 
   // --- STYLING ---
   const textColor = "text-zinc-100";
-  let centerColor = "text-rose-500";
-  let glowEffect = "";
-
-  if (studyMode) {
-    const lower = cleanText.toLowerCase();
-
-    if (DIVINE_TERMS.has(lower)) {
-      centerColor = "text-amber-400";
-      glowEffect = "drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]";
-    } else if (NEGATIVE_TERMS.has(lower)) {
-      centerColor = "text-red-600";
-    } else if (CONNECTORS.has(lower)) {
-      centerColor = "text-blue-400";
-    }
-  }
+  const centerColor = "text-rose-500";
+  const glowEffect = "";
 
   // --- STATIC SIZING (Mobile Fix) ---
   const isLong = text.length > 12;
   const sizeClass = isLong ? "text-3xl md:text-7xl" : "text-4xl md:text-7xl";
 
   return (
-    <div
+    <motion.div
+      layoutId={layoutId}
       className={`flex items-center justify-center ${sizeClass} font-mono tracking-tight leading-none select-none w-full relative h-full`}
     >
       {/* Left Side - Right Aligned - No Wrapping */}
@@ -88,6 +75,6 @@ export function RSVPWordDisplay({ wordData, studyMode }: RSVPWordDisplayProps) {
       >
         {rightPart}
       </div>
-    </div>
+    </motion.div>
   );
 }

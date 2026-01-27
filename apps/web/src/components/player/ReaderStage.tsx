@@ -1,98 +1,163 @@
-import { Quote, RefreshCw } from "lucide-react";
+import { useRef, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { RefreshCw } from "lucide-react";
 
-import type { WordData, VerseContext } from "./types";
+import type { WordData } from "./types";
 
 import { ProgressBar } from "./ProgressBar";
 import { RSVPWordDisplay } from "./RSVPWordDisplay";
+import { MagicalTransition } from "./MagicalTransition";
 
 interface ReaderStageProps {
   words: WordData[];
   wordIndex: number;
-  studyMode: boolean;
+  readingMode: boolean;
   playing: boolean;
-  contextVerses: VerseContext[];
+  chapterData?: any;
   onSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
   onRestart: () => void;
 }
 
 /**
- * Main reading area with word display, context verses, and progress bar.
+ * Main reading area. Switches between RSVP display and Reading Mode (full text).
  */
 export function ReaderStage({
   words,
   wordIndex,
-  studyMode,
+  readingMode,
   playing,
-  contextVerses,
   onSeek,
   onRestart,
 }: ReaderStageProps) {
   const progress = words.length ? (wordIndex / words.length) * 100 : 0;
   const currentWord = words[wordIndex];
+  
+  // Ref for auto-scrolling to active verse in Reading Mode
+  const activeVerseRef = useRef<HTMLDivElement>(null);
+
+  // Group words by verse for Reading Mode text reconstruction
+  const verses = useMemo(() => {
+    const grouped: Record<string, WordData[]> = {};
+    words.forEach((w) => {
+      if (!grouped[w.verse]) {
+        grouped[w.verse] = [];
+      }
+      grouped[w.verse].push(w);
+    });
+    return grouped;
+  }, [words]);
+
+  // Auto-scroll effect when entering Reading Mode
+  useEffect(() => {
+    if (readingMode && activeVerseRef.current) {
+      activeVerseRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [readingMode]);
+
+  // Auto-scroll effect while playing in Reading Mode
+  useEffect(() => {
+    if (readingMode && playing && activeVerseRef.current) {
+      activeVerseRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [readingMode, playing, currentWord?.verse]);
 
   return (
-    <div className="relative z-30 flex flex-col items-center justify-center w-full max-w-5xl h-64 md:h-96 px-4">
-      {/* Study Mode Context Display */}
-      {studyMode && !playing && contextVerses.length > 0 && (
-        <div className="absolute -top-32 md:-top-24 inset-x-0 flex flex-col items-center animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 pointer-events-none z-50">
-          <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-5 rounded-xl max-w-2xl text-center shadow-2xl shadow-black/80 pointer-events-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 ring-1 ring-white/10">
-            {contextVerses.map((v) => (
-              <div
-                key={v.num}
-                className={`mb-4 last:mb-0 transition-opacity ${
-                  v.isCurrent ? "opacity-100" : "opacity-40"
-                }`}
-              >
+    <div className="relative z-30 flex flex-col items-center justify-center w-full max-w-5xl h-full md:h-auto transition-all duration-500 ease-in-out">
+      
+      {/* Magical Transition Overlay */}
+      <MagicalTransition readingMode={readingMode} />
+
+      {readingMode ? (
+        // --- READING MODE VIEW ---
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="w-full h-[60vh] md:h-[70vh] overflow-y-auto px-6 py-12 scrollbar-hide mask-image-edges bg-zinc-950/50 backdrop-blur-sm rounded-xl border border-white/5 shadow-2xl relative z-20"
+        >
+          <div className="max-w-2xl mx-auto pb-20">
+            {Object.entries(verses).map(([vNum, vWords]) => {
+              const isCurrentVerse = currentWord && currentWord.verse === vNum;
+              
+              return (
                 <div
-                  className={`flex items-center justify-center gap-2 mb-1 ${v.isCurrent ? "text-rose-500" : "text-zinc-500"}`}
+                  key={vNum}
+                  ref={isCurrentVerse ? activeVerseRef : null}
+                  className={`mb-6 text-lg md:text-xl font-serif leading-relaxed transition-colors duration-500 ${
+                    isCurrentVerse ? "text-zinc-100" : "text-zinc-500"
+                  }`}
                 >
-                  {v.isCurrent && <Quote className="w-3 h-3 fill-current" />}
-                  <span className="text-[10px] font-mono tracking-widest uppercase">
-                    Verse {v.num}
+                  <span className="text-xs text-rose-500/50 font-sans mr-3 select-none font-bold align-top mt-1 inline-block">
+                    {vNum}
                   </span>
+                  
+                  {vWords.map((w, i) => {
+                    const isActive = currentWord && w === currentWord;
+                    
+                    return (
+                      <span key={`${vNum}-${i}`} className="inline-block mr-1.5">
+                        {isActive ? (
+                          <motion.span
+                            layoutId="active-word"
+                            className="text-rose-500 font-medium relative"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          >
+                            {w.text}
+                          </motion.span>
+                        ) : (
+                          <span>{w.text}</span>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
-                <p
-                  className={`text-lg font-serif italic leading-relaxed ${v.isCurrent ? "text-zinc-200" : "text-zinc-400"}`}
-                >
-                  "{v.text}"
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        </motion.div>
+      ) : (
+        // --- RSVP VIEW ---
+        <div className="flex flex-col items-center justify-center w-full h-64 md:h-96 relative z-10">
+          {/* Optical Guide Line */}
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 md:h-20 w-px bg-gradient-to-b from-transparent via-rose-500/20 to-transparent mx-auto z-0" />
+
+          {/* Word Display Area */}
+          <div className="relative h-40 w-full flex items-center justify-center mb-8">
+            <AnimatePresence mode="wait">
+              {currentWord ? (
+                <RSVPWordDisplay 
+                  key="word-display" 
+                  wordData={currentWord} 
+                  layoutId="active-word" 
+                />
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <RefreshCw className="w-8 h-8 text-zinc-700 animate-spin-slow" />
+                  <span className="text-zinc-600 font-mono text-sm tracking-widest uppercase">
+                    End of Chapter
+                  </span>
+                  <button onClick={onRestart} className="text-xs text-rose-500 hover:underline">
+                    Restart
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Progress Bar */}
+          <ProgressBar
+            progress={progress}
+            wordIndex={wordIndex}
+            totalWords={words.length}
+            onSeek={onSeek}
+          />
         </div>
       )}
-
-      {/* Optical Guide Line */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 md:h-20 w-px bg-gradient-to-b from-transparent via-rose-500/20 to-transparent mx-auto z-0" />
-
-      {/* Word Display Area */}
-      <div
-        className={`relative h-40 w-full flex items-center justify-center mb-8 transition-opacity duration-300 ${
-          studyMode && !playing ? "opacity-10 blur-sm" : "opacity-100"
-        }`}
-      >
-        {currentWord ? (
-          <RSVPWordDisplay wordData={currentWord} studyMode={studyMode} />
-        ) : (
-          <div className="flex flex-col items-center gap-4">
-            <RefreshCw className="w-8 h-8 text-zinc-700 animate-spin-slow" />
-            <span className="text-zinc-600 font-mono text-sm tracking-widest uppercase">
-              End of Chapter
-            </span>
-            <button onClick={onRestart} className="text-xs text-rose-500 hover:underline">
-              Restart
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Progress Bar */}
-      <ProgressBar
-        progress={progress}
-        wordIndex={wordIndex}
-        totalWords={words.length}
-        onSeek={onSeek}
-      />
     </div>
   );
 }

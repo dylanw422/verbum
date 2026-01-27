@@ -11,7 +11,7 @@ import { useSwipe } from "@/hooks/use-swipe";
 import { useStudyTimer } from "@/hooks/use-study-timer";
 
 import { useMutation } from "convex/react";
-import type { WordData, LibraryData, VerseContext } from "./player/types";
+import type { WordData, LibraryData } from "./player/types";
 
 import { ControlDeck } from "./player/ControlDeck";
 import { KeyboardHints } from "./player/KeyboardHints";
@@ -29,7 +29,7 @@ interface PlayerProps {
 export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   // --- Data & Persistence ---
   const { library, isLoading, availableChapters } = useLibrary(book);
-  const { targetWpm, studyMode, adjustSpeed, toggleStudyMode } = usePlayerPersistence();
+  const { targetWpm, readingMode, adjustSpeed, toggleReadingMode } = usePlayerPersistence();
 
   // --- Convex Mutations ---
   const logSession = useMutation("userStats:logSession" as any);
@@ -110,6 +110,13 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
     setWords(parsedWords);
   }, [book, chapter, library]);
 
+  const handleToggleReadingMode = useCallback(() => {
+    if (playing) {
+      togglePlay();
+    }
+    toggleReadingMode();
+  }, [playing, togglePlay, toggleReadingMode]);
+
   // --- Keyboard Controls ---
   useKeyboardControls({
     isLoading,
@@ -119,38 +126,16 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
     togglePlay,
     seekTo,
     adjustSpeed,
-    toggleStudyMode,
+    toggleReadingMode: handleToggleReadingMode,
+    readingMode,
     closeChapters: () => setShowChapters(false),
   });
 
-  // --- Context Verses for Study Mode ---
-  const contextVerses = useMemo<VerseContext[]>(() => {
-    if (!words[wordIndex] || !library) return [];
-    const currentVerseStr = words[wordIndex].verse;
-    const currentVerseNum = parseInt(currentVerseStr, 10);
-    const chData = library[book][chapter.toString()];
-
-    if (!chData || typeof chData === "string") {
-      return [{ num: "1", text: String(chData || ""), isCurrent: true }];
-    }
-
-    const verses: VerseContext[] = [];
-    const range = [-1, 0, 1];
-
-    range.forEach((offset) => {
-      const vNum = currentVerseNum + offset;
-      const vStr = vNum.toString();
-      if (chData[vStr]) {
-        verses.push({
-          num: vStr,
-          text: chData[vStr] as string,
-          isCurrent: offset === 0,
-        });
-      }
-    });
-
-    return verses;
-  }, [wordIndex, words, library, book, chapter]);
+  // --- Chapter Data for Reading Mode ---
+  const chapterData = useMemo(() => {
+    if (!library || !library[book]) return null;
+    return library[book][chapter.toString()];
+  }, [library, book, chapter]);
 
   // --- Event Handlers ---
   const handleSeek = useCallback(
@@ -216,7 +201,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
       <PlayerHeader
         book={book}
         chapter={chapter}
-        studyMode={studyMode}
+        readingMode={readingMode}
         currentVerse={words[wordIndex]?.verse || null}
         showChapters={showChapters}
         availableChapters={availableChapters}
@@ -231,9 +216,9 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
       <ReaderStage
         words={words}
         wordIndex={wordIndex}
-        studyMode={studyMode}
+        readingMode={readingMode}
         playing={playing}
-        contextVerses={contextVerses}
+        chapterData={chapterData}
         onSeek={handleSeek}
         onRestart={resetToStart}
       />
@@ -243,10 +228,10 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         targetWpm={targetWpm}
         isWarmingUp={isWarmingUp}
         playing={playing}
-        studyMode={studyMode}
+        readingMode={readingMode}
         onAdjustSpeed={adjustSpeed}
         onTogglePlay={togglePlay}
-        onToggleStudyMode={toggleStudyMode}
+        onToggleReadingMode={handleToggleReadingMode}
       />
 
       {/* Keyboard Hints */}

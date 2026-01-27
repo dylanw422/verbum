@@ -7,26 +7,28 @@ interface UseKeyboardControlsOptions {
   playing: boolean;
   wordsLength: number;
   wordIndex: number;
+  readingMode: boolean;
   togglePlay: () => void;
   seekTo: (index: number) => void;
   adjustSpeed: (delta: number) => void;
-  toggleStudyMode: () => void;
+  toggleReadingMode: () => void;
   closeChapters: () => void;
 }
 
 /**
  * Hook for handling keyboard shortcuts in the player.
- * Space: play/pause, Arrows: seek/speed, S: study mode, Escape: close chapters
+ * Space: play/pause, Arrows: seek/speed, R: reading mode, Escape: close chapters
  */
 export function useKeyboardControls({
   isLoading,
   playing,
   wordsLength,
   wordIndex,
+  readingMode,
   togglePlay,
   seekTo,
   adjustSpeed,
-  toggleStudyMode,
+  toggleReadingMode,
   closeChapters,
 }: UseKeyboardControlsOptions): void {
   useEffect(() => {
@@ -53,9 +55,9 @@ export function useKeyboardControls({
         e.preventDefault();
         adjustSpeed(-25);
       }
-      if (e.code === "KeyS") {
+      if (e.code === "KeyR") {
         e.preventDefault();
-        toggleStudyMode();
+        toggleReadingMode();
       }
       if (e.code === "Escape") {
         closeChapters();
@@ -69,10 +71,11 @@ export function useKeyboardControls({
     playing,
     wordsLength,
     wordIndex,
+    readingMode,
     togglePlay,
     seekTo,
     adjustSpeed,
-    toggleStudyMode,
+    toggleReadingMode,
     closeChapters,
   ]);
 }

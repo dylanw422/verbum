@@ -6,19 +6,19 @@ import { MIN_WPM, MAX_WPM } from "@/components/player/constants";
 
 interface UsePlayerPersistenceReturn {
   targetWpm: number;
-  studyMode: boolean;
+  readingMode: boolean;
   setTargetWpm: (wpm: number) => void;
   adjustSpeed: (delta: number) => void;
-  toggleStudyMode: () => void;
+  toggleReadingMode: () => void;
 }
 
 /**
  * Hook for persisting player settings to localStorage.
- * Manages reading speed and study mode preferences.
+ * Manages reading speed and mode preferences.
  */
 export function usePlayerPersistence(): UsePlayerPersistenceReturn {
   const [targetWpm, setTargetWpmState] = useState(300);
-  const [studyMode, setStudyMode] = useState(false);
+  const [readingMode, setReadingMode] = useState(false);
 
   // Load saved preferences on mount
   useEffect(() => {
@@ -28,10 +28,6 @@ export function usePlayerPersistence(): UsePlayerPersistenceReturn {
       if (!isNaN(val) && val >= MIN_WPM && val <= MAX_WPM) {
         setTargetWpmState(val);
       }
-    }
-    const savedMode = localStorage.getItem("rsvp-study-mode");
-    if (savedMode === "true") {
-      setStudyMode(true);
     }
   }, []);
 
@@ -49,19 +45,15 @@ export function usePlayerPersistence(): UsePlayerPersistenceReturn {
     });
   };
 
-  const toggleStudyMode = () => {
-    setStudyMode((prev) => {
-      const newMode = !prev;
-      localStorage.setItem("rsvp-study-mode", String(newMode));
-      return newMode;
-    });
+  const toggleReadingMode = () => {
+    setReadingMode((prev) => !prev);
   };
 
   return {
     targetWpm,
-    studyMode,
+    readingMode,
     setTargetWpm,
     adjustSpeed,
-    toggleStudyMode,
+    toggleReadingMode,
   };
 }

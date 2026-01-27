@@ -1,4 +1,4 @@
-import { BookOpen, ChevronDown, ChevronUp, ArrowLeft, GraduationCap } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { ChapterSelector } from "./ChapterSelector";
@@ -6,7 +6,7 @@ import { ChapterSelector } from "./ChapterSelector";
 interface PlayerHeaderProps {
   book: string;
   chapter: number;
-  studyMode: boolean;
+  readingMode: boolean;
   currentVerse: string | null;
   showChapters: boolean;
   availableChapters: number[];
@@ -23,7 +23,7 @@ interface PlayerHeaderProps {
 export function PlayerHeader({
   book,
   chapter,
-  studyMode,
+  readingMode,
   currentVerse,
   showChapters,
   availableChapters,
@@ -53,10 +53,10 @@ export function PlayerHeader({
 
           <div className="flex flex-col gap-1">
             <h1 className="text-[10px] font-bold tracking-[0.25em] text-zinc-600 uppercase flex items-center gap-2">
-              Reading Mode
-              {studyMode && (
+              Verbum
+              {readingMode && (
                 <span className="inline-flex items-center gap-1 text-rose-500 animate-pulse">
-                  <GraduationCap className="w-3 h-3" /> STUDY
+                  <BookOpen className="w-3 h-3" /> READING
                 </span>
               )}
             </h1>

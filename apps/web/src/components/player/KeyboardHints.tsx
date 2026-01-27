@@ -32,7 +32,7 @@ export function KeyboardHints() {
         <ShortcutKey label="Play/Pause" k="Space" />
         <ShortcutKey label="Speed" k="↑ / ↓" />
         <ShortcutKey label="Seek" k="← / →" />
-        <ShortcutKey label="Study Mode" k="S" />
+        <ShortcutKey label="Reading Mode" k="R" />
       </div>
     </div>
   );
