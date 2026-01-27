@@ -146,7 +146,15 @@ export default function JournalPage() {
             <DashboardCard 
               title="Daily Bread" 
               icon={Star}
-              action={{ label: "Full Devotional", onClick: () => {} }}
+              action={{ 
+                label: "Full Devotional", 
+                onClick: () => {
+                  if (dailyVerse) {
+                    const slug = dailyVerse.book.toLowerCase().replace(/\s+/g, '-');
+                    router.push(`/${slug}?chapter=${dailyVerse.chapter}`);
+                  }
+                } 
+              }}
             >
               <div className="bg-zinc-950/30 border border-zinc-800 p-8 rounded-lg relative overflow-hidden group h-full min-h-[300px] flex flex-col justify-center">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">

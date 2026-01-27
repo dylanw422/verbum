@@ -23,9 +23,10 @@ import { QuizModal } from "./quiz-modal";
 
 interface PlayerProps {
   book: string;
+  initialChapter?: number;
 }
 
-export default function Player({ book }: PlayerProps) {
+export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   // --- Data & Persistence ---
   const { library, isLoading, availableChapters } = useLibrary(book);
   const { targetWpm, studyMode, adjustSpeed, toggleStudyMode } = usePlayerPersistence();
@@ -34,7 +35,7 @@ export default function Player({ book }: PlayerProps) {
   const logSession = useMutation("userStats:logSession" as any);
 
   // --- Chapter & Word State ---
-  const [chapter, setChapter] = useState(1);
+  const [chapter, setChapter] = useState(initialChapter);
   const [words, setWords] = useState<WordData[]>([]);
   const [showChapters, setShowChapters] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
