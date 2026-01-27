@@ -191,7 +191,16 @@ export default function JournalPage() {
                   <button className="px-6 py-2 bg-rose-500 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-rose-600 transition-colors hover:cursor-pointer">
                     Meditate
                   </button>
-                  <button className="px-6 py-2 border border-zinc-700 text-zinc-300 text-xs font-bold uppercase tracking-widest rounded hover:bg-zinc-800 transition-colors hover:cursor-pointer">
+                  <button 
+                    onClick={() => {
+                      if (dailyVerse) {
+                         router.push(`/entries?new=true&ref=${encodeURIComponent(dailyVerse.reference)}`);
+                      } else {
+                         router.push("/entries?new=true");
+                      }
+                    }}
+                    className="px-6 py-2 border border-zinc-700 text-zinc-300 text-xs font-bold uppercase tracking-widest rounded hover:bg-zinc-800 transition-colors hover:cursor-pointer"
+                  >
                     Quick Journal
                   </button>
                 </div>

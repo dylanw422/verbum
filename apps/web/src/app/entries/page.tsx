@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, PenTool, Plus, Hash, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EntryModal } from "@/components/entry-modal";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import { JournalHeader } from "@/components/journal-header";
@@ -133,6 +133,7 @@ const EntryCard = ({ entry, collectionsMap, library, onDelete }: { entry: any, c
 
 export default function EntriesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const rawEntries = useQuery("journalEntries:getEntries" as any) || [];
   const collections = useQuery("collections:getCollections" as any) || [];
   const { library } = useLibrary("Genesis");
@@ -144,6 +145,12 @@ export default function EntriesPage() {
   
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("new") === "true") {
+      setIsCreating(true);
+    }
+  }, [searchParams]);
 
   // Deletion State
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -282,7 +289,17 @@ export default function EntriesPage() {
         </div>
       </main>
       
-      <EntryModal isOpen={isCreating} onClose={() => setIsCreating(false)} />
+      <EntryModal 
+        isOpen={isCreating} 
+        onClose={() => {
+            setIsCreating(false);
+            const newParams = new URLSearchParams(searchParams.toString());
+            newParams.delete("new");
+            newParams.delete("ref");
+            router.replace(`/entries?${newParams.toString()}`);
+        }} 
+        initialVerse={searchParams.get("ref") || undefined}
+      />
       
       <ConfirmationModal 
         isOpen={deleteConfirmation.isOpen}

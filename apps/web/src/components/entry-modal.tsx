@@ -2,21 +2,32 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, BookOpen, Save, Loader2, Tag, Hash, Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { SmartVerseInput } from "./smart-verse-input";
 
 interface EntryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialVerse?: string;
 }
 
-export function EntryModal({ isOpen, onClose }: EntryModalProps) {
+export function EntryModal({ isOpen, onClose, initialVerse }: EntryModalProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   
   // Verse State
-  const [verseInput, setVerseInput] = useState("");
+  const [verseInput, setVerseInput] = useState(initialVerse || "");
+
+  useEffect(() => {
+    if (isOpen && initialVerse) {
+        setVerseInput(initialVerse);
+    } else if (!isOpen) {
+        // Reset when closed? Or keep it? 
+        // existing handleSubmit resets it. 
+        // Let's rely on parent to pass undefined if no initialVerse.
+    }
+  }, [isOpen, initialVerse]);
   
   // Collections State
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
