@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { POPULAR_VERSES } from "./popularVerses";
 
 const BIBLE_JSON_URL = "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/BSB.json";
 
@@ -52,27 +53,60 @@ export const fetchAndStoreDailyVerse = internalAction({
     }
 
     const bibleData = (await response.json()) as BibleData;
-    const books = Object.keys(bibleData);
+
+    let selectedVerse: { book: string; chapter: string; verse: string; text: string } | null = null;
+
+    // Try to find a popular verse
+    const shuffledPopular = [...POPULAR_VERSES].sort(() => 0.5 - Math.random());
+
+    for (const verseRef of shuffledPopular) {
+      const match = verseRef.match(/^(.*) (\d+):(\d+)$/);
+      if (match) {
+        const [, book, chapter, verse] = match;
+        if (
+          book &&
+          chapter &&
+          verse &&
+          bibleData[book]?.[chapter]?.[verse]
+        ) {
+          selectedVerse = {
+            book,
+            chapter,
+            verse,
+            text: bibleData[book]![chapter]![verse]!,
+          };
+          break;
+        }
+      }
+    }
+
+    // Fallback to random selection if no popular verse found
+    if (!selectedVerse) {
+      const books = Object.keys(bibleData);
+      const randomBook = books[Math.floor(Math.random() * books.length)]!;
+      const chapters = Object.keys(bibleData[randomBook]!);
+      const randomChapter = chapters[Math.floor(Math.random() * chapters.length)]!;
+      const verses = Object.keys(bibleData[randomBook]![randomChapter]!);
+      const randomVerseNum = verses[Math.floor(Math.random() * verses.length)]!;
+      
+      selectedVerse = {
+        book: randomBook,
+        chapter: randomChapter,
+        verse: randomVerseNum,
+        text: bibleData[randomBook]![randomChapter]![randomVerseNum]!,
+      };
+    }
     
-    // Simple random selection
-    const randomBook = books[Math.floor(Math.random() * books.length)]!;
-    const chapters = Object.keys(bibleData[randomBook]!);
-    const randomChapter = chapters[Math.floor(Math.random() * chapters.length)]!;
-    const verses = Object.keys(bibleData[randomBook]![randomChapter]!);
-    const randomVerseNum = verses[Math.floor(Math.random() * verses.length)]!;
-    
-    const verseText = bibleData[randomBook]![randomChapter]![randomVerseNum];
-    const reference = `${randomBook} ${randomChapter}:${randomVerseNum}`;
-    
+    const reference = `${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`;
     const today = new Date().toISOString().split("T")[0]!;
 
     await ctx.runMutation(internal.dailyBread.saveDailyVerse, {
       date: today,
-      verseText: verseText!,
+      verseText: selectedVerse.text,
       reference,
-      book: randomBook,
-      chapter: parseInt(randomChapter),
-      verse: parseInt(randomVerseNum),
+      book: selectedVerse.book,
+      chapter: parseInt(selectedVerse.chapter),
+      verse: parseInt(selectedVerse.verse),
     });
   },
 });

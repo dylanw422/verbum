@@ -15,6 +15,7 @@ import type * as dailyBread from "../dailyBread.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as journalEntries from "../journalEntries.js";
+import type * as popularVerses from "../popularVerses.js";
 import type * as privateData from "../privateData.js";
 import type * as userStats from "../userStats.js";
 
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   healthCheck: typeof healthCheck;
   http: typeof http;
   journalEntries: typeof journalEntries;
+  popularVerses: typeof popularVerses;
   privateData: typeof privateData;
   userStats: typeof userStats;
 }>;
