@@ -22,7 +22,7 @@ export function JournalHeader() {
     { label: "Journal", href: "/journal" },
     { label: "Entries", href: "/entries" },
     { label: "Archive", href: "/" },
-  ];
+  ] as const;
 
   return (
     <header className="border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-50">
