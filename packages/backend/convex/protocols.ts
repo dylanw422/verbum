@@ -308,3 +308,18 @@ export const updateProtocol = mutation({
     });
   },
 });
+
+export const deactivateProtocol = mutation({
+  args: { userProtocolId: v.id("userProtocols") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    const userProto = await ctx.db.get(args.userProtocolId);
+    if (!userProto || userProto.userId !== user._id) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.userProtocolId, {
+      status: "inactive",
+    });
+  },
+});

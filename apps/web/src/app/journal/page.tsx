@@ -117,14 +117,16 @@ export default function JournalPage() {
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "Seeker";
 
-  // Calculate top protocol
-  const topProtocol = activeProtocols && activeProtocols.length > 0 
+  // Calculate sorted protocols
+  const sortedProtocols = activeProtocols 
     ? [...activeProtocols].sort((a: any, b: any) => {
         const progressA = (a.completedSteps.length / a.totalSteps);
         const progressB = (b.completedSteps.length / b.totalSteps);
         return progressB - progressA;
-      })[0]
-    : null;
+      })
+    : [];
+
+  const topProtocol = sortedProtocols.length > 0 ? sortedProtocols[0] : null;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -325,7 +327,7 @@ export default function JournalPage() {
                     </button>
                   </div>
                 ) : (
-                  activeProtocols.map((proto: any) => {
+                  sortedProtocols.map((proto: any) => {
                     const progress = Math.round((proto.completedSteps.length / proto.totalSteps) * 100);
                     const remaining = proto.totalSteps - proto.completedSteps.length;
                     
