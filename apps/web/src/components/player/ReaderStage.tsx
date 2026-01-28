@@ -89,7 +89,7 @@ export function ReaderStage({
                   <div
                     key={vNum}
                     ref={isCurrentVerse ? activeVerseRef : null}
-                    className={`mb-6 text-lg md:text-xl font-serif leading-relaxed transition-colors duration-500 ${
+                    className={`mb-6 text-lg md:text-xl font-serif leading-relaxed ${
                       isCurrentVerse ? "text-zinc-100" : "text-zinc-500"
                     }`}
                   >
