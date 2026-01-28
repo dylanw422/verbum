@@ -56,4 +56,8 @@ export default defineSchema({
   })
     .index("by_userId_status", ["userId", "status"])
     .index("by_userId_protocolId", ["userId", "protocolId"]),
+
+  admins: defineTable({
+    email: v.string(),
+  }).index("by_email", ["email"]),
 });

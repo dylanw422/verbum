@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Plus, Shield } from "lucide-react";
+import { X, BookOpen, Plus, Shield, Settings } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { toast } from "sonner";
 
@@ -19,6 +19,7 @@ interface ProtocolLibraryModalProps {
 
 export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalProps) {
   const protocols = useQuery("protocols:listSystemProtocols" as any) || [];
+  const isAdmin = useQuery("auth:isAdmin" as any);
   const subscribe = useMutation("protocols:subscribeToProtocol" as any);
 
   const handleSubscribe = async (protocolId: string) => {
@@ -66,12 +67,23 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
                   Initiate a structured reading plan to guide your study. Select a protocol to load it into your dashboard.
                 </p>
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    onClick={() => toast("Admin Create Protocol - Coming Soon")}
+                    className="p-2 text-zinc-500 hover:text-emerald-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50"
+                    title="Create Protocol (Admin)"
+                  >
+                    <Settings className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* List */}

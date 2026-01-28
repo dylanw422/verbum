@@ -49,3 +49,22 @@ export async function getUserId(ctx: GenericCtx<DataModel>) {
   const user = await authComponent.safeGetAuthUser(ctx);
   return user?.id;
 }
+
+export async function getIsAdmin(ctx: GenericCtx<DataModel>) {
+  const user = await authComponent.safeGetAuthUser(ctx);
+  if (!user || !user.email) return false;
+  
+  const admin = await ctx.db
+    .query("admins")
+    .withIndex("by_email", (q) => q.eq("email", user.email))
+    .first();
+    
+  return !!admin;
+}
+
+export const isAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    return await getIsAdmin(ctx);
+  },
+});
