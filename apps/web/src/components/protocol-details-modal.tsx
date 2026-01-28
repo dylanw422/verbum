@@ -36,6 +36,7 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
   const router = useRouter();
   const [optimisticOverrides, setOptimisticOverrides] = useState<Record<number, boolean>>({});
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
   
   const liveProtocol = useQuery("protocols:getUserProtocol" as any, 
     initialProtocol ? { userProtocolId: initialProtocol._id } : "skip"
@@ -85,12 +86,17 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
   };
 
   const handleDeactivate = async () => {
+    setIsDeactivating(true);
     try {
       await deactivate({ userProtocolId: protocol._id });
       toast.success("Protocol deactivated");
-      onClose();
+      setShowDeactivateConfirm(false); // Close confirm modal first
+      onClose(); // Then close details modal
     } catch (err) {
       toast.error("Failed to deactivate");
+      // Keep confirm modal open on error so user can retry or cancel
+    } finally {
+      setIsDeactivating(false);
     }
   };
 
@@ -107,9 +113,10 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
         onClose={() => setShowDeactivateConfirm(false)}
         onConfirm={handleDeactivate}
         title="Deactivate Protocol"
-        message="Are you sure you want to stop this protocol? Your progress will be lost and it will be removed from your active dashboard."
+        message="Are you sure you want to stop this protocol? Your progress will be saved but it will be removed from your active dashboard."
         confirmLabel="Deactivate"
         isDestructive
+        isLoading={isDeactivating}
       />
       
       <AnimatePresence>

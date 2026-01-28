@@ -11,6 +11,7 @@ interface ConfirmationModalProps {
   message: string;
   confirmLabel?: string;
   isDestructive?: boolean;
+  isLoading?: boolean;
 }
 
 export function ConfirmationModal({
@@ -21,6 +22,7 @@ export function ConfirmationModal({
   message,
   confirmLabel = "Confirm",
   isDestructive = false,
+  isLoading = false,
 }: ConfirmationModalProps) {
   return (
     <AnimatePresence>
@@ -38,7 +40,11 @@ export function ConfirmationModal({
                 <AlertTriangle className={`w-4 h-4 ${isDestructive ? "text-rose-500" : "text-yellow-500"}`} />
                 {title}
               </h2>
-              <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              <button 
+                onClick={onClose} 
+                disabled={isLoading}
+                className="text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -54,22 +60,32 @@ export function ConfirmationModal({
             <div className="p-6 border-t border-zinc-800 bg-zinc-900/50 flex justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors"
+                disabled={isLoading}
+                className="px-4 py-2 rounded text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={() => {
                   onConfirm();
-                  onClose();
                 }}
-                className={`px-6 py-2 rounded text-xs font-mono uppercase tracking-widest text-white transition-all shadow-lg ${
+                disabled={isLoading}
+                className={`px-6 py-2 rounded text-xs font-mono uppercase tracking-widest text-white transition-all shadow-lg relative ${
                   isDestructive
                     ? "bg-rose-500 hover:bg-rose-600 shadow-rose-900/20"
                     : "bg-zinc-100 text-zinc-900 hover:bg-white"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {confirmLabel}
+                <div className="grid place-items-center">
+                  <span className={isLoading ? "invisible" : "visible"}>
+                    {confirmLabel}
+                  </span>
+                  {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
               </button>
             </div>
           </motion.div>
