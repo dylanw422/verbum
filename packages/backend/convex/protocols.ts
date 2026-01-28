@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getUserId } from "./auth";
+import { getUserId, getIsAdmin } from "./auth";
 
 // --- Seed Data (Temporary/Init) ---
 const SEED_PROTOCOLS = [
@@ -232,4 +232,45 @@ export const checkAndMarkProgress = mutation({
       }
     }
   }
+});
+
+export const createProtocol = mutation({
+  args: {
+    title: v.string(),
+    description: v.string(),
+    steps: v.array(v.object({ book: v.string(), chapter: v.number() })),
+    isPublic: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const isAdmin = await getIsAdmin(ctx);
+    if (!isAdmin) throw new Error("Unauthorized");
+
+    await ctx.db.insert("protocols", {
+      title: args.title,
+      description: args.description,
+      steps: args.steps,
+      isPublic: args.isPublic,
+    });
+  },
+});
+
+export const updateProtocol = mutation({
+  args: {
+    id: v.id("protocols"),
+    title: v.string(),
+    description: v.string(),
+    steps: v.array(v.object({ book: v.string(), chapter: v.number() })),
+    isPublic: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const isAdmin = await getIsAdmin(ctx);
+    if (!isAdmin) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      description: args.description,
+      steps: args.steps,
+      isPublic: args.isPublic,
+    });
+  },
 });
