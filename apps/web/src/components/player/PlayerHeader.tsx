@@ -1,5 +1,6 @@
 import { BookOpen, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { ChapterSelector } from "./ChapterSelector";
 
@@ -39,17 +40,18 @@ export function PlayerHeader({
     }
     onToggleChapters();
   };
+  const router = useRouter();
 
   return (
     <div className="absolute top-0 left-0 right-0 z-40 flex flex-col items-center p-6 md:p-8 pointer-events-none">
       <div className="w-full max-w-5xl flex justify-between items-start pointer-events-auto">
         <div className="flex items-start gap-4 md:gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
-          <Link
-            href="/"
+          <button
+            onClick={() => router.back()}
             className="mt-1 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-rose-500 hover:bg-zinc-800 transition-all duration-300 group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          </Link>
+          </button>
 
           <div className="flex flex-col gap-1">
             <h1 className="text-[10px] font-bold tracking-[0.25em] text-zinc-600 uppercase flex items-center gap-2">
