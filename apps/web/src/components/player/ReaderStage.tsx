@@ -52,7 +52,7 @@ export function ReaderStage({
   // Auto-scroll effect when entering Reading Mode
   useEffect(() => {
     if (readingMode && activeVerseRef.current) {
-      activeVerseRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      activeVerseRef.current.scrollIntoView({ behavior: "auto", block: "center" });
     }
   }, [readingMode]);
 
