@@ -158,7 +158,7 @@ export function ReaderStage({
                     <span className="text-zinc-600 font-mono text-sm tracking-widest uppercase">
                       End of Chapter
                     </span>
-                    <button onClick={onRestart} className="text-xs text-rose-500 hover:underline">
+                    <button onClick={onRestart} className="text-xs text-rose-500 hover:underline hover:cursor-pointer">
                       Restart
                     </button>
                   </motion.div>

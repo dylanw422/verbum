@@ -163,7 +163,7 @@ export default function RSVPLanding() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => router.push("/")}
-          className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors mb-16 uppercase tracking-widest group"
+          className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-rose-500 transition-colors mb-16 uppercase tracking-widest group hover:cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Return to Archive
@@ -391,7 +391,7 @@ export default function RSVPLanding() {
 
           <button
             onClick={() => router.push("/")}
-            className="group relative px-8 py-4 bg-zinc-100 text-zinc-950 font-bold tracking-wide uppercase text-sm rounded-sm hover:bg-rose-500 hover:text-white transition-all duration-300"
+            className="group relative px-8 py-4 bg-zinc-100 text-zinc-950 font-bold tracking-wide uppercase text-sm rounded-sm hover:bg-rose-500 hover:text-white transition-all duration-300 hover:cursor-pointer"
           >
             <span className="relative z-10 flex items-center gap-2">
               Select Volume <MousePointer2 className="w-4 h-4" />

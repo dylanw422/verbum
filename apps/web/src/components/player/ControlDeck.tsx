@@ -29,7 +29,7 @@ export function ControlDeck({
         <div className="flex items-center bg-zinc-900 rounded-full p-1 border border-zinc-800">
           <button
             onClick={() => onAdjustSpeed(-50)}
-            className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all hover:cursor-pointer"
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -46,7 +46,7 @@ export function ControlDeck({
           </div>
           <button
             onClick={() => onAdjustSpeed(50)}
-            className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all hover:cursor-pointer"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -57,7 +57,7 @@ export function ControlDeck({
         {/* Play/Pause Button */}
         <button
           onClick={onTogglePlay}
-          className={`flex items-center justify-center w-16 h-16 md:w-14 md:h-14 rounded-full transition-all duration-300 shadow-lg ${
+          className={`flex items-center justify-center w-16 h-16 md:w-14 md:h-14 rounded-full transition-all duration-300 shadow-lg hover:cursor-pointer ${
             playing
               ? "bg-zinc-100 text-zinc-950 hover:bg-zinc-200 scale-100"
               : "bg-rose-600 text-white hover:bg-rose-500 hover:scale-105 shadow-rose-900/20"
@@ -75,7 +75,7 @@ export function ControlDeck({
         {/* Reading Mode Toggle */}
         <button
           onClick={onToggleReadingMode}
-          className={`w-12 h-12 flex items-center justify-center rounded-full transition-all active:scale-95 border ${
+          className={`w-12 h-12 flex items-center justify-center rounded-full transition-all active:scale-95 border hover:cursor-pointer ${
             readingMode
               ? "bg-zinc-800 text-rose-500 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]"
               : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 border-transparent"

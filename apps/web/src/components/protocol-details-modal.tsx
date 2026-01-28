@@ -140,13 +140,12 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
                     <h2 className="text-2xl font-bold text-zinc-100">{protocol.protocolTitle}</h2>
                     <p className="text-sm text-zinc-400 mt-1">{protocol.protocolDescription}</p>
                   </div>
-                  <button
-                    onClick={onClose}
-                    className="p-2 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-full transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
+                                  <button
+                                    onClick={onClose}
+                                    className="p-2 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-full transition-colors hover:cursor-pointer"
+                                  >
+                                    <X className="w-5 h-5" />
+                                  </button>                </div>
 
                 {/* Progress Bar */}
                 <div className="flex items-center gap-4">
@@ -178,13 +177,12 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <button
-                          onClick={() => handleToggle(index, isCompleted)}
-                          className={`transition-colors ${
-                            isCompleted ? "text-rose-500" : "text-zinc-700 hover:text-zinc-500"
-                          }`}
-                        >
-                          {isCompleted ? (
+                                              <button
+                                                onClick={() => handleToggle(index, isCompleted)}
+                                                className={`transition-colors hover:cursor-pointer ${
+                                                  isCompleted ? "text-rose-500" : "text-zinc-700 hover:text-zinc-500"
+                                                }`}
+                                              >                          {isCompleted ? (
                             <CheckCircle className="w-5 h-5" />
                           ) : (
                             <Circle className="w-5 h-5" />
@@ -200,15 +198,14 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
                       </div>
 
                       {!isCompleted && (
-                        <button
-                          onClick={() => handleRead(step.book, step.chapter)}
-                          className={`text-xs uppercase tracking-widest font-bold flex items-center gap-1 transition-colors ${
-                            isNext
-                              ? "text-rose-500 hover:text-rose-400"
-                              : "text-zinc-600 hover:text-zinc-400"
-                          }`}
-                        >
-                          Read <ArrowRight className="w-3 h-3" />
+                                              <button
+                                                onClick={() => handleRead(step.book, step.chapter)}
+                                                className={`text-xs uppercase tracking-widest font-bold flex items-center gap-1 transition-colors hover:cursor-pointer ${
+                                                  isNext
+                                                    ? "text-rose-500 hover:text-rose-400"
+                                                    : "text-zinc-600 hover:text-zinc-400"
+                                                }`}
+                                              >                          Read <ArrowRight className="w-3 h-3" />
                         </button>
                       )}
                     </div>
@@ -220,7 +217,7 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtoco
               <div className="p-4 border-t border-zinc-800 bg-zinc-900/50 flex justify-end">
                 <button
                   onClick={() => setShowDeactivateConfirm(true)}
-                  className="text-xs text-red-500 hover:text-red-400 font-mono uppercase tracking-widest transition-colors"
+                  className="text-xs text-red-500 hover:text-red-400 font-mono uppercase tracking-widest transition-colors hover:cursor-pointer"
                 >
                   Deactivate Protocol
                 </button>

@@ -58,7 +58,7 @@ export function JournalHeader() {
             {isAdmin && (
               <button
                 onClick={() => setIsAddAdminOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-zinc-400 border border-zinc-800 rounded hover:text-rose-500 hover:border-rose-500/50 bg-zinc-900/50 transition-colors uppercase tracking-wider"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-zinc-400 border border-zinc-800 rounded hover:text-rose-500 hover:border-rose-500/50 bg-zinc-900/50 transition-colors uppercase tracking-wider hover:cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 Add Admin

@@ -79,7 +79,7 @@ function SortableStep({ step, onRemove }: { step: Step; onRemove: (id: string) =
       </div>
       <button
         onClick={() => onRemove(step.id)}
-        className="text-zinc-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+        className="text-zinc-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 hover:cursor-pointer"
       >
         <Trash2 className="w-4 h-4" />
       </button>
@@ -209,14 +209,14 @@ export function ProtocolEditorModal({ isOpen, onClose, existingProtocol }: Proto
                 <button
                   onClick={handleSave}
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 hover:cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   {isSubmitting ? "Saving..." : "Save Protocol"}
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full hover:bg-zinc-900"
+                  className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full hover:bg-zinc-900 hover:cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -262,7 +262,7 @@ export function ProtocolEditorModal({ isOpen, onClose, existingProtocol }: Proto
                           <button
                             onClick={() => setExpandedBook(isExpanded ? null : book.name)}
                             className={cn(
-                              "w-full flex items-center justify-between p-3 text-sm font-medium transition-colors hover:bg-zinc-900",
+                              "w-full flex items-center justify-between p-3 text-sm font-medium transition-colors hover:bg-zinc-900 hover:cursor-pointer",
                               isExpanded ? "text-rose-500 bg-zinc-900" : "text-zinc-400"
                             )}
                           >
@@ -277,7 +277,7 @@ export function ProtocolEditorModal({ isOpen, onClose, existingProtocol }: Proto
                                       // Add all chapters
                                       for(let i=1; i<=book.chapters; i++) addStep(book.name, i);
                                   }}
-                                  className="col-span-full mb-2 text-xs text-center py-1.5 border border-dashed border-zinc-800 rounded hover:border-rose-500/30 hover:text-rose-500 text-zinc-600 transition-colors"
+                                  className="col-span-full mb-2 text-xs text-center py-1.5 border border-dashed border-zinc-800 rounded hover:border-rose-500/30 hover:text-rose-500 text-zinc-600 transition-colors hover:cursor-pointer"
                                >
                                   + Add All {book.chapters} Chapters
                                </button>
@@ -285,7 +285,7 @@ export function ProtocolEditorModal({ isOpen, onClose, existingProtocol }: Proto
                                 <button
                                   key={chapter}
                                   onClick={() => addStep(book.name, chapter)}
-                                  className="aspect-square flex items-center justify-center text-xs font-mono rounded border border-zinc-800 bg-zinc-900 hover:border-rose-500 hover:text-rose-500 text-zinc-400 transition-all active:scale-95"
+                                  className="aspect-square flex items-center justify-center text-xs font-mono rounded border border-zinc-800 bg-zinc-900 hover:border-rose-500 hover:text-rose-500 text-zinc-400 transition-all active:scale-95 hover:cursor-pointer"
                                 >
                                   {chapter}
                                 </button>
@@ -308,7 +308,7 @@ export function ProtocolEditorModal({ isOpen, onClose, existingProtocol }: Proto
                   {steps.length > 0 && (
                       <button 
                           onClick={() => setSteps([])}
-                          className="text-xs text-rose-500 hover:text-rose-400"
+                          className="text-xs text-rose-500 hover:text-rose-400 hover:cursor-pointer"
                       >
                           Clear All
                       </button>

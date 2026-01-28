@@ -96,7 +96,7 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
                   {isAdmin && (
                     <button
                       onClick={handleCreate}
-                      className="p-2 text-zinc-500 hover:text-emerald-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50"
+                      className="p-2 text-zinc-500 hover:text-emerald-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer"
                       title="Create Protocol (Admin)"
                     >
                       <Settings className="w-5 h-5" />
@@ -104,7 +104,7 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
                   )}
                   <button
                     onClick={onClose}
-                    className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50"
+                    className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -142,7 +142,7 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
                                           e.stopPropagation();
                                           handleEdit(protocol);
                                       }}
-                                      className="p-1.5 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors"
+                                      className="p-1.5 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors hover:cursor-pointer"
                                   >
                                       <Edit2 className="w-3.5 h-3.5" />
                                   </button>
@@ -158,7 +158,7 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
 
                           <button
                             onClick={() => handleSubscribe(protocol._id)}
-                            className="w-full py-3 border border-dashed border-zinc-700 rounded-lg flex items-center justify-center gap-2 text-zinc-400 font-mono text-xs uppercase tracking-widest hover:text-rose-500 hover:border-rose-500/50 hover:bg-rose-500/5 transition-all"
+                            className="w-full py-3 border border-dashed border-zinc-700 rounded-lg flex items-center justify-center gap-2 text-zinc-400 font-mono text-xs uppercase tracking-widest hover:text-rose-500 hover:border-rose-500/50 hover:bg-rose-500/5 transition-all hover:cursor-pointer"
                           >
                             <Plus className="w-4 h-4" />
                             Initiate

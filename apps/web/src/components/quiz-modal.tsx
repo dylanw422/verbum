@@ -89,7 +89,7 @@ export function QuizModal({
       >
         <button
           onClick={resetQuiz}
-          className="absolute top-6 right-6 text-zinc-500 hover:text-zinc-300 transition-colors z-10"
+          className="absolute top-6 right-6 text-zinc-500 hover:text-zinc-300 transition-colors z-10 hover:cursor-pointer"
           aria-label="Close quiz"
         >
           <X className="w-4 h-4" />
@@ -152,7 +152,7 @@ export function QuizModal({
                       <button
                         key={idx}
                         onClick={() => handleAnswerSelect(option)}
-                        className={`w-full p-4 text-left rounded-md transition-all border text-zinc-300
+                        className={`w-full p-4 text-left rounded-md transition-all border text-zinc-300 hover:cursor-pointer
                           ${
                             isSelected
                               ? "bg-rose-500/20 border-rose-500 text-rose-100"

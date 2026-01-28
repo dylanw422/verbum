@@ -90,7 +90,7 @@ const PlanItem = ({ title, progress, daysLeft, onClick }: { title: string; progr
       <div className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter">
         {daysLeft} chapters left
       </div>
-      <button className="text-[10px] font-mono text-rose-500 uppercase tracking-widest border border-rose-500/20 px-2 py-1 rounded bg-rose-500/5 hover:bg-rose-500/20 transition-all">
+      <button className="text-[10px] font-mono text-rose-500 uppercase tracking-widest border border-rose-500/20 px-2 py-1 rounded bg-rose-500/5 hover:bg-rose-500/20 transition-all hover:cursor-pointer">
         Continue
       </button>
     </div>
@@ -293,7 +293,7 @@ export default function JournalPage() {
                     { name: "Hebrew/Greek", icon: LayoutDashboard },
                     { name: "Maps", icon: Shield },
                   ].map((tool, i) => (
-                    <button key={i} className="flex flex-col items-center justify-center gap-2 p-4 bg-zinc-950/50 border border-zinc-800 rounded-lg hover:border-rose-500/30 transition-all group aspect-square">
+                    <button key={i} className="flex flex-col items-center justify-center gap-2 p-4 bg-zinc-950/50 border border-zinc-800 rounded-lg hover:border-rose-500/30 transition-all group aspect-square hover:cursor-pointer">
                       <tool.icon className="w-5 h-5 text-zinc-600 group-hover:text-rose-500" />
                       <span className="text-[10px] font-mono uppercase tracking-tighter text-zinc-500 group-hover:text-zinc-300">{tool.name}</span>
                     </button>
@@ -321,7 +321,7 @@ export default function JournalPage() {
                     <p className="text-sm">No active protocols.</p>
                     <button 
                       onClick={() => setIsLibraryOpen(true)}
-                      className="mt-2 text-xs text-rose-500 hover:underline"
+                      className="mt-2 text-xs text-rose-500 hover:underline hover:cursor-pointer"
                     >
                       Start one now
                     </button>
@@ -369,7 +369,7 @@ export default function JournalPage() {
                   </div>
                 ))}
                 <div className="mt-auto pt-4">
-                    <button className="w-full py-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest hover:text-rose-500 transition-colors">
+                    <button className="w-full py-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest hover:text-rose-500 transition-colors hover:cursor-pointer">
                     View Repository
                     </button>
                 </div>

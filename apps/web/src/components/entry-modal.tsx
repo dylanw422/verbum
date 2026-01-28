@@ -118,7 +118,7 @@ export function EntryModal({ isOpen, onClose, initialVerse }: EntryModalProps) {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-zinc-800 bg-zinc-900/50">
               <h2 className="text-lg font-mono tracking-[0.2em] text-zinc-100 uppercase">New Entry</h2>
-              <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors hover:cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -163,7 +163,7 @@ export function EntryModal({ isOpen, onClose, initialVerse }: EntryModalProps) {
                                 key={col._id}
                                 type="button"
                                 onClick={() => toggleCollection(col._id)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1 ${
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1 hover:cursor-pointer ${
                                     selectedCollections.includes(col._id)
                                     ? "bg-rose-500/20 border-rose-500/50 text-rose-300"
                                     : "bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500"
@@ -191,13 +191,13 @@ export function EntryModal({ isOpen, onClose, initialVerse }: EntryModalProps) {
                                         }
                                     }}
                                 />
-                                <button type="button" onClick={handleCreateCollection} className="text-rose-500 hover:text-rose-400"><Plus className="w-4 h-4" /></button>
+                                <button type="button" onClick={handleCreateCollection} className="text-rose-500 hover:text-rose-400 hover:cursor-pointer"><Plus className="w-4 h-4" /></button>
                             </div>
                         ) : (
                             <button
                                 type="button"
                                 onClick={() => setShowCollectionInput(true)}
-                                className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors flex items-center gap-1"
+                                className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors flex items-center gap-1 hover:cursor-pointer"
                             >
                                 <Plus className="w-3 h-3" /> New
                             </button>
@@ -225,7 +225,7 @@ export function EntryModal({ isOpen, onClose, initialVerse }: EntryModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 rounded text-xs font-mono uppercase tracking-widest text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                className="px-6 py-2 rounded text-xs font-mono uppercase tracking-widest text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors hover:cursor-pointer"
               >
                 Cancel
               </button>
@@ -233,7 +233,7 @@ export function EntryModal({ isOpen, onClose, initialVerse }: EntryModalProps) {
                 type="submit"
                 form="entry-form"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2 bg-rose-500 text-white rounded text-xs font-mono uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-2 bg-rose-500 text-white rounded text-xs font-mono uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
               >
                 {isSubmitting ? (
                     <>

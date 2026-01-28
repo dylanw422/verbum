@@ -80,7 +80,7 @@ export function MeditationModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-50 p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800"
+            className="absolute top-6 right-6 z-50 p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 hover:cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -171,14 +171,14 @@ export function MeditationModal({
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full justify-center">
                   <button
                     onClick={onJournal}
-                    className="px-8 py-3 bg-rose-600 text-white font-mono text-xs uppercase tracking-widest rounded hover:bg-rose-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20"
+                    className="px-8 py-3 bg-rose-600 text-white font-mono text-xs uppercase tracking-widest rounded hover:bg-rose-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20 hover:cursor-pointer"
                   >
                     <PenTool className="w-4 h-4" />
                     Journal Reflection
                   </button>
                   <button
                     onClick={onClose}
-                    className="px-8 py-3 bg-transparent border border-zinc-800 text-zinc-400 font-mono text-xs uppercase tracking-widest rounded hover:text-zinc-200 hover:border-zinc-700 transition-all"
+                    className="px-8 py-3 bg-transparent border border-zinc-800 text-zinc-400 font-mono text-xs uppercase tracking-widest rounded hover:text-zinc-200 hover:border-zinc-700 transition-all hover:cursor-pointer"
                   >
                     Return to Dashboard
                   </button>

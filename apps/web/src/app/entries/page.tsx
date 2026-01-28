@@ -81,7 +81,7 @@ const EntryCard = ({ entry, collectionsMap, library, onDelete }: { entry: any, c
               e.stopPropagation();
               onDelete(entry._id);
           }}
-          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-zinc-800 rounded-md text-zinc-500 hover:text-red-400 z-10"
+          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-zinc-800 rounded-md text-zinc-500 hover:text-red-400 z-10 hover:cursor-pointer"
           title="Delete Entry"
       >
           <Trash2 className="w-4 h-4" />
@@ -216,7 +216,7 @@ export default function EntriesPage() {
           
           <button 
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-rose-600 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:shadow-[0_0_30px_rgba(244,63,94,0.5)] self-start md:self-auto"
+            className="flex items-center gap-2 px-6 py-3 bg-rose-500 text-white font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-rose-600 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:shadow-[0_0_30px_rgba(244,63,94,0.5)] self-start md:self-auto hover:cursor-pointer"
           >
             <Plus className="w-4 h-4" /> New Entry
           </button>
@@ -226,7 +226,7 @@ export default function EntriesPage() {
         <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide items-center">
             <button
                 onClick={() => setSelectedCollection(null)}
-                className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors border ${
+                className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors border hover:cursor-pointer ${
                     selectedCollection === null
                     ? "bg-zinc-100 text-zinc-900 border-zinc-100"
                     : "bg-zinc-900/50 text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
@@ -242,7 +242,7 @@ export default function EntriesPage() {
                 }`}>
                     <button
                         onClick={() => setSelectedCollection(col._id)}
-                        className={`px-3 py-1.5 text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-2 ${
+                        className={`px-3 py-1.5 text-xs font-mono tracking-wider whitespace-nowrap flex items-center gap-2 hover:cursor-pointer ${
                             selectedCollection === col._id ? "text-rose-300" : "text-zinc-500 hover:text-zinc-300"
                         }`}
                     >
@@ -251,7 +251,7 @@ export default function EntriesPage() {
                     {selectedCollection === col._id && (
                          <button
                             onClick={() => openDeleteCollection(col._id)}
-                            className="pr-2 pl-1 py-1.5 text-rose-400 hover:text-rose-200 transition-colors"
+                            className="pr-2 pl-1 py-1.5 text-rose-400 hover:text-rose-200 transition-colors hover:cursor-pointer"
                             title="Delete Collection"
                         >
                             <X className="w-3 h-3" />

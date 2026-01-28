@@ -27,7 +27,7 @@ export function ChapterSelector({
               <button
                 key={ch}
                 onClick={() => onSelectChapter(ch)}
-                className={`h-9 flex items-center justify-center rounded-md text-xs font-medium transition-all duration-200 ${
+                className={`h-9 flex items-center justify-center rounded-md text-xs font-medium transition-all duration-200 hover:cursor-pointer ${
                   ch === currentChapter
                     ? "bg-rose-500 text-white shadow-lg shadow-rose-900/20 font-bold"
                     : "text-zinc-400 bg-zinc-800/50 hover:bg-zinc-700 hover:text-zinc-100"

@@ -72,7 +72,7 @@ const AuthButton = () => {
   return (
     <Link
       href="/auth"
-      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-all duration-200 group/auth"
+      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-all duration-200 group/auth hover:cursor-pointer"
     >
       <User className="w-3.5 h-3.5 text-zinc-500 group-hover/auth:text-rose-500 transition-colors" />
       <span className="text-[10px] font-mono tracking-widest text-zinc-400 group-hover/auth:text-zinc-100 uppercase">

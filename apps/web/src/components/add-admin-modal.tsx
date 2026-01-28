@@ -63,7 +63,7 @@ export function AddAdminModal({ isOpen, onClose }: AddAdminModalProps) {
               </div>
               <button
                 onClick={onClose}
-                className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full hover:bg-zinc-900"
+                className="p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full hover:bg-zinc-900 hover:cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -94,14 +94,14 @@ export function AddAdminModal({ isOpen, onClose }: AddAdminModalProps) {
                  <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors hover:cursor-pointer"
                  >
                     Cancel
                  </button>
                  <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-2 hover:cursor-pointer"
                  >
                     {isSubmitting ? "Adding..." : "Add Admin"}
                  </button>

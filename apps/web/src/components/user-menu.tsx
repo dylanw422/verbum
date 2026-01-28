@@ -20,7 +20,7 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-all duration-200 group outline-none select-none">
+      <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-sm hover:border-rose-500/50 hover:bg-rose-500/10 transition-all duration-200 group outline-none select-none hover:cursor-pointer">
         <div className="w-5 h-5 bg-rose-500/20 rounded-sm flex items-center justify-center border border-rose-500/30">
           <User className="w-3 h-3 text-rose-500" />
         </div>
