@@ -97,6 +97,24 @@ const PlanItem = ({ title, progress, daysLeft, onClick }: { title: string; progr
   </div>
 );
 
+const PlanItemSkeleton = () => (
+  <div className="group border border-transparent p-4 rounded-lg opacity-0 pointer-events-none" aria-hidden="true">
+    <div className="flex justify-between text-sm mb-3">
+      <span className="font-bold">Placeholder</span>
+      <span className="font-mono text-xs">0%</span>
+    </div>
+    <div className="h-1.5 w-full rounded-full mb-3" />
+    <div className="flex justify-between items-center">
+      <div className="text-[10px] font-mono uppercase">
+        0 chapters left
+      </div>
+      <button className="text-[10px] font-mono uppercase px-2 py-1 rounded">
+        Continue
+      </button>
+    </div>
+  </div>
+);
+
 export default function JournalPage() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
@@ -127,6 +145,11 @@ export default function JournalPage() {
     : [];
 
   const topProtocol = sortedProtocols.length > 0 ? sortedProtocols[0] : null;
+
+  // Protocol Slot Logic
+  const MAX_SLOTS = 3;
+  const filledSlots = sortedProtocols.slice(0, MAX_SLOTS);
+  const emptySlotsCount = Math.max(0, MAX_SLOTS - filledSlots.length);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -311,36 +334,48 @@ export default function JournalPage() {
               action={{ label: "Browse", onClick: () => setIsLibraryOpen(true) }}
               className="h-full"
             >
-              <div className="space-y-6 flex flex-col h-full">
+              <div className="relative space-y-6 flex flex-col h-full">
                 {activeProtocols === undefined ? (
                   // Loading
-                  [1, 2].map(i => <div key={i} className="h-24 bg-zinc-900/50 rounded animate-pulse" />)
-                ) : activeProtocols.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-4 opacity-50">
-                    <Zap className="w-8 h-8 mb-2" />
-                    <p className="text-sm">No active protocols.</p>
-                    <button 
-                      onClick={() => setIsLibraryOpen(true)}
-                      className="mt-2 text-xs text-rose-500 hover:underline hover:cursor-pointer"
-                    >
-                      Start one now
-                    </button>
-                  </div>
+                  [1, 2, 3].map(i => <div key={i} className="h-24 bg-zinc-900/50 rounded animate-pulse" />)
                 ) : (
-                  sortedProtocols.map((proto: any) => {
-                    const progress = Math.round((proto.completedSteps.length / proto.totalSteps) * 100);
-                    const remaining = proto.totalSteps - proto.completedSteps.length;
-                    
-                    return (
-                      <PlanItem
-                        key={proto._id}
-                        title={proto.protocolTitle}
-                        progress={progress}
-                        daysLeft={remaining}
-                        onClick={() => setSelectedProtocol(proto)}
-                      />
-                    );
-                  })
+                  <>
+                    <div className="flex flex-col gap-6 w-full">
+                        {filledSlots.map((proto: any) => {
+                          const progress = Math.round((proto.completedSteps.length / proto.totalSteps) * 100);
+                          const remaining = proto.totalSteps - proto.completedSteps.length;
+                          
+                          return (
+                            <PlanItem
+                              key={proto._id}
+                              title={proto.protocolTitle}
+                              progress={progress}
+                              daysLeft={remaining}
+                              onClick={() => setSelectedProtocol(proto)}
+                            />
+                          );
+                        })}
+                        
+                        {/* Empty Slots */}
+                        {Array.from({ length: emptySlotsCount }).map((_, i) => (
+                           <PlanItemSkeleton key={`empty-${i}`} />
+                        ))}
+                    </div>
+
+                    {/* Zero State Overlay */}
+                    {filledSlots.length === 0 && (
+                      <div className="absolute inset-0 top-0 bottom-20 flex flex-col items-center justify-center text-center p-4 opacity-50 z-10 pointer-events-none">
+                        <Zap className="w-8 h-8 mb-2" />
+                        <p className="text-sm">No active protocols.</p>
+                        <button 
+                          onClick={() => setIsLibraryOpen(true)}
+                          className="mt-2 text-xs text-rose-500 hover:underline hover:cursor-pointer pointer-events-auto"
+                        >
+                          Start one now
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
                 
                 <div className="mt-auto pt-4 border-t border-zinc-900">
