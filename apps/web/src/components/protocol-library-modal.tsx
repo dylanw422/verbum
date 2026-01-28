@@ -2,10 +2,11 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, BookOpen, Plus, Shield, Settings, Edit2 } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ProtocolEditorModal } from "./protocol-editor-modal";
+import { authClient } from "@/lib/auth-client";
 
 interface Protocol {
   _id: string;
@@ -21,6 +22,7 @@ interface ProtocolLibraryModalProps {
 }
 
 export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalProps) {
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const protocols = useQuery("protocols:listSystemProtocols" as any) || [];
   const isAdmin = useQuery("auth:isAdmin" as any);
   const subscribe = useMutation("protocols:subscribeToProtocol" as any);
@@ -39,8 +41,15 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
   };
 
   const handleSubscribe = async (protocolId: string) => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      toast.error("Please sign in to initiate a protocol");
+      return;
+    }
+    
     try {
       const result = await subscribe({ protocolId });
+
       if (result.success) {
         toast.success("Protocol started!");
         onClose();

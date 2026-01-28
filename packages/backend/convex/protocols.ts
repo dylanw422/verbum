@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getUserId, getIsAdmin } from "./auth";
+import { getUserId, getIsAdmin, authComponent } from "./auth";
 
 // --- Seed Data (Temporary/Init) ---
 const SEED_PROTOCOLS = [
@@ -105,8 +105,13 @@ export const getProtocolDetails = query({
 export const subscribeToProtocol = mutation({
   args: { protocolId: v.id("protocols") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized: No active session found");
+    
+    const userId = user._id;
+    if (!userId) {
+        throw new Error(`User found but ID missing. Keys: ${Object.keys(user).join(", ")}`);
+    }
 
     // Check if already subscribed and active
     const existing = await ctx.db
