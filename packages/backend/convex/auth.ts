@@ -44,3 +44,8 @@ export const getCurrentUser = query({
     return await authComponent.safeGetAuthUser(ctx);
   },
 });
+
+export async function getUserId(ctx: GenericCtx<DataModel>) {
+  const user = await authComponent.safeGetAuthUser(ctx);
+  return user?.id;
+}

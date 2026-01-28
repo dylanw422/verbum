@@ -20,6 +20,8 @@ import { useQuery } from "convex/react";
 import { authClient } from "@/lib/auth-client";
 import { JournalHeader } from "@/components/journal-header";
 import { MeditationModal } from "@/components/meditation-modal";
+import { ProtocolLibraryModal } from "@/components/protocol-library-modal";
+import { ProtocolDetailsModal } from "@/components/protocol-details-modal";
 
 // --- Mock Components ---
 
@@ -69,8 +71,11 @@ const StatBadge = ({ label, value, icon: Icon }: { label: string; value: string;
   </div>
 );
 
-const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: number; daysLeft: number }) => (
-  <div className="group bg-zinc-950/30 border border-zinc-800/50 p-4 rounded-lg hover:border-rose-500/30 transition-all">
+const PlanItem = ({ title, progress, daysLeft, onClick }: { title: string; progress: number; daysLeft: number; onClick: () => void }) => (
+  <div 
+    onClick={onClick}
+    className="group bg-zinc-950/30 border border-zinc-800/50 p-4 rounded-lg hover:border-rose-500/30 transition-all cursor-pointer"
+  >
     <div className="flex justify-between text-sm mb-3">
       <span className="text-zinc-200 font-bold group-hover:text-rose-400 transition-colors uppercase tracking-tight">{title}</span>
       <span className="text-rose-500 font-mono text-xs">{progress}%</span>
@@ -83,10 +88,10 @@ const PlanItem = ({ title, progress, daysLeft }: { title: string; progress: numb
     </div>
     <div className="flex justify-between items-center">
       <div className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter">
-        {daysLeft} sessions left
+        {daysLeft} chapters left
       </div>
-      <button className="text-[10px] font-mono text-rose-500 uppercase tracking-widest border border-rose-500/20 px-2 py-1 rounded bg-rose-500/5 hover:bg-rose-500/20 transition-all hover:cursor-pointer">
-        Initiate
+      <button className="text-[10px] font-mono text-rose-500 uppercase tracking-widest border border-rose-500/20 px-2 py-1 rounded bg-rose-500/5 hover:bg-rose-500/20 transition-all">
+        Continue
       </button>
     </div>
   </div>
@@ -99,7 +104,11 @@ export default function JournalPage() {
   const recentEntries = useQuery("journalEntries:getEntries" as any);
   const entriesCount = useQuery("journalEntries:getEntriesCount" as any);
   const dailyVerse = useQuery("dailyBread:get" as any);
+  const activeProtocols = useQuery("protocols:getUserProtocols" as any, { status: "active" });
+
   const [isMeditating, setIsMeditating] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [selectedProtocol, setSelectedProtocol] = useState<any>(null);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
   const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
@@ -281,13 +290,40 @@ export default function JournalPage() {
             <DashboardCard 
               title="Active Protocols" 
               icon={Zap}
-              action={{ label: "Browse Plans", onClick: () => {} }}
+              action={{ label: "Browse", onClick: () => setIsLibraryOpen(true) }}
               className="h-full"
             >
               <div className="space-y-6 flex flex-col h-full">
-                <PlanItem title="Wisdom Literature" progress={65} daysLeft={14} />
-                <PlanItem title="The Gospels" progress={22} daysLeft={45} />
-                <PlanItem title="Pauline Epistles" progress={8} daysLeft={60} />
+                {activeProtocols === undefined ? (
+                  // Loading
+                  [1, 2].map(i => <div key={i} className="h-24 bg-zinc-900/50 rounded animate-pulse" />)
+                ) : activeProtocols.length === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-4 opacity-50">
+                    <Zap className="w-8 h-8 mb-2" />
+                    <p className="text-sm">No active protocols.</p>
+                    <button 
+                      onClick={() => setIsLibraryOpen(true)}
+                      className="mt-2 text-xs text-rose-500 hover:underline"
+                    >
+                      Start one now
+                    </button>
+                  </div>
+                ) : (
+                  activeProtocols.map((proto: any) => {
+                    const progress = Math.round((proto.completedSteps.length / proto.totalSteps) * 100);
+                    const remaining = proto.totalSteps - proto.completedSteps.length;
+                    
+                    return (
+                      <PlanItem
+                        key={proto._id}
+                        title={proto.protocolTitle}
+                        progress={progress}
+                        daysLeft={remaining}
+                        onClick={() => setSelectedProtocol(proto)}
+                      />
+                    );
+                  })
+                )}
                 
                 <div className="mt-auto pt-4 border-t border-zinc-900">
                   <button className="w-full py-4 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center gap-2 text-zinc-300 hover:bg-zinc-800 transition-all hover:cursor-pointer">
@@ -326,7 +362,7 @@ export default function JournalPage() {
         </div>
       </main>
 
-      {/* --- Meditation Modal --- */}
+      {/* --- Modals --- */}
       <MeditationModal
         isOpen={isMeditating}
         onClose={() => setIsMeditating(false)}
@@ -339,6 +375,17 @@ export default function JournalPage() {
              router.push("/entries?new=true");
           }
         }}
+      />
+
+      <ProtocolLibraryModal 
+        isOpen={isLibraryOpen}
+        onClose={() => setIsLibraryOpen(false)}
+      />
+
+      <ProtocolDetailsModal
+        isOpen={!!selectedProtocol}
+        onClose={() => setSelectedProtocol(null)}
+        protocol={selectedProtocol}
       />
     </div>
   );

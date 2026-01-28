@@ -34,4 +34,26 @@ export default defineSchema({
     chapter: v.number(),
     verse: v.number(),
   }).index("by_date", ["date"]),
+
+  protocols: defineTable({
+    title: v.string(),
+    description: v.string(),
+    steps: v.array(
+      v.object({
+        book: v.string(),
+        chapter: v.number(),
+      })
+    ),
+    isPublic: v.boolean(),
+  }),
+
+  userProtocols: defineTable({
+    userId: v.string(),
+    protocolId: v.id("protocols"),
+    startDate: v.string(), // ISO string
+    completedSteps: v.array(v.number()), // indices of completed steps
+    status: v.string(), // "active" | "completed"
+  })
+    .index("by_userId_status", ["userId", "status"])
+    .index("by_userId_protocolId", ["userId", "protocolId"]),
 });
