@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   BookOpen,
@@ -18,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { authClient } from "@/lib/auth-client";
 import { JournalHeader } from "@/components/journal-header";
+import { MeditationModal } from "@/components/meditation-modal";
 
 // --- Mock Components ---
 
@@ -97,6 +99,7 @@ export default function JournalPage() {
   const recentEntries = useQuery("journalEntries:getEntries" as any);
   const entriesCount = useQuery("journalEntries:getEntriesCount" as any);
   const dailyVerse = useQuery("dailyBread:get" as any);
+  const [isMeditating, setIsMeditating] = useState(false);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
   const versesDisplay = userStats?.versesEngaged ? userStats.versesEngaged.toLocaleString() : "0";
@@ -188,7 +191,10 @@ export default function JournalPage() {
                   )}
                 </blockquote>
                 <div className="mt-8 flex gap-4">
-                  <button className="px-6 py-2 bg-rose-500 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-rose-600 transition-colors hover:cursor-pointer">
+                  <button 
+                    onClick={() => setIsMeditating(true)}
+                    className="px-6 py-2 bg-rose-500 text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-rose-600 transition-colors hover:cursor-pointer"
+                  >
                     Meditate
                   </button>
                   <button 
@@ -319,6 +325,21 @@ export default function JournalPage() {
 
         </div>
       </main>
+
+      {/* --- Meditation Modal --- */}
+      <MeditationModal
+        isOpen={isMeditating}
+        onClose={() => setIsMeditating(false)}
+        dailyVerse={dailyVerse}
+        onJournal={() => {
+          setIsMeditating(false);
+          if (dailyVerse) {
+             router.push(`/entries?new=true&ref=${encodeURIComponent(dailyVerse.reference)}`);
+          } else {
+             router.push("/entries?new=true");
+          }
+        }}
+      />
     </div>
   );
 }
