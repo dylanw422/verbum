@@ -216,8 +216,9 @@ export const toggleStepCompletion = mutation({
 export const checkAndMarkProgress = mutation({
   args: { book: v.string(), chapter: v.number() },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return; // Silent fail if no user
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) return; // Silent fail if no user
+    const userId = user._id;
 
     // Get all active protocols for user
     const activeProtos = await ctx.db
@@ -232,40 +233,38 @@ export const checkAndMarkProgress = mutation({
       const protocol = await ctx.db.get(userProto.protocolId);
       if (!protocol) continue;
 
-      // Find steps matching the read chapter
-      // Note: A protocol might have the same chapter multiple times (rare but possible), usually just once.
-      // We mark matching steps as complete.
-      const matchingIndices = protocol.steps
-        .map((step, index) => (step.book === args.book && step.chapter === args.chapter ? index : -1))
-        .filter(index => index !== -1);
-      
-      if (matchingIndices.length > 0) {
-        let newCompleted = [...userProto.completedSteps];
-        let changed = false;
-
-        matchingIndices.forEach(idx => {
-          if (!newCompleted.includes(idx)) {
-            newCompleted.push(idx);
-            changed = true;
-          }
-        });
-
-        if (changed) {
-             newCompleted.sort((a, b) => a - b);
-             
-             let status = userProto.status;
-             if (newCompleted.length >= protocol.steps.length) {
-               status = "completed";
-             }
-
-             await ctx.db.patch(userProto._id, {
-               completedSteps: newCompleted,
-               status
-             });
+      // Sequential Constraint: Find the FIRST incomplete step
+      // We only want to auto-complete the *next* logical step in the plan.
+      let nextStepIndex = -1;
+      for (let i = 0; i < protocol.steps.length; i++) {
+        if (!userProto.completedSteps.includes(i)) {
+          nextStepIndex = i;
+          break;
         }
       }
+
+      // If all steps are complete or no next step found, skip
+      if (nextStepIndex === -1) continue;
+
+      const step = protocol.steps[nextStepIndex];
+
+      // Only mark if the read chapter matches THIS specific step
+      if (step.book === args.book && step.chapter === args.chapter) {
+        const newCompleted = [...userProto.completedSteps, nextStepIndex];
+        newCompleted.sort((a, b) => a - b);
+
+        let status = userProto.status;
+        if (newCompleted.length >= protocol.steps.length) {
+          status = "completed";
+        }
+
+        await ctx.db.patch(userProto._id, {
+          completedSteps: newCompleted,
+          status,
+        });
+      }
     }
-  }
+  },
 });
 
 export const createProtocol = mutation({

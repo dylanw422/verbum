@@ -11,6 +11,7 @@ import { useSwipe } from "@/hooks/use-swipe";
 import { useStudyTimer } from "@/hooks/use-study-timer";
 
 import { useMutation } from "convex/react";
+import { toast } from "sonner";
 import type { WordData, LibraryData } from "./player/types";
 
 import { ControlDeck } from "./player/ControlDeck";
@@ -33,6 +34,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
 
   // --- Convex Mutations ---
   const logSession = useMutation("userStats:logSession" as any);
+  const checkProgress = useMutation("protocols:checkAndMarkProgress" as any);
 
   // --- Chapter & Word State ---
   const [chapter, setChapter] = useState(initialChapter);
@@ -51,9 +53,16 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
     logSession({ clientDate, versesRead: uniqueVerses }).catch((err) => {
         console.error("Failed to log session:", err);
     });
+
+    // Check Protocols
+    checkProgress({ book, chapter }).then(() => {
+        // Silent success
+    }).catch((err) => {
+        console.error("Failed to update protocol progress:", err);
+    });
     
     setShowQuizModal(true);
-  }, [logSession, words]);
+  }, [logSession, checkProgress, words, book, chapter]);
 
   // --- Presence Logic ---
   useEffect(() => {
