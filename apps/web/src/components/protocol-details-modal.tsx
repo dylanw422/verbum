@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, BookOpen, CheckCircle, Circle, ArrowRight } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -28,23 +28,55 @@ interface ProtocolDetailsModalProps {
   protocol: UserProtocol | null;
 }
 
-export function ProtocolDetailsModal({ isOpen, onClose, protocol }: ProtocolDetailsModalProps) {
+export function ProtocolDetailsModal({ isOpen, onClose, protocol: initialProtocol }: ProtocolDetailsModalProps) {
   const toggleStep = useMutation("protocols:toggleStepCompletion" as any);
   const router = useRouter();
+  const [optimisticOverrides, setOptimisticOverrides] = useState<Record<number, boolean>>({});
+  
+  const liveProtocol = useQuery("protocols:getUserProtocol" as any, 
+    initialProtocol ? { userProtocolId: initialProtocol._id } : "skip"
+  );
+  
+  const protocol = (liveProtocol || initialProtocol) as UserProtocol | undefined | null;
 
   if (!isOpen || !protocol) return null;
 
-  const progress = Math.round((protocol.completedSteps.length / protocol.totalSteps) * 100);
+  // Calculate effective completed steps (server + optimistic overrides)
+  const effectiveCompletedSteps = protocol.steps.map((_, index) => {
+    if (optimisticOverrides[index] !== undefined) {
+      return optimisticOverrides[index] ? index : -1;
+    }
+    return protocol.completedSteps.includes(index) ? index : -1;
+  }).filter(i => i !== -1);
+
+  const progress = Math.round((effectiveCompletedSteps.length / protocol.totalSteps) * 100);
 
   const handleToggle = async (index: number, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    
+    // Optimistically update
+    setOptimisticOverrides(prev => ({ ...prev, [index]: newStatus }));
+
     try {
       await toggleStep({
         userProtocolId: protocol._id,
         stepIndex: index,
-        completed: !currentStatus,
+        completed: newStatus,
+      });
+      // Clear override on success, letting server state take over
+      setOptimisticOverrides(prev => {
+        const next = { ...prev };
+        delete next[index];
+        return next;
       });
     } catch (err) {
       toast.error("Failed to update progress");
+      // Revert override on error
+      setOptimisticOverrides(prev => {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
     }
   };
 
@@ -98,9 +130,9 @@ export function ProtocolDetailsModal({ isOpen, onClose, protocol }: ProtocolDeta
 
             {/* Steps List */}
             <div className="flex-1 overflow-y-auto p-6 space-y-2">
-              {protocol.steps.map((step, index) => {
-                const isCompleted = protocol.completedSteps.includes(index);
-                const isNext = !isCompleted && (index === 0 || protocol.completedSteps.includes(index - 1));
+              {protocol.steps.map((step: Step, index: number) => {
+                const isCompleted = effectiveCompletedSteps.includes(index);
+                const isNext = !isCompleted && (index === 0 || effectiveCompletedSteps.includes(index - 1));
 
                 return (
                   <div

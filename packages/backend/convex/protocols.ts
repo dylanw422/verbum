@@ -65,7 +65,10 @@ export const listSystemProtocols = query({
 export const getUserProtocols = query({
   args: { status: v.optional(v.string()) }, // "active" or "completed" or undefined for all
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) return [];
+    
+    const userId = user._id;
     if (!userId) return [];
 
     let q = ctx.db.query("userProtocols").withIndex("by_userId_status", (q) => q.eq("userId", userId));
@@ -89,6 +92,29 @@ export const getUserProtocols = query({
     }));
 
     return enriched;
+  },
+});
+
+export const getUserProtocol = query({
+  args: { userProtocolId: v.id("userProtocols") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) return null;
+    const userId = user._id;
+
+    const userProto = await ctx.db.get(args.userProtocolId);
+    if (!userProto || userProto.userId !== userId) return null;
+
+    const protocol = await ctx.db.get(userProto.protocolId);
+    if (!protocol) return null;
+
+    return {
+      ...userProto,
+      protocolTitle: protocol.title,
+      protocolDescription: protocol.description,
+      totalSteps: protocol.steps.length,
+      steps: protocol.steps,
+    };
   },
 });
 
@@ -143,8 +169,11 @@ export const toggleStepCompletion = mutation({
     completed: v.boolean(),
   },
   handler: async (ctx, args) => {
-     const userId = await getUserId(ctx);
-     if (!userId) throw new Error("Unauthorized");
+     const user = await authComponent.safeGetAuthUser(ctx);
+     if (!user) throw new Error("Unauthorized: No active session found");
+     
+     const userId = user._id;
+     if (!userId) throw new Error("User found but ID missing");
 
      const userProto = await ctx.db.get(args.userProtocolId);
      if (!userProto || userProto.userId !== userId) throw new Error("Not found or unauthorized");

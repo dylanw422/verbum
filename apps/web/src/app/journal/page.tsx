@@ -117,6 +117,15 @@ export default function JournalPage() {
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "Seeker";
 
+  // Calculate top protocol
+  const topProtocol = activeProtocols && activeProtocols.length > 0 
+    ? [...activeProtocols].sort((a: any, b: any) => {
+        const progressA = (a.completedSteps.length / a.totalSteps);
+        const progressB = (b.completedSteps.length / b.totalSteps);
+        return progressB - progressA;
+      })[0]
+    : null;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
       {/* --- Header --- */}
@@ -137,8 +146,15 @@ export default function JournalPage() {
               Peace be with you, <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-rose-200">{firstName}</span>
             </h1>
             <p className="text-zinc-400 max-w-2xl leading-relaxed">
-              Continue your journey through the sacred texts. Your current focus is on the 
-              <strong className="text-zinc-200"> Wisdom Literature</strong> protocol.
+              Continue your journey through the sacred texts. 
+              {topProtocol ? (
+                <>
+                  Your current focus is on {topProtocol.protocolTitle.toLowerCase().startsWith("the") ? "" : "the "} 
+                  <strong className="text-zinc-200">{topProtocol.protocolTitle}</strong> protocol.
+                </>
+              ) : (
+                " Explore the library to start a reading plan."
+              )}
             </p>
           </motion.div>
 
