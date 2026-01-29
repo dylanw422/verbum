@@ -308,6 +308,27 @@ export const updateProtocol = mutation({
   },
 });
 
+export const deleteProtocol = mutation({
+  args: { protocolId: v.id("protocols") },
+  handler: async (ctx, args) => {
+    const isAdmin = await getIsAdmin(ctx);
+    if (!isAdmin) throw new Error("Unauthorized");
+
+    // Delete all associated user protocols first
+    const userProtos = await ctx.db
+      .query("userProtocols")
+      .withIndex("by_protocolId", (q) => q.eq("protocolId", args.protocolId))
+      .collect();
+
+    for (const up of userProtos) {
+      await ctx.db.delete(up._id);
+    }
+
+    // Finally delete the protocol itself
+    await ctx.db.delete(args.protocolId);
+  },
+});
+
 export const deactivateProtocol = mutation({
   args: { userProtocolId: v.id("userProtocols") },
   handler: async (ctx, args) => {

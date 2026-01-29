@@ -1,11 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Plus, Shield, Settings, Edit2 } from "lucide-react";
+import { X, BookOpen, Plus, Shield, Settings, Edit2, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ProtocolEditorModal } from "./protocol-editor-modal";
+import { ConfirmationModal } from "./confirmation-modal";
 import { authClient } from "@/lib/auth-client";
 
 interface Protocol {
@@ -26,9 +27,12 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
   const protocols = useQuery("protocols:listSystemProtocols" as any) || [];
   const isAdmin = useQuery("auth:isAdmin" as any);
   const subscribe = useMutation("protocols:subscribeToProtocol" as any);
+  const deleteProtocol = useMutation("protocols:deleteProtocol" as any);
   
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingProtocol, setEditingProtocol] = useState<Protocol | null>(null);
+  const [protocolToDelete, setProtocolToDelete] = useState<Protocol | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreate = () => {
     setEditingProtocol(null);
@@ -38,6 +42,20 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
   const handleEdit = (protocol: Protocol) => {
     setEditingProtocol(protocol);
     setIsEditorOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!protocolToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteProtocol({ protocolId: protocolToDelete._id });
+      toast.success("Protocol deleted successfully");
+      setProtocolToDelete(null);
+    } catch (error) {
+      toast.error("Failed to delete protocol");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleSubscribe = async (protocolId: string) => {
@@ -137,15 +155,28 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
                                   </span>
                               </div>
                               {isAdmin && (
-                                  <button
-                                      onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleEdit(protocol);
-                                      }}
-                                      className="p-1.5 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors hover:cursor-pointer"
-                                  >
-                                      <Edit2 className="w-3.5 h-3.5" />
-                                  </button>
+                                  <div className="flex items-center gap-1">
+                                      <button
+                                          onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleEdit(protocol);
+                                          }}
+                                          className="p-1.5 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors hover:cursor-pointer"
+                                          title="Edit Protocol"
+                                      >
+                                          <Edit2 className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                          onClick={(e) => {
+                                              e.stopPropagation();
+                                              setProtocolToDelete(protocol);
+                                          }}
+                                          className="p-1.5 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors hover:cursor-pointer"
+                                          title="Delete Protocol"
+                                      >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                  </div>
                               )}
                           </div>
                           
@@ -178,6 +209,17 @@ export function ProtocolLibraryModal({ isOpen, onClose }: ProtocolLibraryModalPr
         isOpen={isEditorOpen} 
         onClose={() => setIsEditorOpen(false)} 
         existingProtocol={editingProtocol}
+      />
+
+      <ConfirmationModal
+        isOpen={!!protocolToDelete}
+        onClose={() => setProtocolToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Protocol"
+        message={`Are you sure you want to delete "${protocolToDelete?.title}"? This will remove it from the library and deactivate it for all users currently following it.`}
+        confirmLabel="Delete"
+        isDestructive
+        isLoading={isDeleting}
       />
     </>
   );

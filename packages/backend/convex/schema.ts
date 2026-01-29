@@ -55,7 +55,8 @@ export default defineSchema({
     status: v.string(), // "active" | "completed"
   })
     .index("by_userId_status", ["userId", "status"])
-    .index("by_userId_protocolId", ["userId", "protocolId"]),
+    .index("by_userId_protocolId", ["userId", "protocolId"])
+    .index("by_protocolId", ["protocolId"]),
 
   admins: defineTable({
     email: v.string(),
