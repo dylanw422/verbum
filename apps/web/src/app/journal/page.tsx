@@ -22,6 +22,7 @@ import { JournalHeader } from "@/components/journal-header";
 import { MeditationModal } from "@/components/meditation-modal";
 import { ProtocolLibraryModal } from "@/components/protocol-library-modal";
 import { ProtocolDetailsModal } from "@/components/protocol-details-modal";
+import { StudyCoreModal } from "@/components/study-core-modal";
 
 // --- Mock Components ---
 
@@ -126,6 +127,7 @@ export default function JournalPage() {
 
   const [isMeditating, setIsMeditating] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isStudyCoreOpen, setIsStudyCoreOpen] = useState(false);
   const [selectedProtocol, setSelectedProtocol] = useState<any>(null);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
@@ -306,7 +308,7 @@ export default function JournalPage() {
               <DashboardCard 
                 title="Study Core" 
                 icon={Shield}
-                action={{ label: "Open Library", onClick: () => {} }}
+                action={{ label: "Open Library", onClick: () => setIsStudyCoreOpen(true) }}
                 className="h-full"
               >
                 <div className="grid grid-cols-2 gap-3">
@@ -433,6 +435,11 @@ export default function JournalPage() {
       <ProtocolLibraryModal 
         isOpen={isLibraryOpen}
         onClose={() => setIsLibraryOpen(false)}
+      />
+
+      <StudyCoreModal
+        isOpen={isStudyCoreOpen}
+        onClose={() => setIsStudyCoreOpen(false)}
       />
 
       <ProtocolDetailsModal
