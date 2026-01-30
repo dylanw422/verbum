@@ -69,7 +69,7 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1 
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-5xl h-[85vh] bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+            className="relative w-full max-w-7xl h-[85vh] bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
           >
             {/* Sidebar Navigation */}
             <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-zinc-800 bg-zinc-900/30 flex flex-col">
@@ -106,7 +106,7 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1 
                {/* Close Button (Absolute Top Right) */}
                <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer z-10"
+                  className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer z-50"
                 >
                   <X className="w-5 h-5" />
                 </button>
