@@ -3,10 +3,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Search, BookOpen, LayoutDashboard, Shield, Construction } from "lucide-react";
 import { useState } from "react";
+import { InterlinearTool } from "./tools/interlinear-tool";
 
 interface StudyCoreModalProps {
   isOpen: boolean;
   onClose: () => void;
+  book?: string;
+  chapter?: number;
 }
 
 const TOOLS = [
@@ -44,7 +47,7 @@ const TOOLS = [
   }
 ];
 
-export function StudyCoreModal({ isOpen, onClose }: StudyCoreModalProps) {
+export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1 }: StudyCoreModalProps) {
   const [activeToolId, setActiveToolId] = useState(TOOLS[0].id);
 
   const activeTool = TOOLS.find(t => t.id === activeToolId) || TOOLS[0];
@@ -109,36 +112,42 @@ export function StudyCoreModal({ isOpen, onClose }: StudyCoreModalProps) {
                 </button>
 
               {/* Content Header */}
-              <div className="p-8 border-b border-zinc-800 flex flex-col justify-center h-32">
-                <div className="flex items-center gap-3 mb-2">
-                   <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-rose-500">
-                      <activeTool.icon className="w-6 h-6" />
-                   </div>
-                   <h2 className="text-2xl font-bold text-zinc-100">{activeTool.title}</h2>
+              {activeToolId !== "hebrew-greek" && (
+                <div className="p-8 border-b border-zinc-800 flex flex-col justify-center h-32">
+                  <div className="flex items-center gap-3 mb-2">
+                     <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-rose-500">
+                        <activeTool.icon className="w-6 h-6" />
+                     </div>
+                     <h2 className="text-2xl font-bold text-zinc-100">{activeTool.title}</h2>
+                  </div>
+                  <p className="text-zinc-400 text-sm ml-[3.25rem]">{activeTool.description}</p>
                 </div>
-                <p className="text-zinc-400 text-sm ml-[3.25rem]">{activeTool.description}</p>
-              </div>
+              )}
 
-              {/* Tool Content (Placeholder) */}
-              <div className="flex-1 overflow-y-auto p-8 flex items-center justify-center">
-                 <motion.div 
-                    key={activeTool.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="max-w-md text-center"
-                 >
-                    <div className="w-20 h-20 bg-zinc-900/50 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <Construction className="w-10 h-10 text-zinc-700" />
-                    </div>
-                    <h3 className="text-lg font-bold text-zinc-200 mb-2">Coming Soon</h3>
-                    <p className="text-zinc-500 leading-relaxed mb-6">
-                      {activeTool.comingSoonText}
-                    </p>
-                    <div className="inline-block px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono uppercase tracking-widest text-zinc-600">
-                        Under Construction
-                    </div>
-                 </motion.div>
+              {/* Tool Content */}
+              <div className={`flex-1 ${activeToolId === "hebrew-greek" ? "overflow-hidden" : "overflow-y-auto p-8 flex items-center justify-center"}`}>
+                 {activeToolId === "hebrew-greek" ? (
+                    <InterlinearTool initialBook={book} initialChapter={chapter} />
+                 ) : (
+                   <motion.div 
+                      key={activeTool.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="max-w-md text-center"
+                   >
+                      <div className="w-20 h-20 bg-zinc-900/50 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                          <Construction className="w-10 h-10 text-zinc-700" />
+                      </div>
+                      <h3 className="text-lg font-bold text-zinc-200 mb-2">Coming Soon</h3>
+                      <p className="text-zinc-500 leading-relaxed mb-6">
+                        {activeTool.comingSoonText}
+                      </p>
+                      <div className="inline-block px-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono uppercase tracking-widest text-zinc-600">
+                          Under Construction
+                      </div>
+                   </motion.div>
+                 )}
               </div>
             </div>
           </motion.div>

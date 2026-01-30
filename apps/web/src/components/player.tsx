@@ -21,6 +21,7 @@ import { PlayerHeader } from "./player/PlayerHeader";
 import { ReaderStage } from "./player/ReaderStage";
 import { tokenizeToData } from "./player/utils";
 import { QuizModal } from "./quiz-modal";
+import { StudyCoreModal } from "@/components/study-core-modal";
 
 interface PlayerProps {
   book: string;
@@ -41,6 +42,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   const [words, setWords] = useState<WordData[]>([]);
   const [showChapters, setShowChapters] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showStudyModal, setShowStudyModal] = useState(false);
   const [activeReaders, setActiveReaders] = useState(0);
 
   const handleComplete = useCallback(() => {
@@ -219,6 +221,10 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         onToggleChapters={() => setShowChapters(!showChapters)}
         onSelectChapter={handleSelectChapter}
         onTogglePlay={togglePlay}
+        onToggleStudyTools={() => {
+            if (playing) togglePlay();
+            setShowStudyModal(true);
+        }}
       />
 
       {/* Main Reading Area */}
@@ -253,6 +259,13 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         chapterText={words.map((w) => w.text).join(" ")}
         onNextChapter={handleNextChapter}
         hasNextChapter={chapter < availableChapters.length}
+      />
+
+      <StudyCoreModal 
+        isOpen={showStudyModal}
+        onClose={() => setShowStudyModal(false)}
+        book={book}
+        chapter={chapter}
       />
     </div>
   );

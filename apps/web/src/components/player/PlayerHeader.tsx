@@ -1,4 +1,4 @@
-import { BookOpen, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronUp, ArrowLeft, Library } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +16,7 @@ interface PlayerHeaderProps {
   onToggleChapters: () => void;
   onSelectChapter: (chapter: number) => void;
   onTogglePlay: () => void;
+  onToggleStudyTools: () => void;
 }
 
 /**
@@ -33,6 +34,7 @@ export function PlayerHeader({
   onToggleChapters,
   onSelectChapter,
   onTogglePlay,
+  onToggleStudyTools,
 }: PlayerHeaderProps) {
   const handleChapterToggle = () => {
     if (!showChapters && playing) {
@@ -85,25 +87,36 @@ export function PlayerHeader({
           </div>
         </div>
 
-        {availableChapters.length > 0 && (
-          <div className="relative flex items-center gap-2">
+        <div className="flex items-center gap-2">
             <button
-              onClick={handleChapterToggle}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 mt-1 hover:cursor-pointer ${
-                showChapters
-                  ? "bg-zinc-100 text-zinc-950 border-zinc-100 shadow-md"
-                  : "bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:text-zinc-100 hover:bg-zinc-800"
-              }`}
+                onClick={onToggleStudyTools}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all duration-300 mt-1 hover:cursor-pointer group"
+                title="Study Tools"
             >
-              <span>CH {chapter}</span>
-              {showChapters ? (
-                <ChevronUp className="w-3 h-3" />
-              ) : (
-                <ChevronDown className="w-3 h-3" />
-              )}
+                <Library className="w-3 h-3 group-hover:text-rose-500 transition-colors" />
+                <span className="hidden md:inline">Study</span>
             </button>
-          </div>
-        )}
+
+            {availableChapters.length > 0 && (
+            <div className="relative flex items-center gap-2">
+                <button
+                onClick={handleChapterToggle}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 mt-1 hover:cursor-pointer ${
+                    showChapters
+                    ? "bg-zinc-100 text-zinc-950 border-zinc-100 shadow-md"
+                    : "bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:text-zinc-100 hover:bg-zinc-800"
+                }`}
+                >
+                <span>CH {chapter}</span>
+                {showChapters ? (
+                    <ChevronUp className="w-3 h-3" />
+                ) : (
+                    <ChevronDown className="w-3 h-3" />
+                )}
+                </button>
+            </div>
+            )}
+        </div>
       </div>
 
       <ChapterSelector
