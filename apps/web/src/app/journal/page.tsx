@@ -152,7 +152,7 @@ export default function JournalPage() {
   const emptySlotsCount = Math.max(0, MAX_SLOTS - filledSlots.length);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
+    <div className="h-[100svh] overflow-y-auto bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
       {/* --- Header --- */}
       <JournalHeader />
 
