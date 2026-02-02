@@ -84,7 +84,7 @@ export function ConcordanceTool() {
 
       {/* Header / Search Input */}
       <div className="p-6 border-b border-zinc-800 bg-zinc-900/30">
-        <div className="relative mb-4">
+        <div className="relative mb-4 mr-12">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
           <input
             type="text"
@@ -195,8 +195,8 @@ function FrequencyChart({ distribution, onBarClick }: { distribution: Record<str
     const maxCount = Math.max(...Object.values(distribution));
     
     return (
-        <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
-            <div className="flex items-end gap-[1px] h-24 min-w-[300px] w-full px-1">
+        <div className="w-full overflow-x-auto pb-2 scrollbar-hide pt-20">
+            <div className="flex items-end gap-[1px] h-20 min-w-[400px] w-full px-10">
                 {BOOKS.map((book) => {
                     const count = distribution[book] || 0;
                     const heightPercent = maxCount > 0 ? (count / maxCount) * 100 : 0;
@@ -206,14 +206,19 @@ function FrequencyChart({ distribution, onBarClick }: { distribution: Record<str
                         <div 
                             key={book} 
                             onClick={() => count > 0 && onBarClick(book)}
-                            className={`group relative flex-1 min-w-[4px] h-full flex items-end ${count > 0 ? "cursor-pointer" : ""}`}
+                            className={`group relative flex-1 min-w-[6px] h-full flex items-end ${count > 0 ? "cursor-pointer" : ""}`}
                         >
                              {/* Tooltip */}
-                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20 pointer-events-none">
-                                 <div className="bg-zinc-800 text-zinc-200 text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap border border-zinc-700 z-30">
-                                     <span className="font-bold">{book}</span>: {count}
-                                 </div>
-                             </div>
+                             {!isZero && (
+                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none">
+                                   <div className="bg-zinc-800 text-zinc-100 text-[10px] px-2 py-1.5 rounded shadow-2xl whitespace-nowrap border border-zinc-700 flex flex-col items-center">
+                                       <span className="font-bold">{book}</span>
+                                       <span className="text-rose-400 font-mono">{count} matches</span>
+                                   </div>
+                                   {/* Tooltip Arrow */}
+                                   <div className="w-2 h-2 bg-zinc-800 border-r border-b border-zinc-700 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2" />
+                               </div>
+                             )}
                              
                              {/* Bar */}
                              <div 
@@ -224,7 +229,7 @@ function FrequencyChart({ distribution, onBarClick }: { distribution: Record<str
                     );
                 })}
             </div>
-            <div className="flex justify-between text-[10px] font-mono text-zinc-600 uppercase mt-1 px-1">
+            <div className="flex justify-between text-[10px] font-mono text-zinc-600 uppercase mt-1 px-10 min-w-[400px]">
                 <span>Gen</span>
                 <span>Psa</span>
                 <span>Mat</span>
