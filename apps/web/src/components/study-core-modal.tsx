@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Search, BookOpen, LayoutDashboard, Shield, Construction } from "lucide-react";
 import { useState } from "react";
 import { InterlinearTool } from "./tools/interlinear-tool";
+import { ConcordanceTool } from "./tools/concordance-tool";
 
 interface StudyCoreModalProps {
   isOpen: boolean;
@@ -111,8 +112,8 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1 
                   <X className="w-5 h-5" />
                 </button>
 
-              {/* Content Header */}
-              {activeToolId !== "hebrew-greek" && (
+              {/* Content Header - Suppress for custom tools */}
+              {activeToolId !== "hebrew-greek" && activeToolId !== "concordance" && (
                 <div className="p-8 border-b border-zinc-800 flex flex-col justify-center h-32">
                   <div className="flex items-center gap-3 mb-2">
                      <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-rose-500">
@@ -125,9 +126,11 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1 
               )}
 
               {/* Tool Content */}
-              <div className={`flex-1 ${activeToolId === "hebrew-greek" ? "overflow-hidden" : "overflow-y-auto p-8 flex items-center justify-center"}`}>
+              <div className={`flex-1 ${["hebrew-greek", "concordance"].includes(activeToolId) ? "overflow-hidden" : "overflow-y-auto p-8 flex items-center justify-center"}`}>
                  {activeToolId === "hebrew-greek" ? (
                     <InterlinearTool initialBook={book} initialChapter={chapter} />
+                 ) : activeToolId === "concordance" ? (
+                    <ConcordanceTool />
                  ) : (
                    <motion.div 
                       key={activeTool.id}
