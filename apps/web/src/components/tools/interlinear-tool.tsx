@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Loader2, BookOpen, ChevronDown, PanelRightClose, PanelRightOpen, Check } from "lucide-react";
 import { useLibrary } from "@/hooks/use-library";
 import { useOriginalLanguage } from "@/hooks/use-original-language";
@@ -30,6 +30,18 @@ interface InterlinearWord {
 interface InterlinearVerse {
   verse: InterlinearWord[];
   id: string;
+}
+
+function ScrollAnchor() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Small timeout to ensure the menu is mounted and layout is ready
+    const timer = setTimeout(() => {
+      ref.current?.scrollIntoView({ block: "center" });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+  return <div ref={ref} className="absolute" />;
 }
 
 export function InterlinearTool({ initialBook, initialChapter }: InterlinearToolProps) {
@@ -170,6 +182,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                                         onClick={() => { setBook(b); setChapter(1); }}
                                         className={book === b ? "bg-rose-500/10 text-rose-500" : ""}
                                     >
+                                        {book === b && <ScrollAnchor />}
                                         {b}
                                         {book === b && <Check className="w-3 h-3 ml-auto" />}
                                     </DropdownMenuItem>
@@ -184,6 +197,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                                         onClick={() => { setBook(b); setChapter(1); }}
                                         className={book === b ? "bg-rose-500/10 text-rose-500" : ""}
                                     >
+                                        {book === b && <ScrollAnchor />}
                                         {b}
                                         {book === b && <Check className="w-3 h-3 ml-auto" />}
                                     </DropdownMenuItem>
@@ -205,10 +219,11 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                                         key={c}
                                         onClick={() => setChapter(c)}
                                         className={`
-                                            p-2 text-xs font-mono rounded hover:bg-zinc-800 transition-colors
+                                            p-2 text-xs font-mono rounded hover:bg-zinc-800 transition-colors relative
                                             ${chapter === c ? "bg-rose-500 text-white hover:bg-rose-600" : "text-zinc-400"}
                                         `}
                                     >
+                                        {chapter === c && <ScrollAnchor />}
                                         {c}
                                     </button>
                                 ))}
