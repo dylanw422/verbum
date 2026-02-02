@@ -70,6 +70,7 @@ export const BOOKS = [
 export const BIBLE_JSON_URL = "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/BSB.json";
 export const HEBREW_JSON_URL= "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/hebrew-dict.json"
 export const GREEK_JSON_URL= "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/greek-dict.json"
+export const INTERLINEAR_JSON_URL = "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/interlinear.json";
 
 export const OT_BOOKS = BOOKS.slice(0, 39);
 export const NT_BOOKS = BOOKS.slice(39);

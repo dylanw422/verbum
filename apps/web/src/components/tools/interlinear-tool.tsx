@@ -3,7 +3,6 @@ import { Loader2, BookOpen, ChevronDown, PanelRightClose, PanelRightOpen, Check 
 import { useLibrary } from "@/hooks/use-library";
 import { useOriginalLanguage } from "@/hooks/use-original-language";
 import { LexiconCard } from "./lexicon-card";
-import { tokenizeToData } from "@/components/player/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   DropdownMenu,
@@ -21,103 +20,80 @@ interface InterlinearToolProps {
   initialChapter: number;
 }
 
+interface InterlinearWord {
+  i: number;
+  text: string;
+  word: string;
+  number: string;
+}
+
+interface InterlinearVerse {
+  verse: InterlinearWord[];
+  id: string;
+}
+
 export function InterlinearTool({ initialBook, initialChapter }: InterlinearToolProps) {
   const [book, setBook] = useState(initialBook);
   const [chapter, setChapter] = useState(initialChapter);
-  const [selectedWord, setSelectedWord] = useState<{ text: string; id: string } | null>(null);
+  // selectedWord now stores the Strong's number directly
+  const [selectedWord, setSelectedWord] = useState<{ text: string; word: string; number: string } | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // Data Fetching
-  const { library, isLoading: isLibLoading, availableChapters } = useLibrary(book);
+  const { isLoading: isLibLoading, availableChapters } = useLibrary(book);
   const { dictionary, isLoading: isDictLoading, isOT } = useOriginalLanguage(book);
+  
+  const [interlinearVerses, setInterlinearVerses] = useState<InterlinearVerse[]>([]);
+  const [isTextLoading, setIsTextLoading] = useState(false);
 
-  // Reverse Index for "Fake" Interlinear Mapping
-  const reverseIndex = useMemo(() => {
-    if (!dictionary) return new Map<string, string[]>();
-    
-    const index = new Map<string, string[]>();
-    const commonWords = new Set(["the", "and", "of", "to", "in", "a", "that", "is", "for", "it", "he", "was"]);
-
-    Object.entries(dictionary).forEach(([strongsId, entry]) => {
-      // Split kjv_def by commas and clean up
-      const defs = (entry.kjv_def || "")
-        .split(/[,;]/)
-        .map(d => d.trim().toLowerCase().replace(/[\(\)]/g, ''))
-        .filter(d => d.length > 0);
-
-      defs.forEach(def => {
-        // Handle phrases? For now just simple single word matching or exact phrase match
-        // We'll index by the whole definition phrase usually found in KJV
-        if (!index.has(def)) {
-            index.set(def, []);
-        }
-        index.get(def)?.push(strongsId);
-        
-        // Also index individual words if they are significant
-        const words = def.split(" ");
-        if (words.length > 1) {
-            words.forEach(w => {
-                if (commonWords.has(w)) return;
-                if (!index.has(w)) index.set(w, []);
-                index.get(w)?.push(strongsId);
-            });
-        }
-      });
-    });
-    return index;
-  }, [dictionary]);
-
-  // Derived Chapter Text
-  const chapterTextData = useMemo(() => {
-    if (!library || !library[book] || !library[book][chapter.toString()]) return [];
-    
-    const chapterData = library[book][chapter.toString()];
-    let text = "";
-    
-    if (typeof chapterData === "string") {
-        text = chapterData;
-    } else {
-        // Combine verses
-        Object.entries(chapterData)
-            .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-            .forEach(([_, vText]) => {
-                text += vText + " ";
-            });
+  useEffect(() => {
+    async function fetchInterlinear() {
+      setIsTextLoading(true);
+      try {
+        const res = await fetch(`/api/interlinear?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        // The API returns an array of verses or empty array
+        setInterlinearVerses(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Failed to load interlinear text", e);
+        setInterlinearVerses([]);
+      } finally {
+        setIsTextLoading(false);
+      }
     }
-    
-    return tokenizeToData(text, "1", 0);
-  }, [library, book, chapter]);
+    fetchInterlinear();
+  }, [book, chapter]);
 
   // Identify Strong's Entry for Selected Word
   const selectedEntryData = useMemo(() => {
     if (!selectedWord || !dictionary) return null;
     
-    const clean = selectedWord.text.toLowerCase().replace(/[^a-z]/g, '');
+    // Normalize Strong's number to match dictionary keys (usually uppercase + number)
+    // interlinear.json has "h7225", dictionary might have "H7225"
+    const number = selectedWord.number;
+    const cleanNumber = number.replace(/[^a-zA-Z0-9]/g, '');
     
-    // 1. Try Exact Match in KJV Defs
-    let ids = reverseIndex.get(clean);
-    
-    // 2. Fallback to generic simple search if not found
-    if (!ids || ids.length === 0) {
-        // simple stemming?
-        if (clean.endsWith('s')) ids = reverseIndex.get(clean.slice(0, -1));
-        else if (clean.endsWith('ed')) ids = reverseIndex.get(clean.slice(0, -2));
-        else if (clean.endsWith('ing')) ids = reverseIndex.get(clean.slice(0, -3));
+    // Try explicit lookup
+    let entry = dictionary[cleanNumber];
+    if (!entry) {
+        // Try uppercase
+        entry = dictionary[cleanNumber.toUpperCase()];
+    }
+    if (!entry) {
+        // Try lowercase
+        entry = dictionary[cleanNumber.toLowerCase()];
     }
 
-    if (ids && ids.length > 0) {
-        // Prefer lower numbers? Or just first.
-        // For Hebrew/Greek distinction, assuming useOriginalLanguage handles fetching correct dict.
-        // We just pick the first valid one for now.
-        // Ideally we'd have context, but without mapping we guess.
+    if (entry) {
         return {
-            entry: dictionary[ids[0]],
-            id: ids[0]
+            entry: entry,
+            id: cleanNumber.toUpperCase() // Display standard format
         };
     }
     
     return null;
-  }, [selectedWord, reverseIndex, dictionary]);
+  }, [selectedWord, dictionary]);
 
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -245,29 +221,54 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
 
         {/* Text Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-12 scroll-smooth">
-            <div className={`max-w-3xl mx-auto text-lg md:text-xl leading-[2] text-zinc-300 font-serif selection:bg-rose-500/30 selection:text-rose-200 transition-all duration-300 ${!isSidebarOpen ? 'max-w-4xl' : ''}`}>
-                {chapterTextData.map((wordObj) => {
-                    const isSelected = selectedWord?.id === wordObj.id;
-                    
-                    return (
-                        <span 
-                            key={wordObj.id}
-                            onClick={() => setSelectedWord({ text: wordObj.cleanText, id: wordObj.id })}
-                            className={`
-                                inline-block px-1 rounded-sm cursor-pointer transition-all duration-200 select-none mr-1 relative group
-                                ${isSelected 
-                                    ? "bg-rose-500/20 text-rose-300 font-medium" 
-                                    : "hover:bg-zinc-800 hover:text-zinc-100 text-zinc-400"
-                                }
-                            `}
-                        >
-                            {wordObj.text}
-                            {!isSelected && (
-                                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            )}
-                        </span>
-                    );
-                })}
+            <div className={`max-w-3xl mx-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-4xl' : ''}`}>
+                {isTextLoading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="w-8 h-8 animate-spin text-zinc-700" />
+                    </div>
+                ) : interlinearVerses.length === 0 ? (
+                    <div className="text-center py-20 text-zinc-500">
+                        <p>No text available for this chapter.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-8">
+                        {interlinearVerses.map((v) => {
+                            const verseNum = parseInt(v.id.slice(5), 10);
+                            return (
+                                <div key={v.id} className="flex gap-2">
+                                    <div className="w-8 shrink-0 pt-1 text-right">
+                                        <span className="text-xs font-mono text-zinc-600 select-none">{verseNum}</span>
+                                    </div>
+                                    <div className="flex-1 flex flex-wrap gap-x-2 gap-y-4">
+                                        {v.verse.map((w, i) => {
+                                            const isSelected = selectedWord?.number === w.number;
+                                            return (
+                                                <div 
+                                                    key={i}
+                                                    onClick={() => setSelectedWord(w)}
+                                                    className={`
+                                                        flex flex-col items-center cursor-pointer rounded px-1.5 py-1 transition-all group
+                                                        ${isSelected 
+                                                            ? "bg-rose-500/20 ring-1 ring-rose-500/30" 
+                                                            : "hover:bg-zinc-800/50"
+                                                        }
+                                                    `}
+                                                >
+                                                    <span className={`text-base font-serif leading-none mb-1 ${isSelected ? "text-rose-200" : "text-zinc-200"}`}>
+                                                        {w.text}
+                                                    </span>
+                                                    <span className={`text-sm font-sans text-zinc-500 leading-none ${isSelected ? "text-rose-400" : "group-hover:text-zinc-400"}`}>
+                                                        {w.word}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
             <div className="h-20" /> {/* Bottom padding */}
         </div>
@@ -285,9 +286,9 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
       >
         <div className="w-96 h-full">
             <LexiconCard 
-                word={selectedWord?.text || ""}
+                word={selectedWord?.word || ""} // Original word
                 entry={selectedEntryData?.entry || null}
-                strongsNumber={selectedEntryData?.id || null}
+                strongsNumber={selectedEntryData?.id || selectedWord?.number || null}
                 onClose={() => setSelectedWord(null)}
                 isOT={isOT}
             />
@@ -311,9 +312,9 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
                     <LexiconCard 
-                        word={selectedWord?.text || ""}
+                        word={selectedWord?.word || ""}
                         entry={selectedEntryData?.entry || null}
-                        strongsNumber={selectedEntryData?.id || null}
+                        strongsNumber={selectedEntryData?.id || selectedWord?.number || null}
                         onClose={() => { setSelectedWord(null); setIsSidebarOpen(false); }}
                         isOT={isOT}
                     />
