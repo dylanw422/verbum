@@ -63,7 +63,7 @@ export function LexiconCard({ word, entry, strongsNumber, onClose, isOT }: Lexic
           <div className="flex flex-col gap-0.5 text-zinc-400">
             <div className="flex items-baseline gap-2">
               <span className="font-medium text-zinc-300">{entry.xlit || entry.translit}</span>
-              <span className="text-xs font-mono opacity-50">/{entry.pron}/</span>
+              {entry.pron && <span className="text-xs font-mono opacity-50">/{entry.pron}/</span>}
             </div>
           </div>
         </div>

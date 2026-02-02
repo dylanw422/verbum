@@ -5,6 +5,18 @@ import { INTERLINEAR_JSON_URL } from "@/lib/constants";
 let cachedData: any = null;
 let fetchPromise: Promise<any> | null = null;
 
+function normalizeBookKey(bookName: string): string {
+  const lower = bookName.toLowerCase();
+  
+  // Handle numbered books
+  if (lower.startsWith("1 ")) return lower.replace("1 ", "i_").replace(/ /g, "_");
+  if (lower.startsWith("2 ")) return lower.replace("2 ", "ii_").replace(/ /g, "_");
+  if (lower.startsWith("3 ")) return lower.replace("3 ", "iii_").replace(/ /g, "_");
+  
+  // Handle spaces
+  return lower.replace(/ /g, "_");
+}
+
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const book = searchParams.get("book");
@@ -33,11 +45,11 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const bookKey = book.toLowerCase();
+    const bookKey = normalizeBookKey(book);
     const bookData = cachedData[bookKey];
 
     if (!bookData) {
-       // Return empty if book not found
+       console.warn(`Book key not found: ${bookKey} (original: ${book})`);
        return NextResponse.json([]);
     }
 
