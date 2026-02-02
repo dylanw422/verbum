@@ -122,6 +122,7 @@ const ResonanceCard = ({
   <motion.div
     initial={{ opacity: 0, x: -20 }}
     whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true }}
     transition={{ delay: index * 0.1, duration: 0.5 }}
     className="relative group overflow-hidden bg-zinc-900/10 border-l-2 border-zinc-800 hover:border-rose-500/50 pl-6 py-4 pr-4 transition-all duration-500"
   >
