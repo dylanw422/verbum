@@ -128,6 +128,7 @@ export default function JournalPage() {
   const [isMeditating, setIsMeditating] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [isStudyCoreOpen, setIsStudyCoreOpen] = useState(false);
+  const [studyCoreToolId, setStudyCoreToolId] = useState<string | undefined>(undefined);
   const [selectedProtocol, setSelectedProtocol] = useState<any>(null);
 
   const streakDisplay = userStats ? `${userStats.currentStreak} Day${userStats.currentStreak === 1 ? "" : "s"}` : "0 Days";
@@ -308,17 +309,24 @@ export default function JournalPage() {
               <DashboardCard 
                 title="Study Core" 
                 icon={Shield}
-                action={{ label: "Open Library", onClick: () => setIsStudyCoreOpen(true) }}
+                action={{ label: "Open Library", onClick: () => { setStudyCoreToolId("concordance"); setIsStudyCoreOpen(true); } }}
                 className="h-full"
               >
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { name: "Concordance", icon: Search },
-                    { name: "Commentaries", icon: BookOpen },
-                    { name: "Hebrew/Greek", icon: LayoutDashboard },
-                    { name: "Maps", icon: Shield },
+                    { id: "concordance", name: "Concordance", icon: Search },
+                    { id: "commentaries", name: "Commentaries", icon: BookOpen },
+                    { id: "hebrew-greek", name: "Hebrew/Greek", icon: LayoutDashboard },
+                    { id: "maps", name: "Maps", icon: Shield },
                   ].map((tool, i) => (
-                    <button key={i} className="flex flex-col items-center justify-center gap-2 p-4 bg-zinc-950/50 border border-zinc-800 rounded-lg hover:border-rose-500/30 transition-all group aspect-square hover:cursor-pointer">
+                    <button 
+                      key={i} 
+                      onClick={() => {
+                        setStudyCoreToolId(tool.id);
+                        setIsStudyCoreOpen(true);
+                      }}
+                      className="flex flex-col items-center justify-center gap-2 p-4 bg-zinc-950/50 border border-zinc-800 rounded-lg hover:border-rose-500/30 transition-all group aspect-square hover:cursor-pointer"
+                    >
                       <tool.icon className="w-5 h-5 text-zinc-600 group-hover:text-rose-500" />
                       <span className="text-[10px] font-mono uppercase tracking-tighter text-zinc-500 group-hover:text-zinc-300">{tool.name}</span>
                     </button>
@@ -440,6 +448,7 @@ export default function JournalPage() {
       <StudyCoreModal
         isOpen={isStudyCoreOpen}
         onClose={() => setIsStudyCoreOpen(false)}
+        initialToolId={studyCoreToolId}
       />
 
       <ProtocolDetailsModal

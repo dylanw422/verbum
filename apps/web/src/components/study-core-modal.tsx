@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Search, BookOpen, LayoutDashboard, Shield, Construction } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InterlinearTool } from "./tools/interlinear-tool";
 import { ConcordanceTool } from "./tools/concordance-tool";
 
@@ -11,6 +11,7 @@ interface StudyCoreModalProps {
   onClose: () => void;
   book?: string;
   chapter?: number;
+  initialToolId?: string;
 }
 
 const TOOLS = [
@@ -48,8 +49,14 @@ const TOOLS = [
   }
 ];
 
-export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1 }: StudyCoreModalProps) {
+export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1, initialToolId }: StudyCoreModalProps) {
   const [activeToolId, setActiveToolId] = useState(TOOLS[0].id);
+
+  useEffect(() => {
+    if (isOpen && initialToolId) {
+      setActiveToolId(initialToolId);
+    }
+  }, [isOpen, initialToolId]);
 
   const activeTool = TOOLS.find(t => t.id === activeToolId) || TOOLS[0];
 
