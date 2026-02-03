@@ -23,6 +23,7 @@ import { ReaderStage } from "./player/ReaderStage";
 import { tokenizeToData } from "./player/utils";
 import { QuizModal } from "./quiz-modal";
 import { StudyCoreModal } from "@/components/study-core-modal";
+import { ShareModal } from "@/components/share-modal";
 
 interface PlayerProps {
   book: string;
@@ -47,6 +48,8 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   const [showChapters, setShowChapters] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showStudyModal, setShowStudyModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareData, setShareData] = useState<{ text: string; reference: string }>({ text: "", reference: "" });
   const [studyModalInitialSearch, setStudyModalInitialSearch] = useState<string | undefined>(undefined);
   const [activeReaders, setActiveReaders] = useState(0);
 
@@ -97,8 +100,42 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
     } else if (action === "remove_highlight") {
         // data: { id }
         removeHighlight({ id: data.id }).catch(() => toast.error("Failed to remove highlight"));
+    } else if (action === "share") {
+        // data: { text, reference } - Wait, ReaderStage passes raw context usually.
+        // Let's assume ReaderStage passes the formatted reference or we format it here?
+        // ReaderStage passes `selectedContext` which has { text, verse, indices }
+        
+        // We need to reconstruct the reference if not passed.
+        // But `ReaderStage` handles logic usually. 
+        // Let's update ReaderStage to pass formatted data for Share, OR do it here.
+        // Doing it here requires access to `words` array to find verse numbers from indices if raw data passed.
+        
+        // Actually, let's look at `ReaderStage.tsx` call to `onAction`.
+        // It passes `selectedContext`. 
+        
+        // RE-IMPLEMENT formatting here to be safe:
+        // data is `selectedContext`
+        const indices = data.indices;
+        if (!indices || !indices.length) return;
+        
+        const startIdx = indices[0];
+        const endIdx = indices[indices.length - 1];
+        const startVerse = words[startIdx]?.verse;
+        const endVerse = words[endIdx]?.verse;
+        
+        const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
+        let reference = `${displayBook} ${chapter}:${startVerse}`;
+        if (startVerse && endVerse && startVerse !== endVerse) {
+            reference += `-${endVerse}`;
+        }
+        
+        setShareData({
+            text: data.text,
+            reference: reference
+        });
+        setShowShareModal(true);
     }
-  }, [book, chapter, createHighlight, removeHighlight, session]);
+  }, [book, chapter, createHighlight, removeHighlight, session, words]);
 
   // --- Presence Logic ---
   useEffect(() => {
@@ -308,6 +345,13 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         book={book}
         chapter={chapter}
         initialSearchTerm={studyModalInitialSearch}
+      />
+
+      <ShareModal 
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        text={shareData.text}
+        reference={shareData.reference}
       />
     </div>
   );

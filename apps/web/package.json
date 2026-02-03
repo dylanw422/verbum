@@ -31,6 +31,7 @@
     "clsx": "^2.1.1",
     "dotenv": "catalog:",
     "framer-motion": "^12.26.2",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.546.0",
     "next": "catalog:",
     "next-themes": "^0.4.6",

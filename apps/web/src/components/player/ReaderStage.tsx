@@ -302,13 +302,19 @@ export function ReaderStage({
         setMenuPosition(null);
         break;
       case "share":
-        // simple share
-        if (navigator.share) {
-            navigator.share({ text: selectedContext.text }).catch(() => {});
+        if (onAction) {
+            onAction("share", selectedContext);
         } else {
-            toast.info("Share menu opened");
+            // fallback
+            if (navigator.share) {
+                navigator.share({ text: selectedContext.text }).catch(() => {});
+            } else {
+                toast.info("Share menu opened");
+            }
         }
         setMenuPosition(null);
+        setLiveSelection(new Set());
+        window.getSelection()?.removeAllRanges();
         break;
     }
   };
