@@ -64,6 +64,17 @@ export function ShareModal({
     }
   };
 
+  // Dynamic Text Sizing Logic
+  const wordCount = text.split(/\s+/).length;
+  let fontSizeClass = "text-xl md:text-2xl"; // Default fallback
+
+  if (wordCount < 10) fontSizeClass = "text-4xl md:text-6xl";
+  else if (wordCount < 25) fontSizeClass = "text-3xl md:text-5xl";
+  else if (wordCount < 50) fontSizeClass = "text-2xl md:text-4xl";
+  else if (wordCount < 80) fontSizeClass = "text-xl md:text-3xl";
+  else if (wordCount < 120) fontSizeClass = "text-lg md:text-2xl";
+  else fontSizeClass = "text-sm md:text-lg"; // Very long text
+
   if (!isOpen) return null;
 
   return (
@@ -78,7 +89,7 @@ export function ShareModal({
              if (e.target === e.currentTarget) onClose();
           }}
         >
-          <div className="relative w-full max-w-2xl flex flex-col items-center gap-6">
+          <div className="relative w-full max-w-xl flex flex-col items-center gap-6">
              {/* Close Button */}
              <button
                 onClick={onClose}
@@ -88,35 +99,40 @@ export function ShareModal({
              </button>
 
              {/* PREVIEW CARD (What gets captured) */}
-             <div className="w-full shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-xl overflow-hidden border border-white/5">
+             <div className="w-full aspect-square shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-xl overflow-hidden border border-white/5">
                 <div 
                     ref={cardRef}
-                    className="relative bg-[#09090b] p-12 md:p-20 flex flex-col items-center justify-center text-center gap-10 min-h-[500px] overflow-hidden"
+                    className="relative bg-[#09090b] w-full h-full pt-12 md:pt-16 px-8 md:px-12 pb-0 flex flex-col items-center text-center overflow-hidden"
                 >
                     {/* Background Noise/Gradient replicated here for capture */}
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-[#09090b] to-[#09090b]" />
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
                     
                     {/* Decorative Meditation-style Glow */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-rose-500/5 blur-[120px] rounded-full pointer-events-none" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-rose-500/10 rounded-full pointer-events-none" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-rose-500/5 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] border border-rose-500/10 rounded-full pointer-events-none" />
 
                     {/* Content */}
-                    <div className="relative z-10 max-w-2xl">
-                        <p className="text-3xl md:text-5xl font-serif italic leading-tight md:leading-snug text-zinc-100 drop-shadow-2xl">
+                    <div className="relative z-10 max-w-2xl flex-1 flex flex-col items-center justify-center w-full min-h-0 px-4 pb-12">
+                        <p className={`${fontSizeClass} font-serif italic leading-tight md:leading-snug text-zinc-100 drop-shadow-2xl`}>
                            "{text}"
-                        </p>
-                        <div className="w-16 h-px bg-gradient-to-r from-transparent via-rose-500/40 to-transparent mx-auto my-10" />
-                        <p className="text-xs md:text-sm font-mono uppercase tracking-[0.4em] text-zinc-500">
-                           — {reference}
                         </p>
                     </div>
 
-                    {/* Watermark / Branding */}
-                    <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-2 opacity-30">
-                        <div className="h-px w-4 bg-zinc-800" />
-                        <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.5em]">Verbum</span>
-                        <div className="h-px w-4 bg-zinc-800" />
+                    {/* Static Footer: Row Layout at the very bottom */}
+                    <div className="relative z-10 shrink-0 w-full flex items-end justify-between pb-8 md:pb-10 pt-4">
+                        {/* Left: Reference */}
+                        <div className="flex flex-col items-start gap-2">
+                            <div className="w-8 h-px bg-rose-500/50" />
+                            <p className="text-xs md:text-sm font-mono uppercase tracking-[0.2em] text-zinc-400">
+                               {reference}
+                            </p>
+                        </div>
+
+                        {/* Right: Branding */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-[0.3em]">Verbum</span>
+                        </div>
                     </div>
                 </div>
              </div>
