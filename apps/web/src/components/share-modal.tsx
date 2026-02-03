@@ -82,7 +82,7 @@ export function ShareModal({
              {/* Close Button */}
              <button
                 onClick={onClose}
-                className="absolute -top-12 right-0 md:-right-12 p-2 text-zinc-400 hover:text-white transition-colors"
+                className="absolute -top-12 right-0 md:-right-12 p-2 text-zinc-400 hover:text-white transition-colors hover:cursor-pointer"
              >
                 <X className="w-6 h-6" />
              </button>
@@ -126,7 +126,7 @@ export function ShareModal({
                 <button
                     onClick={handleCopyImage}
                     disabled={isGenerating}
-                    className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-rose-600 text-white font-mono text-xs uppercase tracking-widest rounded hover:bg-rose-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-rose-900/20 active:scale-95"
+                    className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-rose-600 text-white font-mono text-xs uppercase tracking-widest rounded hover:bg-rose-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-rose-900/20 active:scale-95 hover:cursor-pointer"
                 >
                     {isGenerating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

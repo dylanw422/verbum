@@ -84,7 +84,7 @@ function MenuButton({ icon, label, onClick, danger }: { icon: React.ReactNode, l
         e.preventDefault();
         onClick();
       }}
-      className={`flex flex-col items-center justify-center p-2 rounded-md transition-colors group ${
+      className={`flex flex-col items-center justify-center p-2 rounded-md transition-colors group hover:cursor-pointer ${
         danger 
           ? "text-rose-400 hover:bg-rose-500/10 hover:text-rose-300" 
           : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
