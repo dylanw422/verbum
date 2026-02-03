@@ -14,6 +14,7 @@ import type * as collections from "../collections.js";
 import type * as crons from "../crons.js";
 import type * as dailyBread from "../dailyBread.js";
 import type * as healthCheck from "../healthCheck.js";
+import type * as highlights from "../highlights.js";
 import type * as http from "../http.js";
 import type * as journalEntries from "../journalEntries.js";
 import type * as popularVerses from "../popularVerses.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   dailyBread: typeof dailyBread;
   healthCheck: typeof healthCheck;
+  highlights: typeof highlights;
   http: typeof http;
   journalEntries: typeof journalEntries;
   popularVerses: typeof popularVerses;

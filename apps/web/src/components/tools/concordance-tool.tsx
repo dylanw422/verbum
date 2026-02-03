@@ -20,8 +20,12 @@ interface SearchResponse {
   distribution: Record<string, number>;
 }
 
-export function ConcordanceTool() {
-  const [query, setQuery] = useState("");
+interface ConcordanceToolProps {
+  initialQuery?: string;
+}
+
+export function ConcordanceTool({ initialQuery = "" }: ConcordanceToolProps) {
+  const [query, setQuery] = useState(initialQuery);
   const [scope, setScope] = useState<"all" | "ot" | "nt">("all");
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);

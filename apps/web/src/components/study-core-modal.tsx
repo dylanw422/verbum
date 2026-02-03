@@ -12,6 +12,7 @@ interface StudyCoreModalProps {
   book?: string;
   chapter?: number;
   initialToolId?: string;
+  initialSearchTerm?: string;
 }
 
 const TOOLS = [
@@ -49,14 +50,18 @@ const TOOLS = [
   }
 ];
 
-export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1, initialToolId }: StudyCoreModalProps) {
+export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1, initialToolId, initialSearchTerm }: StudyCoreModalProps) {
   const [activeToolId, setActiveToolId] = useState(TOOLS[0].id);
 
   useEffect(() => {
-    if (isOpen && initialToolId) {
-      setActiveToolId(initialToolId);
+    if (isOpen) {
+        if (initialSearchTerm) {
+            setActiveToolId("concordance");
+        } else if (initialToolId) {
+            setActiveToolId(initialToolId);
+        }
     }
-  }, [isOpen, initialToolId]);
+  }, [isOpen, initialToolId, initialSearchTerm]);
 
   const activeTool = TOOLS.find(t => t.id === activeToolId) || TOOLS[0];
 
@@ -137,7 +142,7 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1,
                  {activeToolId === "hebrew-greek" ? (
                     <InterlinearTool initialBook={book} initialChapter={chapter} />
                  ) : activeToolId === "concordance" ? (
-                    <ConcordanceTool />
+                    <ConcordanceTool initialQuery={initialSearchTerm} />
                  ) : (
                    <motion.div 
                       key={activeTool.id}

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { BIBLE_JSON_URL, INTERLINEAR_JSON_URL, OT_BOOKS, NT_BOOKS, BOOKS } from "@/lib/constants";
 
 // Cache for English Bible Index
-let bsbIndex: Array<{ b: string; c: number; v: number; t: string; isOT: boolean }> | null = null;
+type BSBIndexItem = { b: string; c: number; v: number; t: string; isOT: boolean };
+let bsbIndex: BSBIndexItem[] | null = null;
 let bsbPromise: Promise<any> | null = null;
 
 // Cache for Interlinear (Strongs) Data
@@ -41,15 +42,15 @@ async function loadBSBIndex() {
   }
 
   const data = await bsbPromise;
-  const index: typeof bsbIndex = [];
+  const index: BSBIndexItem[] = [];
   const otSet = new Set(OT_BOOKS);
 
   for (const [book, chapters] of Object.entries(data)) {
     const isOT = otSet.has(book);
     // @ts-ignore
     for (const [chapter, content] of Object.entries(chapters)) {
-      if (typeof content === "object") {
-        for (const [verse, text] of Object.entries(content)) {
+      if (content && typeof content === "object") {
+        for (const [verse, text] of Object.entries(content as Record<string, string>)) {
           index.push({
             b: book,
             c: parseInt(chapter),
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
   const isStrongsSearch = /^[hg]\d+$/i.test(rawQuery);
 
   try {
-    let allMatches: Array<{ b: string; c: number; v: number; t: string; isOT: boolean }> = [];
+    let allMatches: BSBIndexItem[] = [];
 
     if (isStrongsSearch) {
       // --- Strong's Search ---

@@ -10,8 +10,9 @@ import { usePlayerPersistence } from "@/hooks/use-player-persistence";
 import { useSwipe } from "@/hooks/use-swipe";
 import { useStudyTimer } from "@/hooks/use-study-timer";
 
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 import type { WordData, LibraryData } from "./player/types";
 
 import { ControlDeck } from "./player/ControlDeck";
@@ -33,9 +34,12 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   const { library, isLoading, availableChapters } = useLibrary(book);
   const { targetWpm, readingMode, adjustSpeed, toggleReadingMode } = usePlayerPersistence();
 
-  // --- Convex Mutations ---
+  // --- Convex Mutations & Queries ---
   const logSession = useMutation("userStats:logSession" as any);
   const checkProgress = useMutation("protocols:checkAndMarkProgress" as any);
+  const createHighlight = useMutation("highlights:create" as any);
+  const removeHighlight = useMutation("highlights:remove" as any);
+  const { data: session } = authClient.useSession();
 
   // --- Chapter & Word State ---
   const [chapter, setChapter] = useState(initialChapter);
@@ -43,7 +47,10 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   const [showChapters, setShowChapters] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showStudyModal, setShowStudyModal] = useState(false);
+  const [studyModalInitialSearch, setStudyModalInitialSearch] = useState<string | undefined>(undefined);
   const [activeReaders, setActiveReaders] = useState(0);
+
+  const savedHighlights = useQuery("highlights:list" as any, { book, chapter }) || [];
 
   const handleComplete = useCallback(() => {
     // Update Streak & Stats
@@ -52,19 +59,46 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
     // Calculate unique verses
     const uniqueVerses = new Set(words.map(w => w.verse)).size;
 
-    logSession({ clientDate, versesRead: uniqueVerses }).catch((err) => {
-        console.error("Failed to log session:", err);
-    });
+    if (session) {
+        logSession({ clientDate, versesRead: uniqueVerses }).catch((err) => {
+            console.error("Failed to log session:", err);
+        });
 
-    // Check Protocols
-    checkProgress({ book, chapter }).then(() => {
-        // Silent success
-    }).catch((err) => {
-        console.error("Failed to update protocol progress:", err);
-    });
+        // Check Protocols
+        checkProgress({ book, chapter }).then(() => {
+            // Silent success
+        }).catch((err) => {
+            console.error("Failed to update protocol progress:", err);
+        });
+    }
     
     setShowQuizModal(true);
-  }, [logSession, checkProgress, words, book, chapter]);
+  }, [logSession, checkProgress, words, book, chapter, session]);
+
+  // --- Reader Actions (Selection Menu) ---
+  const handleReaderAction = useCallback((action: string, data: any) => {
+    if (action === "concordance") {
+      setStudyModalInitialSearch(data); // data is the selected text
+      setShowStudyModal(true);
+    } else if (action === "highlight") {
+        if (!session) {
+            toast.info("Sign in to save highlights");
+            return;
+        }
+        // data: { verse, indices, text }
+        createHighlight({
+            book,
+            chapter,
+            verse: data.verse,
+            indices: data.indices,
+            text: data.text,
+            color: "rose"
+        }).catch(() => toast.error("Failed to save highlight"));
+    } else if (action === "remove_highlight") {
+        // data: { id }
+        removeHighlight({ id: data.id }).catch(() => toast.error("Failed to remove highlight"));
+    }
+  }, [book, chapter, createHighlight, removeHighlight, session]);
 
   // --- Presence Logic ---
   useEffect(() => {
@@ -234,9 +268,13 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         readingMode={readingMode}
         playing={playing}
         chapterData={chapterData}
+        book={book}
+        chapter={chapter}
         onSeek={handleSeek}
         onRestart={resetToStart}
         onWordClick={seekTo}
+        onAction={handleReaderAction}
+        savedHighlights={savedHighlights}
       />
 
       {/* Control Deck */}
@@ -263,9 +301,13 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
 
       <StudyCoreModal 
         isOpen={showStudyModal}
-        onClose={() => setShowStudyModal(false)}
+        onClose={() => {
+            setShowStudyModal(false);
+            setStudyModalInitialSearch(undefined);
+        }}
         book={book}
         chapter={chapter}
+        initialSearchTerm={studyModalInitialSearch}
       />
     </div>
   );

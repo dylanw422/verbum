@@ -61,4 +61,17 @@ export default defineSchema({
   admins: defineTable({
     email: v.string(),
   }).index("by_email", ["email"]),
+
+  highlights: defineTable({
+    userId: v.string(),
+    book: v.string(),
+    chapter: v.number(),
+    verse: v.string(),
+    indices: v.array(v.number()),
+    color: v.optional(v.string()), // e.g., "rose", "yellow"
+    text: v.optional(v.string()), // The selected text content
+    createdAt: v.number(),
+  })
+    .index("by_userId_book_chapter", ["userId", "book", "chapter"])
+    .index("by_userId", ["userId"]),
 });

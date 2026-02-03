@@ -5,7 +5,7 @@ import { betterAuth } from "better-auth";
 import type { DataModel } from "./_generated/dataModel";
 
 import { components } from "./_generated/api";
-import { query } from "./_generated/server";
+import { query, type QueryCtx } from "./_generated/server";
 import authConfig from "./auth.config";
 
 const siteUrl = process.env.SITE_URL!;
@@ -47,10 +47,10 @@ export const getCurrentUser = query({
 
 export async function getUserId(ctx: GenericCtx<DataModel>) {
   const user = await authComponent.safeGetAuthUser(ctx);
-  return user?.id;
+  return user?._id;
 }
 
-export async function getIsAdmin(ctx: GenericCtx<DataModel>) {
+export async function getIsAdmin(ctx: QueryCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
   if (!user || !user.email) return false;
   
