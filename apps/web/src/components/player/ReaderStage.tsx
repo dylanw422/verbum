@@ -147,7 +147,7 @@ export function ReaderStage({
           if (!vWords) return;
           
           const vText = vWords.map(vw => vw.word.text).join(" ");
-          if (i > 0) fullText += "\n\n"; // Gap between verses
+          if (i > 0) fullText += "\n"; // Gap between verses (Single newline)
           fullText += vText;
           
           vWords.forEach(vw => fullIndices.push(vw.index));
@@ -294,7 +294,7 @@ export function ReaderStage({
         const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
         const reference = `${displayBook} ${chapter}:${refStr}`;
 
-        const copyText = `"${selectedContext.text}"\n\n${reference}`;
+        const copyText = `"${selectedContext.text}"\n\n${reference}\nvrbmrsvp.com`;
         navigator.clipboard.writeText(copyText);
         toast.success("Copied to clipboard");
         setMenuPosition(null);
@@ -396,9 +396,7 @@ export function ReaderStage({
                             e.stopPropagation();
                             handleVerseClick(vNum);
                         }}
-                        className={`text-xs font-sans mr-3 select-none font-bold align-top mt-1 inline-block cursor-pointer transition-colors ${
-                            isVerseSelected ? "text-rose-500 scale-110" : "text-rose-500/50 hover:text-rose-400"
-                        }`}
+                        className="text-xs font-sans mr-3 select-none font-bold align-top mt-1 inline-block cursor-pointer p-2 -m-2 text-rose-500/50"
                     >
                       {vNum}
                     </span>
