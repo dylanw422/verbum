@@ -21,18 +21,17 @@ export function TextSelectionMenu({ position, onAction, onClose, isHighlightActi
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+      initial={{ opacity: 0, y: 10, scale: 0.95, x: "-50%" }}
+      animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
+      exit={{ opacity: 0, y: 10, scale: 0.95, x: "-50%" }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       style={{
         position: "fixed",
         left: position.x,
         top: position.y,
-        transform: "translate(-50%, -100%)", // Center horizontally, place above
         zIndex: 50,
       }}
-      className="flex items-center gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl backdrop-blur-md mb-2"
+      className="flex items-center gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl backdrop-blur-md mt-2"
     >
       {isHighlightActive ? (
         <MenuButton 
@@ -71,8 +70,8 @@ export function TextSelectionMenu({ position, onAction, onClose, isHighlightActi
         onClick={() => onAction("share")} 
       />
       
-      {/* Tiny arrow pointing down */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-zinc-900 drop-shadow-sm" />
+      {/* Tiny arrow pointing up */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-zinc-900" />
     </motion.div>
   );
 }

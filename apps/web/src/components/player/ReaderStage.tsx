@@ -52,7 +52,10 @@ export function ReaderStage({
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
   const [selectedContext, setSelectedContext] = useState<{ text: string; verse: string; indices: number[] } | null>(null);
   const [optimisticHighlights, setOptimisticHighlights] = useState<Record<number, boolean>>({});
-  const [liveSelection, setLiveSelection] = useState<Set<number>>(new Set());
+  
+  // Verse Selection State (Replacing Drag Selection)
+  const [selectedVerses, setSelectedVerses] = useState<Set<string>>(new Set());
+
   const [matchingHighlightId, setMatchingHighlightId] = useState<string | null>(null);
   const [removedHighlightIds, setRemovedHighlightIds] = useState<Set<string>>(new Set());
 
@@ -60,14 +63,15 @@ export function ReaderStage({
   useEffect(() => {
     setOptimisticHighlights({});
     setRemovedHighlightIds(new Set());
-  }, [words[0]?.verse]); // Using first word verse as a proxy for chapter change
+    setSelectedVerses(new Set());
+    setMenuPosition(null);
+  }, [words[0]?.verse]); 
 
   // Derived highlights map (Optimistic + Saved)
   const highlights = useMemo(() => {
     const map = { ...optimisticHighlights };
     
     savedHighlights.forEach(h => {
-        // Only add if not optimistically removed
         if (!removedHighlightIds.has(h._id)) {
             h.indices.forEach(i => map[i] = true);
         }
@@ -87,6 +91,15 @@ export function ReaderStage({
     return grouped;
   }, [words]);
 
+  // Derived Live Selection (All indices of selected verses)
+  const liveSelection = useMemo(() => {
+      const indices = new Set<number>();
+      selectedVerses.forEach(vNum => {
+          verses[vNum]?.forEach(item => indices.add(item.index));
+      });
+      return indices;
+  }, [selectedVerses, verses]);
+
   // Auto-scroll effect when entering Reading Mode
   useEffect(() => {
     if (readingMode && activeVerseRef.current) {
@@ -101,128 +114,100 @@ export function ReaderStage({
     }
   }, [readingMode, playing, currentWord?.verse]);
 
-  // --- Real-time Selection Logic (Snap to Words) ---
-  useEffect(() => {
-    const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      
-      // If no selection or collapsed, clear live selection
-      // But ONLY if we are interacting with THIS container? 
-      // Actually, if selection is elsewhere, `containsNode` will fail, which is fine.
-      if (!selection || selection.isCollapsed) {
-        setLiveSelection(new Set());
-        return;
-      }
 
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(selection.anchorNode)) {
-          // Selection started outside
+  // --- Verse Selection Logic ---
+  const handleVerseClick = useCallback((vNum: string) => {
+      const newSet = new Set(selectedVerses);
+      if (newSet.has(vNum)) {
+          newSet.delete(vNum);
+      } else {
+          newSet.add(vNum);
+      }
+      setSelectedVerses(newSet);
+
+      // Clear menu if empty
+      if (newSet.size === 0) {
+          setMenuPosition(null);
+          setMatchingHighlightId(null);
           return;
       }
 
-      // Find all word spans in the container
-      // Optimization: Could cache these spans if performance is an issue, but standard DOM query is usually ok.
-      const wordSpans = Array.from(containerRef.current.querySelectorAll("span[data-word-index]"));
+      // -- Calculate Context & Menu Position --
       
-      // Filter to find which ones are selected
-      const selectedIndices = new Set<number>();
+      // 1. Sort verses numerically
+      const sortedVerses = Array.from(newSet).sort((a, b) => parseInt(a) - parseInt(b));
       
-      wordSpans.forEach(span => {
-        if (selection.containsNode(span, true)) {
-           const idx = parseInt(span.getAttribute("data-word-index") || "-1");
-           if (idx !== -1) selectedIndices.add(idx);
-        }
+      // 2. Build Text & Indices
+      let fullText = "";
+      let fullIndices: number[] = [];
+      
+      sortedVerses.forEach((v, i) => {
+          const vWords = verses[v];
+          if (!vWords) return;
+          
+          const vText = vWords.map(vw => vw.word.text).join(" ");
+          if (i > 0) fullText += "\n\n"; // Gap between verses
+          fullText += vText;
+          
+          vWords.forEach(vw => fullIndices.push(vw.index));
       });
 
-      setLiveSelection(selectedIndices);
-    };
+      // 3. Check for Highlights (Exact match of ANY selected verse? Or the whole block?)
+      // Current logic: Exact match of indices.
+      const selectedSet = new Set(fullIndices);
+      const existing = savedHighlights.find(h => {
+          if (h.indices.length !== fullIndices.length) return false;
+          return h.indices.every(i => selectedSet.has(i));
+      });
+      setMatchingHighlightId(existing?._id || null);
 
-    document.addEventListener("selectionchange", handleSelectionChange);
-    return () => document.removeEventListener("selectionchange", handleSelectionChange);
-  }, []);
+      // 4. Position Menu
+      // Always position below the last (highest numbered) selected verse.
+      const targetVerse = sortedVerses[sortedVerses.length - 1];
+      
+      if (containerRef.current && targetVerse) {
+          // Find the verse number span specifically for vertical position
+          const node = containerRef.current.querySelector(`[data-verse-click-id="${targetVerse}"]`);
+          
+          if (node) {
+              const rect = node.getBoundingClientRect();
+               // Position centered horizontally on the screen (viewport center)
+               const newPos = {
+                   x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, 
+                   y: rect.bottom + 10, // Below the verse number
+               };
+               setMenuPosition(newPos);
+          }
+      }
 
-  // --- Finalize Selection (Menu) ---
-  const handleSelectionEnd = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || liveSelection.size === 0) {
-      setMenuPosition(null);
-      setMatchingHighlightId(null);
-      return;
-    }
+      setSelectedContext({
+          text: fullText,
+          verse: sortedVerses.join(", "), 
+          indices: fullIndices
+      });
 
-    // Calculate indices from live selection
-    const indices = Array.from(liveSelection).sort((a, b) => a - b);
-    if (indices.length === 0) return;
+  }, [selectedVerses, verses, savedHighlights]);
 
-    const start = indices[0];
-    const end = indices[indices.length - 1];
-    
-    // Fill gaps if any (though UI might show gaps, logically we usually want a block)
-    // For now, let's trust the user selection or fill it? 
-    // Standard text selection fills gaps. Let's fill.
-    const fullIndices = [];
-    for (let i = start; i <= end; i++) fullIndices.push(i);
 
-    // Update Live Selection to be "Solid" block for visual consistency
-    setLiveSelection(new Set(fullIndices));
-
-    // Get text
-    const selectedText = words.slice(start, end + 1).map(w => w.text).join(" ");
-
-    // Check for EXACT match with existing highlights
-    // We compare JSON stringified arrays for simplicity (since they are sorted integers)
-    // Or set comparison
-    const selectedSet = new Set(fullIndices);
-    const existing = savedHighlights.find(h => {
-        if (h.indices.length !== fullIndices.length) return false;
-        return h.indices.every(i => selectedSet.has(i));
-    });
-
-    setMatchingHighlightId(existing?._id || null);
-
-    // Calculate Menu Position
-    // We try to use the bounding rect of the visual selection
-    // Since native selection might be partial, let's use the first and last word elements
-    if (!containerRef.current) return;
-    
-    const startNode = containerRef.current.querySelector(`span[data-word-index="${start}"]`);
-    const endNode = containerRef.current.querySelector(`span[data-word-index="${end}"]`);
-    
-    if (startNode && endNode) {
-        const startRect = startNode.getBoundingClientRect();
-        const endRect = endNode.getBoundingClientRect();
-        
-        // Center of the top line usually, or center of the block? 
-        // Let's go with: Horizontal center of the combined rect, Top of the first line.
-        // Actually, simple average is often safest for multi-line.
-        // Or just use the native selection rect as a proxy for position.
-        const rangeRect = selection.getRangeAt(0).getBoundingClientRect();
-        
-        const newPos = {
-          x: rangeRect.left + rangeRect.width / 2,
-          y: rangeRect.top - 10,
-        };
-        setMenuPosition(newPos);
-    }
-
-    setSelectedContext({
-      text: selectedText, 
-      verse: words[start].verse, 
-      indices: fullIndices
-    });
-
-  }, [liveSelection, words, savedHighlights]);
-
-  // Close menu on click elsewhere (handled by blur/click listeners usually, but specific logic here)
+  // Close menu on click elsewhere
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-        // If clicking inside the menu, don't close
-        if ((e.target as HTMLElement).closest('[role="dialog"]')) return; // approximation
+        if ((e.target as HTMLElement).closest('[role="dialog"]')) return;
         
-        // If selection is cleared, close
-        if (window.getSelection()?.isCollapsed) {
-            setMenuPosition(null);
-            setLiveSelection(new Set()); // Clear visual selection too
+        // Check if click is on a verse number or word
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-verse-click]')) return; // Identifier for our clickables
+
+        // If clicking background, clear selection
+        // But we want to allow clicking multiple verses.
+        // So only clear if clicking *outside* the reader stage entirely?
+        // Or if clicking on empty space in reader stage?
+        // Let's say: Click on empty space = Clear.
+        // Click on Verse Num = Toggle.
+        
+        if (!target.closest('.cursor-pointer')) {
+             setSelectedVerses(new Set());
+             setMenuPosition(null);
         }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -240,62 +225,75 @@ export function ReaderStage({
         setOptimisticHighlights(newHighlights);
         
         if (onAction) {
-            onAction("highlight", selectedContext);
+            // We need to pass the *first* verse as the canonical one? 
+            // Or change the API to accept multi-verse highlights?
+            // `createHighlight` takes `verse: string`. We can pass "1-3".
+            // Let's calculate the range string.
+            const sortedIndices = selectedContext.indices.sort((a,b) => a-b);
+            const startVerse = words[sortedIndices[0]].verse;
+            const endVerse = words[sortedIndices[sortedIndices.length-1]].verse;
+            const range = startVerse === endVerse ? startVerse : `${startVerse}-${endVerse}`;
+            
+            onAction("highlight", { ...selectedContext, verse: range });
         } else {
             toast.success("Highlight saved (Local)");
         }
         
         setMenuPosition(null);
-        setLiveSelection(new Set());
-        window.getSelection()?.removeAllRanges();
+        setSelectedVerses(new Set());
         break;
       
       case "remove_highlight":
         if (matchingHighlightId && onAction) {
             onAction("remove_highlight", { id: matchingHighlightId });
-            
-            // Optimistic removal
             setRemovedHighlightIds(prev => new Set([...prev, matchingHighlightId]));
-            
-            // Also clear these indices from optimistic highlights if they were there
             const updatedOptimistic = { ...optimisticHighlights };
             selectedContext.indices.forEach(i => delete updatedOptimistic[i]);
             setOptimisticHighlights(updatedOptimistic);
-
             toast.success("Highlight removed");
         }
         setMenuPosition(null);
-        setLiveSelection(new Set());
-        window.getSelection()?.removeAllRanges();
+        setSelectedVerses(new Set());
         break;
 
       case "copy":
-        const startIdx = selectedContext.indices[0];
-        const endIdx = selectedContext.indices[selectedContext.indices.length - 1];
-        const startVerse = words[startIdx]?.verse;
-        const endVerse = words[endIdx]?.verse;
-        
-        // Capitalize book for display
-        const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
-        
-        let reference = `${displayBook} ${chapter}:${startVerse}`;
-        if (startVerse && endVerse && startVerse !== endVerse) {
-            reference += `-${endVerse}`;
+        // Logic to format "1, 3, 5" or "1-5"
+        // We can just use the `selectedVerses` set
+        const sortedV = Array.from(selectedVerses).sort((a,b) => parseInt(a)-parseInt(b));
+        // Simple range formatter
+        let refStr = "";
+        if (sortedV.length > 0) {
+            refStr = sortedV[0];
+            let inRange = false;
+            for (let i = 1; i < sortedV.length; i++) {
+                const prev = parseInt(sortedV[i-1]);
+                const curr = parseInt(sortedV[i]);
+                if (curr === prev + 1) {
+                    inRange = true;
+                } else {
+                    if (inRange) refStr += `-${prev}`; // Close previous range
+                    refStr += `, ${curr}`;
+                    inRange = false;
+                }
+            }
+            if (inRange) refStr += `-${sortedV[sortedV.length-1]}`;
         }
+
+        const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
+        const reference = `${displayBook} ${chapter}:${refStr}`;
 
         const copyText = `"${selectedContext.text}"\n\n${reference}`;
         navigator.clipboard.writeText(copyText);
         toast.success("Copied to clipboard");
         setMenuPosition(null);
-        setLiveSelection(new Set());
-        window.getSelection()?.removeAllRanges();
+        setSelectedVerses(new Set());
         break;
+
       case "concordance":
         toast.info(`Searching for: ${selectedContext.text}`);
         if (onAction) onAction("concordance", selectedContext.text);
         setMenuPosition(null);
-        setLiveSelection(new Set()); // Maybe keep selection?
-        // window.getSelection()?.removeAllRanges();
+        setSelectedVerses(new Set());
         break;
       case "note":
         toast.info("Note created (placeholder)");
@@ -303,18 +301,32 @@ export function ReaderStage({
         break;
       case "share":
         if (onAction) {
-            onAction("share", selectedContext);
-        } else {
-            // fallback
-            if (navigator.share) {
-                navigator.share({ text: selectedContext.text }).catch(() => {});
-            } else {
-                toast.info("Share menu opened");
+             // Use same ref logic as Copy
+            const sortedV = Array.from(selectedVerses).sort((a,b) => parseInt(a)-parseInt(b));
+            let refStr = "";
+            if (sortedV.length > 0) {
+                refStr = sortedV[0];
+                let inRange = false;
+                for (let i = 1; i < sortedV.length; i++) {
+                    const prev = parseInt(sortedV[i-1]);
+                    const curr = parseInt(sortedV[i]);
+                    if (curr === prev + 1) {
+                        inRange = true;
+                    } else {
+                        if (inRange) refStr += `-${prev}`;
+                        refStr += `, ${curr}`;
+                        inRange = false;
+                    }
+                }
+                if (inRange) refStr += `-${sortedV[sortedV.length-1]}`;
             }
+            const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
+            const reference = `${displayBook} ${chapter}:${refStr}`;
+            
+            onAction("share", { text: selectedContext.text, indices: selectedContext.indices, referenceOverride: reference });
         }
         setMenuPosition(null);
-        setLiveSelection(new Set());
-        window.getSelection()?.removeAllRanges();
+        setSelectedVerses(new Set());
         break;
     }
   };
@@ -348,14 +360,13 @@ export function ReaderStage({
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
             transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-            className="w-full h-[60vh] md:h-[70vh] overflow-y-auto px-6 py-12 scrollbar-hide mask-image-edges bg-zinc-950/50 backdrop-blur-sm rounded-xl border border-white/5 shadow-2xl relative z-20 selection:bg-transparent"
+            className="w-full h-[60vh] md:h-[70vh] overflow-y-auto px-6 py-12 scrollbar-hide mask-image-edges bg-zinc-950/50 backdrop-blur-sm rounded-xl border border-white/5 shadow-2xl relative z-20 selection:bg-transparent select-none"
             ref={containerRef}
-            onMouseUp={handleSelectionEnd}
-            onTouchEnd={handleSelectionEnd} // Basic mobile support
           >
             <div className="max-w-2xl mx-auto pb-20">
               {Object.entries(verses).map(([vNum, vWords]) => {
                 const isCurrentVerse = currentWord && currentWord.verse === vNum;
+                const isVerseSelected = selectedVerses.has(vNum);
                 
                 return (
                   <div
@@ -365,7 +376,17 @@ export function ReaderStage({
                       isCurrentVerse ? "text-zinc-100" : "text-zinc-500"
                     }`}
                   >
-                    <span className="text-xs text-rose-500/50 font-sans mr-3 select-none font-bold align-top mt-1 inline-block">
+                    <span 
+                        data-verse-click="true"
+                        data-verse-click-id={vNum}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleVerseClick(vNum);
+                        }}
+                        className={`text-xs font-sans mr-3 select-none font-bold align-top mt-1 inline-block cursor-pointer transition-colors ${
+                            isVerseSelected ? "text-rose-500 scale-110" : "text-rose-500/50 hover:text-rose-400"
+                        }`}
+                    >
                       {vNum}
                     </span>
                     
