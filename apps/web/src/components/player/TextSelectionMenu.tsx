@@ -14,16 +14,28 @@ interface TextSelectionMenuProps {
   onAction: (action: "highlight" | "remove_highlight" | "note" | "concordance" | "copy" | "share") => void;
   onClose: () => void;
   isHighlightActive?: boolean;
+  orientation?: "vertical" | "horizontal";
 }
 
-export function TextSelectionMenu({ position, onAction, onClose, isHighlightActive }: TextSelectionMenuProps) {
+export function TextSelectionMenu({ position, onAction, onClose, isHighlightActive, orientation = "vertical" }: TextSelectionMenuProps) {
   if (!position) return null;
+
+  const isVertical = orientation === "vertical";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95, x: "-50%" }}
-      animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
-      exit={{ opacity: 0, y: 10, scale: 0.95, x: "-50%" }}
+      initial={isVertical 
+        ? { opacity: 0, x: "calc(-50% - 10px)", y: "-50%", scale: 0.95 }
+        : { opacity: 0, y: 10, x: 0, scale: 0.95 }
+      }
+      animate={isVertical
+        ? { opacity: 1, x: "-50%", y: "-50%", scale: 1 }
+        : { opacity: 1, y: "-100%", x: 0, scale: 1 } // y: -100% places it above the anchor point
+      }
+      exit={isVertical
+        ? { opacity: 0, x: "calc(-50% - 10px)", y: "-50%", scale: 0.95 }
+        : { opacity: 0, y: 10, x: 0, scale: 0.95 }
+      }
       transition={{ duration: 0.2, ease: "easeOut" }}
       style={{
         position: "fixed",
@@ -31,7 +43,7 @@ export function TextSelectionMenu({ position, onAction, onClose, isHighlightActi
         top: position.y,
         zIndex: 50,
       }}
-      className="flex items-center gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl backdrop-blur-md mt-2"
+      className={`flex ${isVertical ? "flex-col" : "flex-row"} items-center gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl backdrop-blur-md`}
     >
       {isHighlightActive ? (
         <MenuButton 
@@ -58,7 +70,7 @@ export function TextSelectionMenu({ position, onAction, onClose, isHighlightActi
         label="Search" 
         onClick={() => onAction("concordance")} 
       />
-      <div className="w-px h-4 bg-zinc-800 mx-1" />
+      <div className={isVertical ? "w-4 h-px bg-zinc-800 my-1" : "w-px h-4 bg-zinc-800 mx-1"} />
       <MenuButton 
         icon={<Copy className="w-4 h-4" />} 
         label="Copy" 
@@ -70,8 +82,12 @@ export function TextSelectionMenu({ position, onAction, onClose, isHighlightActi
         onClick={() => onAction("share")} 
       />
       
-      {/* Tiny arrow pointing up */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-zinc-900" />
+      {/* Arrow */}
+      {isVertical ? (
+        <div className="absolute left-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-zinc-900" />
+      ) : (
+        <div className="absolute top-full left-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-zinc-900" />
+      )}
     </motion.div>
   );
 }

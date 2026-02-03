@@ -50,6 +50,7 @@ export function ReaderStage({
 
   // Selection State
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  const [menuOrientation, setMenuOrientation] = useState<"vertical" | "horizontal">("vertical");
   const [selectedContext, setSelectedContext] = useState<{ text: string; verse: string; indices: number[] } | null>(null);
   const [optimisticHighlights, setOptimisticHighlights] = useState<Record<number, boolean>>({});
   
@@ -166,17 +167,28 @@ export function ReaderStage({
       const targetVerse = sortedVerses[sortedVerses.length - 1];
       
       if (containerRef.current && targetVerse) {
-          // Find the verse number span specifically for vertical position
+          // Find the verse number span specifically for positioning
           const node = containerRef.current.querySelector(`[data-verse-click-id="${targetVerse}"]`);
           
           if (node) {
               const rect = node.getBoundingClientRect();
-               // Position centered horizontally on the screen (viewport center)
-               const newPos = {
-                   x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, 
-                   y: rect.bottom + 10, // Below the verse number
-               };
-               setMenuPosition(newPos);
+              const isMobile = window.innerWidth < 768; // MD breakpoint
+              
+              let newPos;
+              if (isMobile) {
+                  newPos = {
+                      x: rect.left, // Left aligned with verse number
+                      y: rect.top - 10, // Above the verse number
+                  };
+                  setMenuOrientation("horizontal");
+              } else {
+                  newPos = {
+                      x: rect.left - 50, // To the left of the verse number
+                      y: rect.top + rect.height / 2, // Centered vertically on the verse number
+                  };
+                  setMenuOrientation("vertical");
+              }
+              setMenuPosition(newPos);
           }
       }
 
@@ -346,6 +358,7 @@ export function ReaderStage({
             onAction={handleMenuAction} 
             onClose={() => setMenuPosition(null)}
             isHighlightActive={!!matchingHighlightId}
+            orientation={menuOrientation}
           />
         )}
       </AnimatePresence>
@@ -395,25 +408,20 @@ export function ReaderStage({
                       const isHighlighted = highlights[globalIndex];
                       const isSelected = liveSelection.has(globalIndex);
                       
-                      // Neighbor checks for rounding logic
+                      // Neighbor checks for rounding logic (primarily for saved highlights)
                       const prevWord = words[globalIndex - 1];
                       const nextWord = words[globalIndex + 1];
                       const isSameVersePrev = prevWord?.verse === w.verse;
                       const isSameVerseNext = nextWord?.verse === w.verse;
 
                       let bgClass = "";
-                      let roundedClass = "rounded-sm";
+                      let roundedClass = "rounded-none";
 
                       if (isSelected) {
-                        bgClass = "bg-rose-500/40 text-rose-100";
-                        const prevConnected = isSameVersePrev && liveSelection.has(globalIndex - 1);
-                        const nextConnected = isSameVerseNext && liveSelection.has(globalIndex + 1);
-
-                        if (prevConnected && nextConnected) roundedClass = "rounded-none";
-                        else if (prevConnected) roundedClass = "rounded-l-none rounded-r-sm";
-                        else if (nextConnected) roundedClass = "rounded-r-none rounded-l-sm";
+                        bgClass = "underline decoration-dotted decoration-rose-500/60 underline-offset-4 text-rose-100";
                       } else if (isHighlighted) {
                         bgClass = "bg-rose-500/20 text-rose-200";
+                        roundedClass = "rounded-sm";
                         const prevConnected = isSameVersePrev && highlights[globalIndex - 1];
                         const nextConnected = isSameVerseNext && highlights[globalIndex + 1];
 
@@ -427,13 +435,13 @@ export function ReaderStage({
                           key={`${vNum}-${i}`} 
                           data-word-index={globalIndex}
                           data-verse={vNum}
-                          className={`inline-block pr-1.5 py-0.5 cursor-pointer hover:text-zinc-300 transition-colors ${roundedClass} ${bgClass}`}
+                          className={`inline decoration-clone py-0.5 cursor-pointer hover:text-zinc-300 transition-colors ${roundedClass} ${bgClass}`}
                           onClick={() => onWordClick(globalIndex)}
                         >
                           {isActive ? (
                             <motion.span
                               layoutId="active-word"
-                              className="text-rose-500 font-medium relative block"
+                              className="text-rose-500 font-medium relative inline-block"
                               transition={{ type: "spring", stiffness: 120, damping: 20 }}
                             >
                               {w.text}
@@ -441,6 +449,7 @@ export function ReaderStage({
                           ) : (
                             <span>{w.text}</span>
                           )}
+                          {" "}
                         </span>
                       );
                     })}
