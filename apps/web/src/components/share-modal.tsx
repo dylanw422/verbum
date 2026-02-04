@@ -28,10 +28,13 @@ export function ShareModal({
     setIsGenerating(true);
 
     try {
+      const isMobile = window.innerWidth < 768;
+      const pixelRatio = isMobile ? 2 : 4;
+
       // 1. Generate PNG using html-to-image (Supports modern CSS like oklch/lab)
       const dataUrl = await toPng(cardRef.current, {
         cacheBust: true, 
-        pixelRatio: 4, 
+        pixelRatio, 
         backgroundColor: "#09090b",
         filter: (node) => {
           if (!(node instanceof HTMLElement)) return true;
@@ -49,16 +52,38 @@ export function ShareModal({
         return;
       }
 
-      // 3. Write to Clipboard
-      await navigator.clipboard.write([
-        new ClipboardItem({
+      const file = new File([blob], "verbum-verse.png", { type: blob.type });
+      const clipboardSupported =
+        typeof ClipboardItem !== "undefined" && !!navigator.clipboard?.write;
+
+      // 3a. Prefer native share on mobile if available
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: reference,
+          text: reference,
+        });
+        toast.success("Share sheet opened");
+      } else if (clipboardSupported) {
+        // 3b. Write to Clipboard
+        await navigator.clipboard.write([
+          new ClipboardItem({
             [blob.type]: blob,
-        }),
-      ]);
-      
-      setHasCopied(true);
-      toast.success("Image copied to clipboard");
-      setTimeout(() => setHasCopied(false), 2000);
+          }),
+        ]);
+        setHasCopied(true);
+        toast.success("Image copied to clipboard");
+        setTimeout(() => setHasCopied(false), 2000);
+      } else {
+        // 3c. Fallback: trigger download
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "verbum-verse.png";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        toast.success("Image downloaded");
+      }
 
     } catch (err) {
       console.error("Image generation failed", err);
