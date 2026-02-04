@@ -235,7 +235,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
         </div>
 
         {/* Text Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 scroll-smooth">
+        <div className="flex-1 overflow-y-auto pt-6 pb-6 pr-6 pl-3 md:pt-12 md:pb-12 md:pr-12 md:pl-6 scroll-smooth">
             <div className={`max-w-3xl mx-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-4xl' : ''}`}>
                 {isTextLoading ? (
                     <div className="flex justify-center py-20">

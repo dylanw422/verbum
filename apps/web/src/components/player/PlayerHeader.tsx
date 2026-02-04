@@ -72,10 +72,10 @@ export function PlayerHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-center md:self-start">
             <button
                 onClick={onToggleStudyTools}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all duration-300 mt-1 hover:cursor-pointer group"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all duration-300 mt-0 md:mt-1 hover:cursor-pointer group"
                 title="Study Tools"
             >
                 <span>Study</span>

@@ -88,7 +88,18 @@ export function ConcordanceTool({ initialQuery = "" }: ConcordanceToolProps) {
 
       {/* Header / Search Input */}
       <div className="p-6 border-b border-zinc-800 bg-zinc-900/30">
-        <div className="relative mb-4 mr-12">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-rose-500">
+            <Search className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-zinc-100">Concordance</h2>
+            <p className="text-sm text-zinc-500">
+              Search every occurrence across Scripture.
+            </p>
+          </div>
+        </div>
+        <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
           <input
             type="text"
