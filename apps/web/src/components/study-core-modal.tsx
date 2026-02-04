@@ -117,7 +117,7 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1,
                   <button
                     type="button"
                     onClick={onClose}
-                    className="inline-flex items-center justify-center p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer"
+                    className="inline-flex items-center justify-center p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer md:absolute md:top-4 md:right-4 md:z-50"
                     aria-label="Close"
                   >
                     <X className="w-4 h-4" />

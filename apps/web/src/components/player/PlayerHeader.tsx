@@ -1,20 +1,12 @@
-import { BookOpen, ChevronDown, ChevronUp, ArrowLeft, Library } from "lucide-react";
-import Link from "next/link";
+import { BookOpen, ArrowLeft, Library } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-import { ChapterSelector } from "./ChapterSelector";
 
 interface PlayerHeaderProps {
   book: string;
   chapter: number;
   readingMode: boolean;
-  currentVerse: string | null;
-  showChapters: boolean;
-  availableChapters: number[];
-  playing: boolean;
   activeReaders?: number;
-  onToggleChapters: () => void;
-  onSelectChapter: (chapter: number) => void;
+  onOpenBookChapter: () => void;
   onTogglePlay: () => void;
   onToggleStudyTools: () => void;
 }
@@ -26,22 +18,11 @@ export function PlayerHeader({
   book,
   chapter,
   readingMode,
-  currentVerse,
-  showChapters,
-  availableChapters,
-  playing,
   activeReaders = 0,
-  onToggleChapters,
-  onSelectChapter,
+  onOpenBookChapter,
   onTogglePlay,
   onToggleStudyTools,
 }: PlayerHeaderProps) {
-  const handleChapterToggle = () => {
-    if (!showChapters && playing) {
-      onTogglePlay();
-    }
-    onToggleChapters();
-  };
   const router = useRouter();
 
   return (
@@ -64,11 +45,15 @@ export function PlayerHeader({
                 </span>
               )}
             </h1>
-            <div className="flex items-center gap-3 text-zinc-200">
+            <button
+              onClick={onOpenBookChapter}
+              className="flex items-center gap-3 text-zinc-200 rounded-lg px-2 py-1 -mx-2 hover:bg-zinc-900/60 transition-colors hover:cursor-pointer"
+              title="Jump to book and chapter"
+            >
               <div className="p-1.5 bg-zinc-900 rounded-md border border-zinc-800">
                 <BookOpen className="w-4 h-4 text-rose-500" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col text-left">
                 <span className="font-medium tracking-tight text-sm leading-none">{book}</span>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-xs text-zinc-500">Chapter {chapter}</span>
@@ -83,7 +68,7 @@ export function PlayerHeader({
                   )}
                 </div>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -96,35 +81,8 @@ export function PlayerHeader({
                 <Library className="w-3 h-3 group-hover:text-rose-500 transition-colors" />
                 <span className="hidden md:inline">Study</span>
             </button>
-
-            {availableChapters.length > 0 && (
-            <div className="relative flex items-center gap-2">
-                <button
-                onClick={handleChapterToggle}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 mt-1 hover:cursor-pointer ${
-                    showChapters
-                    ? "bg-zinc-100 text-zinc-950 border-zinc-100 shadow-md"
-                    : "bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:text-zinc-100 hover:bg-zinc-800"
-                }`}
-                >
-                <span>CH {chapter}</span>
-                {showChapters ? (
-                    <ChevronUp className="w-3 h-3" />
-                ) : (
-                    <ChevronDown className="w-3 h-3" />
-                )}
-                </button>
-            </div>
-            )}
         </div>
       </div>
-
-      <ChapterSelector
-        chapters={availableChapters}
-        currentChapter={chapter}
-        isOpen={showChapters}
-        onSelectChapter={onSelectChapter}
-      />
     </div>
   );
 }

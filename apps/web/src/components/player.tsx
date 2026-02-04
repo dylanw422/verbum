@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 import { updatePresence } from "@/app/actions/presence";
 import { useKeyboardControls } from "@/hooks/use-keyboard-controls";
@@ -24,6 +25,7 @@ import { tokenizeToData } from "./player/utils";
 import { QuizModal } from "./quiz-modal";
 import { StudyCoreModal } from "@/components/study-core-modal";
 import { ShareModal } from "@/components/share-modal";
+import { BookChapterModal } from "./player/BookChapterModal";
 
 interface PlayerProps {
   book: string;
@@ -31,6 +33,7 @@ interface PlayerProps {
 }
 
 export default function Player({ book, initialChapter = 1 }: PlayerProps) {
+  const router = useRouter();
   // --- Data & Persistence ---
   const { library, isLoading, availableChapters } = useLibrary(book);
   const { targetWpm, readingMode, adjustSpeed, toggleReadingMode } = usePlayerPersistence();
@@ -46,7 +49,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   // --- Chapter & Word State ---
   const [chapter, setChapter] = useState(initialChapter);
   const [words, setWords] = useState<WordData[]>([]);
-  const [showChapters, setShowChapters] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showStudyModal, setShowStudyModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -218,7 +221,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
     adjustSpeed,
     toggleReadingMode: handleToggleReadingMode,
     readingMode,
-    closeChapters: () => setShowChapters(false),
+    closeChapters: () => setIsBookModalOpen(false),
   });
 
   // --- Chapter Data for Reading Mode ---
@@ -292,13 +295,11 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         book={book}
         chapter={chapter}
         readingMode={readingMode}
-        currentVerse={words[wordIndex]?.verse || null}
-        showChapters={showChapters}
-        availableChapters={availableChapters}
-        playing={playing}
         activeReaders={activeReaders}
-        onToggleChapters={() => setShowChapters(!showChapters)}
-        onSelectChapter={handleSelectChapter}
+        onOpenBookChapter={() => {
+          if (playing) togglePlay();
+          setIsBookModalOpen(true);
+        }}
         onTogglePlay={togglePlay}
         onToggleStudyTools={() => {
             if (playing) togglePlay();
@@ -360,6 +361,22 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         onClose={() => setShowShareModal(false)}
         text={shareData.text}
         reference={shareData.reference}
+      />
+
+      <BookChapterModal
+        isOpen={isBookModalOpen}
+        onClose={() => setIsBookModalOpen(false)}
+        currentBook={book}
+        currentChapter={chapter}
+        library={library}
+        onSelect={(nextBook, nextChapter) => {
+          if (nextBook !== book) {
+            setChapter(nextChapter);
+            router.push(`/${nextBook.toLowerCase().replace(/\\s+/g, "-")}?chapter=${nextChapter}`);
+            return;
+          }
+          handleSelectChapter(nextChapter);
+        }}
       />
     </div>
   );
