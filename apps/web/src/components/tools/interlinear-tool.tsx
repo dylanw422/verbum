@@ -331,7 +331,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                                                         {w.word}
                                                     </span>
                                                     {pronunciation && (
-                                                      <span className="text-sm font-mono tracking-tight text-zinc-600 leading-none mt-1 lowercase">
+                                                      <span className="text-sm font-mono tracking-tight text-zinc-600 leading-none mt-2 lowercase">
                                                         {pronunciation}
                                                       </span>
                                                     )}
