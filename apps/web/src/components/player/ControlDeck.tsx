@@ -57,10 +57,14 @@ export function ControlDeck({
         {/* Play/Pause Button */}
         <button
           onClick={onTogglePlay}
-          className={`flex items-center justify-center w-16 h-16 md:w-14 md:h-14 rounded-full transition-all duration-300 shadow-lg hover:cursor-pointer ${
-            playing
-              ? "bg-zinc-100 text-zinc-950 hover:bg-zinc-200 scale-100"
-              : "bg-rose-600 text-white hover:bg-rose-500 hover:scale-105 shadow-rose-900/20"
+          disabled={readingMode}
+          title={readingMode ? "Play disabled in Reading Mode" : "Play/Pause"}
+          className={`flex items-center justify-center w-16 h-16 md:w-14 md:h-14 rounded-full transition-all duration-300 shadow-lg ${
+            readingMode
+              ? "bg-zinc-800 text-zinc-500 opacity-60 cursor-not-allowed"
+              : playing
+                ? "bg-zinc-100 text-zinc-950 hover:bg-zinc-200 scale-100 hover:cursor-pointer"
+                : "bg-rose-600 text-white hover:bg-rose-500 hover:scale-105 shadow-rose-900/20 hover:cursor-pointer"
           }`}
         >
           {playing ? (

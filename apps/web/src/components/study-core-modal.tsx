@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Search, BookOpen, LayoutDashboard, Shield, Construction, GitBranch } from "lucide-react";
+import { X, Search, BookOpen, LayoutDashboard, Shield, Construction, GitBranch, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { InterlinearTool } from "./tools/interlinear-tool";
 import { ConcordanceTool } from "./tools/concordance-tool";
@@ -61,6 +61,7 @@ const TOOLS = [
 
 export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1, initialToolId, initialSearchTerm }: StudyCoreModalProps) {
   const [activeToolId, setActiveToolId] = useState(TOOLS[0].id);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -69,6 +70,7 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1,
         } else if (initialToolId) {
             setActiveToolId(initialToolId);
         }
+        setIsSidebarOpen(false);
     }
   }, [isOpen, initialToolId, initialSearchTerm]);
 
@@ -95,20 +97,46 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1,
           >
             {/* Sidebar Navigation */}
             <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-zinc-800 bg-zinc-900/30 flex flex-col">
-              <div className="p-6 border-b border-zinc-800/50">
-                 <span className="text-xs font-mono text-rose-500 uppercase tracking-[0.2em] mb-1 block">
+              <div className="p-6 border-b border-zinc-800/50 flex items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-mono text-rose-500 uppercase tracking-[0.2em] mb-1 block">
                     Study Core
                   </span>
                   <h2 className="text-xl font-bold text-zinc-100">Library</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSidebarOpen((prev) => !prev)}
+                    className="md:hidden inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-400 hover:text-rose-400 transition-colors"
+                    aria-expanded={isSidebarOpen}
+                  >
+                    Tools
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isSidebarOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="inline-flex items-center justify-center p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer"
+                    aria-label="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div
+                className={`flex-1 overflow-y-auto p-4 space-y-2 ${isSidebarOpen ? "block" : "hidden"} md:block`}
+              >
                 {TOOLS.map((tool) => {
                   const isActive = activeToolId === tool.id;
                   return (
                     <button
                       key={tool.id}
-                      onClick={() => setActiveToolId(tool.id)}
+                      onClick={() => {
+                        setActiveToolId(tool.id);
+                        setIsSidebarOpen(false);
+                      }}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all text-sm font-medium hover:cursor-pointer ${
                         isActive 
                           ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" 
@@ -125,13 +153,6 @@ export function StudyCoreModal({ isOpen, onClose, book = "Genesis", chapter = 1,
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-h-0 bg-zinc-950/50 relative">
-               {/* Close Button (Absolute Top Right) */}
-               <button
-                  onClick={onClose}
-                  className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-rose-500 transition-colors rounded-full border border-transparent hover:border-zinc-800 bg-zinc-900/50 hover:cursor-pointer z-50"
-                >
-                  <X className="w-5 h-5" />
-                </button>
 
               {/* Content Header - Suppress for custom tools */}
               {activeToolId !== "hebrew-greek" && activeToolId !== "concordance" && activeToolId !== "cross-references" && (
