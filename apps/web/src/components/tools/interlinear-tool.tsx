@@ -50,6 +50,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
   // selectedWord now stores the Strong's number directly
   const [selectedWord, setSelectedWord] = useState<{ text: string; word: string; number: string } | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [pronunciationMode, setPronunciationMode] = useState<"koine" | "classical">("koine");
   
   // Data Fetching
   const { isLoading: isLibLoading, availableChapters } = useLibrary(book);
@@ -106,6 +107,34 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
     
     return null;
   }, [selectedWord, dictionary]);
+
+  const getPronunciation = (word: InterlinearWord) => {
+    if (!dictionary) return null;
+    const cleanNumber = word.number.replace(/[^a-zA-Z0-9]/g, "");
+    const entry =
+      dictionary[cleanNumber] ||
+      dictionary[cleanNumber.toUpperCase()] ||
+      dictionary[cleanNumber.toLowerCase()];
+    if (!entry) return null;
+    const base = isOT
+      ? entry.xlit || entry.pron || entry.translit
+      : entry.translit || entry.pron || entry.xlit;
+    if (!base) return null;
+    const normalized = base.toLowerCase();
+    if (isOT || pronunciationMode === "classical") {
+      return normalized;
+    }
+    return applyKoinePronunciation(normalized);
+  };
+
+  const applyKoinePronunciation = (value: string) => {
+    return value
+      .replace(/ph/g, "f")
+      .replace(/ch/g, "kh")
+      .replace(/ei/g, "ee")
+      .replace(/ou/g, "oo")
+      .replace(/b/g, "v");
+  };
 
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -230,8 +259,33 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                             </div>
                          </DropdownMenuContent>
                     </DropdownMenu>
+
                 </div>
             </div>
+
+            {!isOT && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-rose-400">
+                  {pronunciationMode === "koine" ? "Koine" : "Classical"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPronunciationMode(
+                      pronunciationMode === "koine" ? "classical" : "koine"
+                    )
+                  }
+                  className="relative inline-flex h-5 w-10 items-center rounded-full border border-zinc-800 bg-zinc-900/50 transition-colors hover:cursor-pointer"
+                  aria-label="Toggle pronunciation mode"
+                >
+                  <span
+                    className={`absolute left-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                      pronunciationMode === "koine" ? "translate-x-0" : "translate-x-5"
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
         </div>
 
         {/* Text Content */}
@@ -257,6 +311,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                                     <div className="flex-1 flex flex-wrap gap-x-2 gap-y-4">
                                         {v.verse.map((w, i) => {
                                             const isSelected = selectedWord?.number === w.number;
+                                            const pronunciation = getPronunciation(w);
                                             return (
                                                 <div 
                                                     key={i}
@@ -275,6 +330,11 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
                                                     <span className={`text-sm font-sans text-zinc-500 leading-none ${isSelected ? "text-rose-400" : "group-hover:text-zinc-400"}`}>
                                                         {w.word}
                                                     </span>
+                                                    {pronunciation && (
+                                                      <span className="text-sm font-mono tracking-tight text-zinc-600 leading-none mt-1 lowercase">
+                                                        {pronunciation}
+                                                      </span>
+                                                    )}
                                                 </div>
                                             );
                                         })}

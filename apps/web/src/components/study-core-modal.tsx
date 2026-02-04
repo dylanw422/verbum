@@ -37,7 +37,7 @@ const TOOLS = [
     id: "commentaries",
     label: "Commentaries",
     icon: BookOpen,
-    title: "Theological Commentaries",
+    title: "Commentaries",
     description: "Access a rich library of historical and contemporary commentaries to deepen your understanding.",
     comingSoonText: "Integration with classic commentaries (Matthew Henry, Jamieson-Fausset-Brown) and modern insights."
   },
