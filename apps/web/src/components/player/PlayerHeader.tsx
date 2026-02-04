@@ -1,4 +1,4 @@
-import { BookOpen, ArrowLeft } from "lucide-react";
+import { BookOpen, ArrowLeft, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PlayerHeaderProps {
@@ -27,7 +27,7 @@ export function PlayerHeader({
 
   return (
     <div className="absolute top-0 left-0 right-0 z-40 flex flex-col items-center p-6 md:p-8 pointer-events-none">
-      <div className="w-full max-w-5xl flex justify-between items-start pointer-events-auto">
+      <div className="w-full max-w-5xl flex justify-between items-center pointer-events-auto">
         <div className="flex items-start gap-4 md:gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
           <button
             onClick={() => router.back()}
@@ -72,13 +72,14 @@ export function PlayerHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-center md:self-start">
+        <div className="flex items-center gap-2">
             <button
                 onClick={onToggleStudyTools}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all duration-300 mt-0 md:mt-1 hover:cursor-pointer group"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all duration-300 hover:cursor-pointer group"
                 title="Study Tools"
             >
-                <span>Study</span>
+                <GraduationCap className="w-4 h-4 text-zinc-400 group-hover:text-rose-500 transition-colors" />
+                <span className="sr-only">Study</span>
             </button>
         </div>
       </div>
