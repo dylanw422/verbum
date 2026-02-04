@@ -49,7 +49,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
   const [chapter, setChapter] = useState(initialChapter);
   // selectedWord now stores the Strong's number directly
   const [selectedWord, setSelectedWord] = useState<{ text: string; word: string; number: string } | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pronunciationMode, setPronunciationMode] = useState<"koine" | "classical">("koine");
   
   // Data Fetching
@@ -142,8 +142,7 @@ export function InterlinearTool({ initialBook, initialChapter }: InterlinearTool
     const checkDesktop = () => {
         const isDesk = window.innerWidth >= 768;
         setIsDesktop(isDesk);
-        if (!isDesk) setIsSidebarOpen(false); // Default close on mobile
-        else setIsSidebarOpen(true);
+        setIsSidebarOpen(false); // Keep collapsed on mount/resizes
     };
     // Initial check
     checkDesktop();
