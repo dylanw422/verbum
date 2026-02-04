@@ -71,6 +71,7 @@ export const BIBLE_JSON_URL = "https://grnkacu5pyiersbw.public.blob.vercel-stora
 export const HEBREW_JSON_URL= "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/hebrew-dict.json"
 export const GREEK_JSON_URL= "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/greek-dict.json"
 export const INTERLINEAR_JSON_URL = "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/interlinear.json";
+export const CROSS_REFERENCES_URL = "https://grnkacu5pyiersbw.public.blob.vercel-storage.com/cross_references.txt";
 
 export const OT_BOOKS = BOOKS.slice(0, 39);
 export const NT_BOOKS = BOOKS.slice(39);

@@ -378,9 +378,9 @@ export default function JournalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: "concordance", name: "Concordance", icon: Search },
+                    { id: "cross-references", name: "Cross Refs", icon: History },
                     { id: "commentaries", name: "Commentaries", icon: BookOpen },
                     { id: "hebrew-greek", name: "Hebrew/Greek", icon: LayoutDashboard },
-                    { id: "maps", name: "Maps", icon: Shield },
                   ].map((tool, i) => (
                     <button 
                       key={i} 

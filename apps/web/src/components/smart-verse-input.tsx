@@ -10,9 +10,10 @@ interface SmartVerseInputProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  showPreview?: boolean;
 }
 
-export function SmartVerseInput({ value, onChange, className }: SmartVerseInputProps) {
+export function SmartVerseInput({ value, onChange, className, showPreview = true }: SmartVerseInputProps) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightIndex] = useState(0);
@@ -127,7 +128,7 @@ export function SmartVerseInput({ value, onChange, className }: SmartVerseInputP
       </AnimatePresence>
       
       {/* Preview */}
-      {previewText && (
+      {showPreview && previewText && (
         <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
