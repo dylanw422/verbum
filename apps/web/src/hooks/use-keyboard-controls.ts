@@ -35,6 +35,16 @@ export function useKeyboardControls({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLoading) return;
 
+      const target = e.target as HTMLElement | null;
+      const isTypingTarget =
+        !!target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable);
+
+      if (isTypingTarget) return;
+
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
