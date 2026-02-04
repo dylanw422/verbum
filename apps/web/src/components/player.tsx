@@ -245,7 +245,6 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
 
   const handleSelectChapter = useCallback((ch: number) => {
     setChapter(ch);
-    setShowChapters(false);
   }, []);
 
   const handleNextChapter = useCallback(() => {
