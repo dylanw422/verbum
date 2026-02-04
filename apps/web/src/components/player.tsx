@@ -40,6 +40,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   const checkProgress = useMutation("protocols:checkAndMarkProgress" as any);
   const createHighlight = useMutation("highlights:create" as any);
   const removeHighlight = useMutation("highlights:remove" as any);
+  const logSharedVerse = useMutation("sharedVerses:create" as any);
   const { data: session } = authClient.useSession();
 
   // --- Chapter & Word State ---
@@ -113,29 +114,36 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         // Actually, let's look at `ReaderStage.tsx` call to `onAction`.
         // It passes `selectedContext`. 
         
-        // RE-IMPLEMENT formatting here to be safe:
-        // data is `selectedContext`
         const indices = data.indices;
         if (!indices || !indices.length) return;
-        
-        const startIdx = indices[0];
-        const endIdx = indices[indices.length - 1];
-        const startVerse = words[startIdx]?.verse;
-        const endVerse = words[endIdx]?.verse;
-        
-        const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
-        let reference = `${displayBook} ${chapter}:${startVerse}`;
-        if (startVerse && endVerse && startVerse !== endVerse) {
-            reference += `-${endVerse}`;
+
+        let reference = data.referenceOverride as string | undefined;
+        if (!reference) {
+            const startIdx = indices[0];
+            const endIdx = indices[indices.length - 1];
+            const startVerse = words[startIdx]?.verse;
+            const endVerse = words[endIdx]?.verse;
+            
+            const displayBook = book.charAt(0).toUpperCase() + book.slice(1);
+            reference = `${displayBook} ${chapter}:${startVerse}`;
+            if (startVerse && endVerse && startVerse !== endVerse) {
+                reference += `-${endVerse}`;
+            }
         }
-        
+
         setShareData({
             text: data.text,
             reference: reference
         });
         setShowShareModal(true);
+
+        if (session) {
+            logSharedVerse({ reference, text: data.text }).catch(() => {
+                toast.error("Failed to record shared verse");
+            });
+        }
     }
-  }, [book, chapter, createHighlight, removeHighlight, session, words]);
+  }, [book, chapter, createHighlight, logSharedVerse, removeHighlight, session, words]);
 
   // --- Presence Logic ---
   useEffect(() => {

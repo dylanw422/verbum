@@ -99,3 +99,25 @@ export const list = query({
     return highlights;
   },
 });
+
+export const recent = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    const limit = args.limit ?? 6;
+
+    const highlights = await ctx.db
+      .query("highlights")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(limit);
+
+    return highlights;
+  },
+});

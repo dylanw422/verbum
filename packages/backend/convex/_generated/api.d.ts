@@ -20,6 +20,7 @@ import type * as journalEntries from "../journalEntries.js";
 import type * as popularVerses from "../popularVerses.js";
 import type * as privateData from "../privateData.js";
 import type * as protocols from "../protocols.js";
+import type * as sharedVerses from "../sharedVerses.js";
 import type * as userStats from "../userStats.js";
 
 import type {
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   popularVerses: typeof popularVerses;
   privateData: typeof privateData;
   protocols: typeof protocols;
+  sharedVerses: typeof sharedVerses;
   userStats: typeof userStats;
 }>;
 

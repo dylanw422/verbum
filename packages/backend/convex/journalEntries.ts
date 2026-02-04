@@ -33,6 +33,28 @@ export const getEntriesCount = query({
   },
 });
 
+export const getLinkedEntries = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) return [];
+
+    const limit = args.limit ?? 6;
+
+    const entries = await ctx.db
+      .query("journalEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .collect();
+
+    const linked = entries.filter((entry) => !!entry.linkedVerse);
+
+    return linked.slice(0, limit);
+  },
+});
+
 export const createEntry = mutation({
   args: {
     title: v.string(),

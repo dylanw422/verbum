@@ -116,6 +116,38 @@ const PlanItemSkeleton = () => (
   </div>
 );
 
+const toTitleCase = (value: string) =>
+  value
+    .split(" ")
+    .map((segment) =>
+      segment
+        .split("-")
+        .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+        .join("-")
+    )
+    .join(" ");
+
+const formatTimeAgo = (timestamp: number) => {
+  if (!Number.isFinite(timestamp)) return "--";
+  const diffMs = Date.now() - timestamp;
+  if (diffMs < 0) return "Just now";
+
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const week = 7 * day;
+  const month = 30 * day;
+  const year = 365 * day;
+
+  if (diffMs < minute) return "Just now";
+  if (diffMs < hour) return `${Math.floor(diffMs / minute)}m ago`;
+  if (diffMs < day) return `${Math.floor(diffMs / hour)}h ago`;
+  if (diffMs < week) return `${Math.floor(diffMs / day)}d ago`;
+  if (diffMs < month) return `${Math.floor(diffMs / week)}w ago`;
+  if (diffMs < year) return `${Math.floor(diffMs / month)}mo ago`;
+  return `${Math.floor(diffMs / year)}y ago`;
+};
+
 export default function JournalPage() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
@@ -124,6 +156,9 @@ export default function JournalPage() {
   const entriesCount = useQuery("journalEntries:getEntriesCount" as any);
   const dailyVerse = useQuery("dailyBread:get" as any);
   const activeProtocols = useQuery("protocols:getUserProtocols" as any, { status: "active" });
+  const recentHighlights = useQuery("highlights:recent" as any, { limit: 4 });
+  const recentSharedVerses = useQuery("sharedVerses:recent" as any, { limit: 4 });
+  const linkedEntries = useQuery("journalEntries:getLinkedEntries" as any, { limit: 4 });
 
   const [isMeditating, setIsMeditating] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -153,6 +188,34 @@ export default function JournalPage() {
   const MAX_SLOTS = 3;
   const filledSlots = sortedProtocols.slice(0, MAX_SLOTS);
   const emptySlotsCount = Math.max(0, MAX_SLOTS - filledSlots.length);
+
+  const artifactsLoading =
+    recentHighlights === undefined ||
+    recentSharedVerses === undefined ||
+    linkedEntries === undefined;
+
+  const artifacts = artifactsLoading
+    ? []
+    : [
+        ...(recentHighlights || []).map((highlight: any) => ({
+          title: `${toTitleCase(highlight.book)} ${highlight.chapter}:${highlight.verse}`,
+          type: "Highlight",
+          timestamp: typeof highlight.createdAt === "number" ? highlight.createdAt : Date.now(),
+        })),
+        ...(recentSharedVerses || []).map((share: any) => ({
+          title: share.reference,
+          type: "Share",
+          timestamp: typeof share.createdAt === "number" ? share.createdAt : Date.now(),
+        })),
+        ...(linkedEntries || []).map((entry: any) => ({
+          title: entry.linkedVerse,
+          type: "Note",
+          timestamp: Date.parse(entry.createdAt),
+        })),
+      ]
+        .filter((artifact) => !!artifact.title && Number.isFinite(artifact.timestamp))
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 4);
 
   return (
     <div className="h-[100svh] overflow-y-auto bg-zinc-950 text-zinc-100 selection:bg-rose-500/30">
@@ -397,26 +460,45 @@ export default function JournalPage() {
               </div>
             </DashboardCard>
 
-            <DashboardCard title="Sacred Artifacts" icon={History} className="h-full">
-              <div className="space-y-4 flex flex-col h-full">
-                {[
-                  { title: "Psalm 119:105", type: "Saved Verse", date: "2d ago" },
-                  { title: "Romans 12:2", type: "Highlighted", date: "5d ago" },
-                  { title: "John 15:5", type: "Saved Verse", date: "1w ago" },
-                  { title: "Philippians 4:13", type: "Highlighted", date: "1w ago" },
-                ].map((artifact, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-zinc-950/30 border border-zinc-800 rounded-lg group cursor-pointer hover:border-rose-500/30 transition-all">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-zinc-200 group-hover:text-rose-400 transition-colors">{artifact.title}</span>
-                      <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter">{artifact.type}</span>
+            <DashboardCard title="Sacred Artifacts" icon={History} className="h-[420px]">
+              <div className="flex flex-col h-full">
+                <div className="space-y-4 flex-1">
+                  {artifactsLoading ? (
+                    [1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="h-14 bg-zinc-900/50 rounded animate-pulse border border-zinc-800/50"
+                      />
+                    ))
+                  ) : artifacts.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-center text-xs font-mono text-zinc-600 uppercase tracking-widest">
+                      No artifacts yet
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-700">{artifact.date}</span>
-                  </div>
-                ))}
-                <div className="mt-auto pt-4">
-                    <button className="w-full py-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest hover:text-rose-500 transition-colors hover:cursor-pointer">
+                  ) : (
+                    artifacts.map((artifact, i) => (
+                      <div
+                        key={`${artifact.type}-${artifact.title}-${i}`}
+                        className="flex items-center justify-between p-3 bg-zinc-950/30 border border-zinc-800 rounded-lg group cursor-pointer hover:border-rose-500/30 transition-all"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-zinc-200 group-hover:text-rose-400 transition-colors">
+                            {artifact.title}
+                          </span>
+                          <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter">
+                            {artifact.type}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-zinc-700">
+                          {formatTimeAgo(artifact.timestamp)}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="pt-4">
+                  <button className="w-full py-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest hover:text-rose-500 transition-colors hover:cursor-pointer">
                     View Repository
-                    </button>
+                  </button>
                 </div>
               </div>
             </DashboardCard>

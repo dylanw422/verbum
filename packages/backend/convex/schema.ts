@@ -74,4 +74,11 @@ export default defineSchema({
   })
     .index("by_userId_book_chapter", ["userId", "book", "chapter"])
     .index("by_userId", ["userId"]),
+
+  sharedVerses: defineTable({
+    userId: v.string(),
+    reference: v.string(),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_userId", ["userId"]),
 });
