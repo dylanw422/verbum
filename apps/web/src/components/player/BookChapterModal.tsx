@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { OT_BOOKS, NT_BOOKS } from "@/lib/constants";
 import type { LibraryData } from "./types";
 
@@ -96,7 +96,7 @@ export function BookChapterModal({
 
             <div
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-6"
+              className="flex-1 overflow-y-auto px-0 py-6 md:p-6 space-y-6"
             >
               {!library && (
                 <div className="text-sm text-zinc-500">Loading library...</div>
@@ -107,7 +107,7 @@ export function BookChapterModal({
                 { label: "New Testament", books: NT_BOOKS },
               ].map((section) => (
                 <div key={section.label} className="space-y-3">
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 px-4 md:px-0">
                     {section.label}
                   </div>
                   <div className="space-y-0">
@@ -135,8 +135,13 @@ export function BookChapterModal({
                             aria-expanded={isExpanded}
                           >
                             <span>{book}</span>
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+                            <span className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                               {chapters.length} ch
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform ${
+                                  isExpanded ? "rotate-180 text-rose-400" : ""
+                                }`}
+                              />
                             </span>
                           </button>
 
