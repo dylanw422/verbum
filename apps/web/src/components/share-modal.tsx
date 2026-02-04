@@ -33,6 +33,10 @@ export function ShareModal({
         cacheBust: true, 
         pixelRatio: 4, 
         backgroundColor: "#09090b",
+        filter: (node) => {
+          if (!(node instanceof HTMLElement)) return true;
+          return node.dataset.capture !== "false";
+        },
       });
 
       // 2. Convert Data URL to Blob for Clipboard API
@@ -106,7 +110,10 @@ export function ShareModal({
                 >
                     {/* Background Noise/Gradient replicated here for capture */}
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-[#09090b] to-[#09090b]" />
-                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+                    <div
+                      data-capture="false"
+                      className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"
+                    />
                     
                     {/* Decorative Meditation-style Glow */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-rose-500/5 blur-[100px] rounded-full pointer-events-none" />
