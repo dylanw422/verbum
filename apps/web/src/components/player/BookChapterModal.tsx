@@ -57,7 +57,7 @@ export function BookChapterModal({
     };
 
     requestAnimationFrame(scrollToTarget);
-  }, [isOpen, currentBook, expandedBook]);
+  }, [isOpen, currentBook]);
 
   return (
     <AnimatePresence>
@@ -110,14 +110,16 @@ export function BookChapterModal({
                   <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                     {section.label}
                   </div>
-                  <div className="space-y-2">
-                    {section.books.map((book) => {
+                  <div className="space-y-0">
+                    {section.books.map((book, index) => {
                       const isExpanded = expandedBook === book;
                       const chapters = getChaptersForBook(library, book);
                       return (
                         <div
                           key={book}
-                          className="border border-zinc-800/60 rounded-sm bg-zinc-950/40 overflow-hidden"
+                          className={`border border-zinc-800/60 bg-zinc-950/40 overflow-hidden ${
+                            index === 0 ? "" : "-mt-px"
+                          }`}
                         >
                           <button
                             type="button"
@@ -125,7 +127,7 @@ export function BookChapterModal({
                               setExpandedBook(isExpanded ? null : book)
                             }
                             ref={book === currentBook ? currentBookRef : undefined}
-                            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors hover:cursor-pointer rounded-sm ${
+                            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors hover:cursor-pointer ${
                               isExpanded
                                 ? "text-rose-400 bg-rose-500/10"
                                 : "text-zinc-300 hover:bg-zinc-900/60"
@@ -138,34 +140,45 @@ export function BookChapterModal({
                             </span>
                           </button>
 
-                          {isExpanded && (
-                            <div className="px-4 pb-4 pt-2">
-                              {chapters.length === 0 ? (
-                                <div className="text-xs text-zinc-500">
-                                  No chapters available.
+                          <AnimatePresence initial={false}>
+                            {isExpanded && (
+                              <motion.div
+                                key={`${book}-chapters`}
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                                className="overflow-hidden"
+                              >
+                                <div className="px-4 pb-4 pt-2">
+                                  {chapters.length === 0 ? (
+                                    <div className="text-xs text-zinc-500">
+                                      No chapters available.
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2">
+                                      {chapters.map((ch) => (
+                                        <button
+                                          key={ch}
+                                          onClick={() => {
+                                            onSelect(book, ch);
+                                            onClose();
+                                          }}
+                                          className={`h-9 flex items-center justify-center rounded-md text-xs font-medium transition-all hover:cursor-pointer ${
+                                            book === currentBook && ch === currentChapter
+                                              ? "bg-rose-500 text-white shadow-lg shadow-rose-900/20 font-bold"
+                                              : "text-zinc-400 bg-zinc-800/50 hover:bg-zinc-700 hover:text-zinc-100"
+                                          }`}
+                                        >
+                                          {ch}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2">
-                                  {chapters.map((ch) => (
-                                    <button
-                                      key={ch}
-                                      onClick={() => {
-                                        onSelect(book, ch);
-                                        onClose();
-                                      }}
-                                      className={`h-9 flex items-center justify-center rounded-md text-xs font-medium transition-all hover:cursor-pointer ${
-                                        book === currentBook && ch === currentChapter
-                                          ? "bg-rose-500 text-white shadow-lg shadow-rose-900/20 font-bold"
-                                          : "text-zinc-400 bg-zinc-800/50 hover:bg-zinc-700 hover:text-zinc-100"
-                                      }`}
-                                    >
-                                      {ch}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       );
                     })}
