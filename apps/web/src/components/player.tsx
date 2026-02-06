@@ -34,6 +34,13 @@ interface PlayerProps {
 
 export default function Player({ book, initialChapter = 1 }: PlayerProps) {
   const router = useRouter();
+  const toBookSlug = useCallback((value: string) => {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }, []);
   // --- Data & Persistence ---
   const { library, isLoading, availableChapters } = useLibrary(book);
   const { targetWpm, readingMode, adjustSpeed, toggleReadingMode } = usePlayerPersistence();
@@ -371,7 +378,7 @@ export default function Player({ book, initialChapter = 1 }: PlayerProps) {
         onSelect={(nextBook, nextChapter) => {
           if (nextBook !== book) {
             setChapter(nextChapter);
-            router.push(`/${nextBook.toLowerCase().replace(/\\s+/g, "-")}?chapter=${nextChapter}`);
+            router.push(`/${toBookSlug(nextBook)}?chapter=${nextChapter}`);
             return;
           }
           handleSelectChapter(nextChapter);
