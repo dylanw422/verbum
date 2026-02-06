@@ -28,7 +28,9 @@ export function ShareModal({
     setIsGenerating(true);
 
     try {
-      const isMobile = window.innerWidth < 768;
+      const isMobile =
+        window.innerWidth < 768 ||
+        /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       const pixelRatio = isMobile ? 2 : 4;
 
       // 1. Generate PNG using html-to-image (Supports modern CSS like oklch/lab)
@@ -57,7 +59,7 @@ export function ShareModal({
         typeof ClipboardItem !== "undefined" && !!navigator.clipboard?.write;
 
       // 3a. Prefer native share on mobile if available
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: reference,
